@@ -22,10 +22,12 @@ by everyone. It can be slow, change, or go down.
   a secret scan replaces this run's test-account values in the results, and stops the report if a password is left
   anywhere except the CI log-mask line. It cannot look inside compressed files (traces, screenshots); those come
   only from logged-in tests, where no password is typed or printed
+- GitHub Actions on every pull request and push to main: a pass/fail table on the run page, and the Allure report
+  attached to the run (`allure-report`), even when tests fail
 - Tags: `@sanity` (login works, search) and `@regression` (the rest); `npm run test:sanity` for a quick check after a deploy or a fix
 
 **Next**
-- GitHub Actions on every pull request; report on GitHub Pages
+- Report on GitHub Pages from main
 - AI agents explore the site, write a test plan and draft tests with our page objects; a person approves each step in a pull request
 
 **Later**
@@ -55,6 +57,12 @@ resets its data. So each run registers two customers through Toolshop's API (one
 for the login tests; one more per retry). Their emails use the reserved `example.com` domain; the passwords are
 generated for the run and kept only in `playwright/.auth/run-accounts/` (git-ignored), where the secret scan
 reads them.
+
+## CI
+
+`.github/workflows/ui-tests.yml` runs `npm test` with 2 workers (little load on a shared public site) and 1 retry.
+It needs no secrets, so pull requests from forks run fully. Only a report that passed the secret scan is
+uploaded or published. No AI runs in CI: runs stay repeatable and cost nothing per run.
 
 ## How we write tests
 

@@ -1,0 +1,46 @@
+name: UI tests
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Run the UI tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run the tests
+        run: npm test
+
+      # Runs even when tests fail, so a red run still has its report.
+      # Includes the secret scan: if a test-account password is in the results or the report, this step fails.
+      - name: Build the Allure report and scan it for secrets
+        id: report
+        if: ${{ !cancelled() }}
+        run: npm run report:build
+
+      # Only a report that passed the secret scan is uploaded.
+      - name: Upload the Allure report
+        if: ${{ !cancelled() && steps.report.outcome == 'success' }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: allure-report
+          path: allure-report/
+          retention-days: 14

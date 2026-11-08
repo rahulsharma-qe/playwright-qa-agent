@@ -12,6 +12,10 @@ export default defineConfig({
   reporter: [
     ['list'],
     ['allure-playwright', { resultsDir: 'allure-results', detail: false }], // detail off: action steps would carry typed values
+    // In CI: a pass/fail table on the GitHub Actions run page (job summary).
+    ...(inCI
+      ? [['@estruyf/github-actions-reporter', { title: 'Toolshop UI tests', showError: true, errorFormat: 'short' }] as const]
+      : []),
   ],
   use: {
     baseURL: settings.baseUrl,
