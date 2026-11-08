@@ -4,6 +4,7 @@
   "description": "Playwright + TypeScript test framework for QA teams",
   "scripts": {
     "test": "playwright test",
+    "test:sanity": "playwright test --grep @sanity",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {

@@ -15,9 +15,10 @@ by everyone. It can be slow, change, or go down.
   logs in once through the UI and saves the session for the logged-in tests
 - Page objects (`pages/`) given to tests through `fixtures.ts`
 - Login tests: login works · unknown email shows an error · wrong password shows the same error (on this run's own account)
+- Search finds the product · add to cart makes the cart count go up; search terms and product names in `test-data/`
+- Tags: `@sanity` (login works, search) and `@regression` (the rest); `npm run test:sanity` for a quick check after a deploy or a fix
 
 **Next**
-- Search and cart tests; `@sanity` and `@regression` tags
 - Allure report; GitHub Actions on every pull request; report on GitHub Pages
 - AI agents explore the site, write a test plan and draft tests with our page objects; a person approves each step in a pull request
 
@@ -34,6 +35,7 @@ npm ci
 npx playwright install chromium
 cp .env.example .env         # optional: only to test another Toolshop copy
 npm test
+npm run test:sanity         # only @sanity tests (setup still runs)
 ```
 
 ## Settings
