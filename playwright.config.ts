@@ -9,7 +9,10 @@ export default defineConfig({
   forbidOnly: inCI,
   retries: inCI ? 1 : 0, // a test that passes only on retry is flaky, not passed
   workers: inCI ? 2 : undefined, // light load on a shared public site
-  reporter: [['list']],
+  reporter: [
+    ['list'],
+    ['allure-playwright', { resultsDir: 'allure-results', detail: false }], // detail off: action steps would carry typed values
+  ],
   use: {
     baseURL: settings.baseUrl,
     testIdAttribute: 'data-test', // Toolshop marks elements with data-test

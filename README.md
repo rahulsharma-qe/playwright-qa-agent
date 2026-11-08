@@ -16,10 +16,16 @@ by everyone. It can be slow, change, or go down.
 - Page objects (`pages/`) given to tests through `fixtures.ts`
 - Login tests: login works · unknown email shows an error · wrong password shows the same error (on this run's own account)
 - Search finds the product · add to cart makes the cart count go up; search terms and product names in `test-data/`
+- Allure report (Allure 3, runs on Node, no Java): steps, retries; a screenshot and a trace on
+  failed logged-in tests only, because they record what was typed, and the login tests type login details;
+  a failed login test keeps a text snapshot of the page instead;
+  a secret scan replaces this run's test-account values in the results, and stops the report if a password is left
+  anywhere except the CI log-mask line. It cannot look inside compressed files (traces, screenshots); those come
+  only from logged-in tests, where no password is typed or printed
 - Tags: `@sanity` (login works, search) and `@regression` (the rest); `npm run test:sanity` for a quick check after a deploy or a fix
 
 **Next**
-- Allure report; GitHub Actions on every pull request; report on GitHub Pages
+- GitHub Actions on every pull request; report on GitHub Pages
 - AI agents explore the site, write a test plan and draft tests with our page objects; a person approves each step in a pull request
 
 **Later**
@@ -36,7 +42,10 @@ npx playwright install chromium
 cp .env.example .env         # optional: only to test another Toolshop copy
 npm test
 npm run test:sanity         # only @sanity tests (setup still runs)
+npm run report              # build the Allure report and open it
 ```
+
+A trace attached to a failed test opens with `npx playwright show-trace <file>` or at trace.playwright.dev.
 
 ## Settings
 

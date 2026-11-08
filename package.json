@@ -3,15 +3,24 @@
   "version": "1.0.0",
   "description": "Playwright + TypeScript test framework for QA teams",
   "scripts": {
+    "pretest": "node -e \"for (const d of ['allure-results', 'playwright/.auth/run-accounts']) require('fs').rmSync(d, { recursive: true, force: true })\"",
     "test": "playwright test",
+    "pretest:sanity": "node -e \"for (const d of ['allure-results', 'playwright/.auth/run-accounts']) require('fs').rmSync(d, { recursive: true, force: true })\"",
     "test:sanity": "playwright test --grep @sanity",
+    "report:build": "node support/secret-scan.mjs redact && allure generate allure-results --clean -o allure-report --name \"Toolshop UI tests\" && node support/secret-scan.mjs check",
+    "report": "npm run report:build && allure open allure-report",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
     "@playwright/test": "1.64.1",
     "@types/node": "22.19.1",
+    "allure": "3.22.1",
+    "allure-playwright": "3.14.0",
     "dotenv": "18.0.9",
     "typescript": "7.0.2"
   },
-  "private": true
+  "private": true,
+  "overrides": {
+    "dompurify": "3.4.17"
+  }
 }
