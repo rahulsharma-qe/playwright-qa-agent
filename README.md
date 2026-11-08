@@ -2,6 +2,8 @@
 
 A Playwright + TypeScript test framework for QA teams. Next: an AI assistant drafts tests, a person approves them.
 
+**Latest test report (main):** https://rahulsharma-qe.github.io/playwright-qa-agent/
+
 Tests run against **Toolshop** (practicesoftwaretesting.com), the Sprint 5 version: a public demo shop shared
 by everyone. It can be slow, change, or go down.
 
@@ -24,10 +26,10 @@ by everyone. It can be slow, change, or go down.
   only from logged-in tests, where no password is typed or printed
 - GitHub Actions on every pull request and push to main: a pass/fail table on the run page, and the Allure report
   attached to the run (`allure-report`), even when tests fail
+- The report from main published on GitHub Pages (link at the top), also when tests fail
 - Tags: `@sanity` (login works, search) and `@regression` (the rest); `npm run test:sanity` for a quick check after a deploy or a fix
 
 **Next**
-- Report on GitHub Pages from main
 - AI agents explore the site, write a test plan and draft tests with our page objects; a person approves each step in a pull request
 
 **Later**
@@ -62,7 +64,8 @@ reads them.
 
 `.github/workflows/ui-tests.yml` runs `npm test` with 2 workers (little load on a shared public site) and 1 retry.
 It needs no secrets, so pull requests from forks run fully. Only a report that passed the secret scan is
-uploaded or published. No AI runs in CI: runs stay repeatable and cost nothing per run.
+uploaded or published. For the report on GitHub Pages, one-time setup: Settings → Pages → Source:
+"GitHub Actions". Pull requests do not publish. No AI runs in CI: runs stay repeatable and cost nothing per run.
 
 ## How we write tests
 
@@ -77,7 +80,6 @@ test('login works', { tag: '@sanity' }, async ({ loginPage, header }) => {
 });
 ```
 
-
 - No hard waits (`page.waitForTimeout`): Playwright already waits for elements.
 - Locators by role or label first; `data-test` when there is no clear role or label. No CSS chains or XPath.
 - Page objects describe the page and may return values; only tests call `expect`. Tests never write `new LoginPage(page)`.
@@ -86,3 +88,11 @@ test('login works', { tag: '@sanity' }, async ({ loginPage, header }) => {
 - Check what the page shows with web-first assertions (`await expect(locator).toHaveText(…)`), or `expect.poll` for a
   value a page object returns. Never read a value once and compare it: the page may still be updating.
 - A test that passes only on retry is **flaky**, not passed.
+
+## Honest lines
+
+- Five tests prove the framework, not the coverage of a shop. Small on purpose.
+- Toolshop is shared by everyone and can be slow or down; the site check says when the environment, not a test, is the problem.
+- Each run leaves two throwaway accounts on Toolshop (one more per retry); there is no API to delete them, and
+  the site's resets clear them.
+- Lockout after failed logins is not tested yet (Next: on an account made for it).
