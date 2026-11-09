@@ -11,7 +11,7 @@ playwright-qa-agent/
   fixtures.ts             gives the page objects to tests, watches every page for a bot check, re-exports test and expect
   tests/                  setup files, specs, and unit/ for our own helpers
   test-data/              search terms and product names
-  support/                settings, environment messages, test-account registration, bot-check detector,
+  support/                settings, page addresses, environment messages, test-account registration, bot-check detector,
                           secret scan, planted-bug count and summary
   ci/                     start, wait for and stop the CI copy of Toolshop; image pins and the pin script
   docs/                   this design
@@ -48,6 +48,8 @@ instead of being skipped. `--grep @sanity` picks tests; their dependency project
   site resets its data). Toolshop hides the cart badge when the cart is empty, so `cartCount()` returns 0.
 - Tests check what the page shows with web-first assertions, or `expect.poll` for a value a page object returns
   (the cart badge updates after an API call); never a value read once and compared.
+- Page objects open pages only through `appUrl()` (`support/app-url.ts`): Sprint 5 uses plain paths, the "with
+  bugs" version hash routing (`/#/…`), chosen by `SPRINT` from each version's router config in Toolshop's source.
 - `fixtures.ts` gives `header`, `loginPage`, `productListPage`, `productPage` and `cartPage`; tests never write
   `new LoginPage(page)`. Setup files use the same fixtures.
 

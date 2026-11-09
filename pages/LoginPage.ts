@@ -1,4 +1,5 @@
 import { Locator, Page, test } from '@playwright/test';
+import { appUrl } from '../support/app-url';
 
 export class LoginPage {
   readonly errorMessage: Locator;
@@ -16,7 +17,7 @@ export class LoginPage {
   }
 
   async open(): Promise<void> {
-    await test.step('Open the login page', () => this.page.goto('/auth/login'));
+    await test.step('Open the login page', () => this.page.goto(appUrl('/auth/login')));
   }
 
   /** The step name never holds the email or password: the report is public. */

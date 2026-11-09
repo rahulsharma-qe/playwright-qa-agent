@@ -1,4 +1,5 @@
 import { Locator, Page, test } from '@playwright/test';
+import { appUrl } from '../support/app-url';
 
 /** The cart: first step of checkout. */
 export class CartPage {
@@ -10,6 +11,6 @@ export class CartPage {
   }
 
   async open(): Promise<void> {
-    await test.step('Open the cart', () => this.page.goto('/checkout'));
+    await test.step('Open the cart', () => this.page.goto(appUrl('/checkout')));
   }
 }

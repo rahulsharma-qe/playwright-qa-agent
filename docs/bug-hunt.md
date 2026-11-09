@@ -71,11 +71,21 @@ with-bugs version also needs address, city and country as separate fields (its A
 not its planted bugs). The set-up picks the sign-up fields by `SPRINT`; no test step or check changes. The with-bugs
 sign-up also sends a date of birth, to work around a defect that is not on the planted list (below).
 
+The two versions also put pages in their addresses differently: Sprint 5 uses plain paths (`/auth/login`), the
+with-bugs version hash routing (`/#/auth/login`). Page objects open pages through one helper, `appUrl()`, chosen by
+`SPRINT`; no locator, step or check changes.
+
+A difference between the copies counts only when Toolshop's source config shows it (as with the sign-up rules and
+`useHash`), never when it is inferred from a failing run alone.
+
 - **Run 1 (09-11-2026, commit 58d0961): not a baseline.** Summary: 0 failed, 5 not reached, 0 passed. The set-up
   could not register a test customer, because it sent the Sprint 5 sign-up to the with-bugs API; no test reached
   the app.
 - **Run 2 (09-11-2026, commit 4f0084f): not a baseline.** Summary: 0 failed, 5 not reached, 0 passed. Sign-up was
   refused with HTTP 404 (the defect below); no test reached the app.
+- **Run 3 (09-11-2026, commit b797180): not a baseline.** Summary: 3 failed, 2 not reached, 0 passed. Sign-up worked,
+  but the tests opened plain paths (`/auth/login`) on the hash-routed copy, which showed the home page; no test
+  reached the login form, so nothing on our path was checked.
 
 No baseline run yet.
 

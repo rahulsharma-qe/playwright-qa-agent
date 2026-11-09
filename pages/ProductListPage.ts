@@ -1,4 +1,5 @@
 import { Locator, Page, test } from '@playwright/test';
+import { appUrl } from '../support/app-url';
 
 /** The home page: product cards and the search box. */
 export class ProductListPage {
@@ -14,7 +15,7 @@ export class ProductListPage {
   }
 
   async open(): Promise<void> {
-    await test.step('Open the home page', () => this.page.goto('/'));
+    await test.step('Open the home page', () => this.page.goto(appUrl('/')));
   }
 
   async search(term: string): Promise<void> {
