@@ -58,10 +58,10 @@ instead of being skipped. `--grep @sanity` picks tests; their dependency project
   tests one after another in one worker. A failed test does not skip the others; the next worker registers one
   more account, as a retry does.
 - **Sign-up fields by version:** `SIGN_UP_FIELDS` in `support/test-accounts.ts`, chosen by `SPRINT`. Sprint 5 needs
-  only name, email and password; the "with bugs" version also needs address, city and country as separate fields
-  (made-up values). Taken from each version's API contract in Toolshop's source at the pinned commit, never from
-  its planted bugs. An unknown `SPRINT` stops with a message; a refused sign-up stops the run with the environment
-  message (no retry with another shape).
+  only name, email and password; the "with bugs" version's contract also asks for address, city and country as
+  separate fields, and it gets a date of birth to work around a defect not on the planted list (recorded in
+  bug-hunt.md). Made-up values, taken from Toolshop's source at the pinned commit, never from its planted bugs. An unknown `SPRINT` stops with a message; a refused sign-up stops the run
+  with the environment message (no retry with another shape).
 - **Email** on the reserved `example.com` domain: `pqa-<run id>-<purpose>-<time><random>@example.com`, at most 60
   characters (the "with bugs" version's limit).
 - **Password:** 24 characters with upper and lower case, a number and a symbol (Toolshop's rules; it also refuses

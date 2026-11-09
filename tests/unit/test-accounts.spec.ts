@@ -7,8 +7,8 @@ test.describe('test accounts', () => {
     expect(signUpFieldsFor('sprint5')).toEqual({});
   });
 
-  test('the with-bugs version also gets address, city and country', () => {
-    expect(Object.keys(signUpFieldsFor('sprint5-with-bugs'))).toEqual(expect.arrayContaining(['address', 'city', 'country']));
+  test('the with-bugs version also gets address, city, country and a date of birth', () => {
+    expect(Object.keys(signUpFieldsFor('sprint5-with-bugs'))).toEqual(expect.arrayContaining(['address', 'city', 'country', 'dob']));
   });
 
   test('an unknown version stops with a message saying where to add it', () => {

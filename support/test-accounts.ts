@@ -9,13 +9,22 @@ import { RUN_ACCOUNTS_DIR, settings } from './settings';
 export type TestAccount = { email: string; password: string };
 
 /**
- * What each Toolshop version needs at sign-up besides name, email and password, taken from its API contract in
- * Toolshop's source at the pinned commit (never from its planted bugs). Sprint 5 needs nothing more; the "with
- * bugs" version needs address, city and country as separate fields, so it gets made-up values.
+ * What each Toolshop version needs at sign-up besides name, email and password, taken from Toolshop's source at the
+ * pinned commit (never from its planted bugs). Sprint 5 needs nothing more. The "with bugs" version's contract asks
+ * for address, city and country as separate fields. It also gets a date of birth, to work around a defect that is
+ * not on the planted list (see docs/bug-hunt.md, "Found, not on the planted list"): its sign-up rules leave `dob`
+ * optional, but its database requires it. Made-up values; the date of birth is inside its age rules.
  */
 export const SIGN_UP_FIELDS: Record<string, Record<string, string>> = {
   sprint5: {},
-  'sprint5-with-bugs': { address: '1 Test Street', city: 'Testville', state: 'Test', country: 'NL', postcode: '1000' },
+  'sprint5-with-bugs': {
+    address: '1 Test Street',
+    city: 'Testville',
+    state: 'Test',
+    country: 'NL',
+    postcode: '1000',
+    dob: '1990-01-01',
+  },
 };
 
 /** The shortest email limit among the versions above (the "with bugs" version allows 60 characters). */

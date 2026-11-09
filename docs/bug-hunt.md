@@ -67,11 +67,27 @@ contact, rentals, emails) are not on our path.
 ## Runs
 
 Toolshop's two versions register customers differently: Sprint 5 needs only name, email and password; the
-with-bugs version also needs address, city and country as separate fields (from its API contract in Toolshop's
-source, not from its planted bugs). The set-up picks the sign-up fields by `SPRINT`; no test step or check changes.
+with-bugs version also needs address, city and country as separate fields (its API contract in Toolshop's source,
+not its planted bugs). The set-up picks the sign-up fields by `SPRINT`; no test step or check changes. The with-bugs
+sign-up also sends a date of birth, to work around a defect that is not on the planted list (below).
 
 - **Run 1 (09-11-2026, commit 58d0961): not a baseline.** Summary: 0 failed, 5 not reached, 0 passed. The set-up
   could not register a test customer, because it sent the Sprint 5 sign-up to the with-bugs API; no test reached
   the app.
+- **Run 2 (09-11-2026, commit 4f0084f): not a baseline.** Summary: 0 failed, 5 not reached, 0 passed. Sign-up was
+  refused with HTTP 404 (the defect below); no test reached the app.
 
 No baseline run yet.
+
+## Found, not on the planted list
+
+Defects we met that are not in Testsmith's list. A defect like this may be worked around in set-up only, so the
+tests can run, and is recorded here. It is not counted in the catch rate, and no test step or check changes.
+A workaround never touches a page or flow on our path (login, home and search, product page, cart): there, a
+failure stays a failure and is recorded as one. Workarounds come from reading Toolshop's source, never from the
+bug list.
+
+| Copy | Seen | What we saw | Cause (Toolshop's source at the pinned commit) | Worked around by |
+|---|---|---|---|---|
+| sprint5-with-bugs | Run 2, 09-11-2026, commit 4f0084f | Sign-up through the API without a date of birth is refused with HTTP 404 | The sign-up rules leave the date of birth optional, but the users table requires it; the database error is reported as 404 | The with-bugs sign-up sends a made-up date of birth |
+
