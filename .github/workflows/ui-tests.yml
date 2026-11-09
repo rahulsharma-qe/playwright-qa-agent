@@ -12,7 +12,11 @@ jobs:
   test:
     name: Run the UI tests
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30  # first value; set from measured runs
+    # CI tests its own copy of Toolshop: the public site shows a bot check to CI machines.
+    env:
+      BASE_URL: http://localhost:4200
+      API_URL: http://localhost:8091
     outputs:
       report-scanned: ${{ steps.report.outcome == 'success' }}
     steps:
@@ -28,14 +32,23 @@ jobs:
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
 
+      - name: Start Toolshop (own copy, pinned images)
+        id: start
+        run: ci/start-toolshop.sh
+
       - name: Run the tests
         run: npm test
+
+      - name: Show the last Toolshop logs
+        if: ${{ failure() }}
+        run: docker compose -p toolshop logs --tail 60
 
       # Runs even when tests fail, so a red run still has its report.
       # Includes the secret scan: if a test-account password is in the results or the report, this step fails.
       - name: Build the Allure report and scan it for secrets
         id: report
-        if: ${{ !cancelled() }}
+        # Only when Toolshop started: otherwise no test ran and there is nothing to report or scan.
+        if: ${{ !cancelled() && steps.start.outcome == 'success' }}
         run: npm run report:build
 
       # Only a report that passed the secret scan is uploaded.
@@ -52,6 +65,10 @@ jobs:
         uses: actions/upload-pages-artifact@v5
         with:
           path: allure-report/
+
+      - name: Stop Toolshop
+        if: ${{ always() }}
+        run: ci/stop-toolshop.sh
 
   publish-report:
     name: Publish the report on GitHub Pages

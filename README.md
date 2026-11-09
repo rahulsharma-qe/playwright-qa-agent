@@ -4,8 +4,9 @@ A Playwright + TypeScript test framework for QA teams. Next: an AI assistant dra
 
 **Latest test report (main):** https://rahulsharma-qe.github.io/playwright-qa-agent/
 
-Tests run against **Toolshop** (practicesoftwaretesting.com), the Sprint 5 version: a public demo shop shared
-by everyone. It can be slow, change, or go down.
+Tests run against **Toolshop**, the Sprint 5 version of the practice web shop by
+[Testsmith](https://github.com/testsmith-io/practice-software-testing). Local runs use the public site
+(practicesoftwaretesting.com); CI runs Toolshop's published images privately inside the runner (see [CI](#ci)).
 
 ## Built / Next / Later
 
@@ -24,6 +25,7 @@ by everyone. It can be slow, change, or go down.
   a secret scan replaces this run's test-account values in the results, and stops the report if a password is left
   anywhere except the CI log-mask line. It cannot look inside compressed files (traces, screenshots); those come
   only from logged-in tests, where no password is typed or printed
+- CI starts its own copy of Toolshop from pinned images, seeds it and waits for it, then runs the tests against it
 - GitHub Actions on every pull request and push to main: a pass/fail table on the run page, and the Allure report
   attached to the run (`allure-report`), even when tests fail
 - The report from main published on GitHub Pages (link at the top), also when tests fail
@@ -62,10 +64,31 @@ reads them.
 
 ## CI
 
-`.github/workflows/ui-tests.yml` runs `npm test` with 2 workers (little load on a shared public site) and 1 retry.
-It needs no secrets, so pull requests from forks run fully. Only a report that passed the secret scan is
-uploaded or published. For the report on GitHub Pages, one-time setup: Settings → Pages → Source:
-"GitHub Actions". Pull requests do not publish. No AI runs in CI: runs stay repeatable and cost nothing per run.
+`.github/workflows/ui-tests.yml` runs on every pull request and push to main. Toolshop's public site shows a bot
+check to CI machines, and we do not try to get past it, so CI starts its own copy first:
+
+1. `ci/start-toolshop.sh` fetches Toolshop's compose file at a pinned commit, starts the database, API, web server
+   and site from Toolshop's published images (pinned by digest in `ci/toolshop-images.sprint5.yml`), seeds the
+   database, and waits until the API and the site answer. Toolshop's hourly data reset is not started.
+2. `npm test` runs against `http://localhost:4200` (site) and `http://localhost:8091` (API), with 2 workers and 1 retry.
+3. The report is built and scanned; `ci/stop-toolshop.sh` removes the containers.
+
+Start the same copy on your machine (needs Docker):
+
+```bash
+ci/start-toolshop.sh
+BASE_URL=http://localhost:4200 API_URL=http://localhost:8091 npm test
+ci/stop-toolshop.sh
+```
+
+The copy uses host ports 3306 (database), 8000 and 8091 (API) and 4200 (site); free them first.
+
+CI needs no secrets, so pull requests from forks run fully. Only a report that passed the secret scan is uploaded
+or published. For the report on GitHub Pages, one-time setup: Settings → Pages → Source: "GitHub Actions". Pull
+requests do not publish. No AI runs in CI: runs stay repeatable and cost nothing per run.
+
+To update Toolshop in CI: change `TOOLSHOP_COMMIT` in `ci/start-toolshop.sh` and run `ci/pin-toolshop-images.sh`
+(the two are one pair), run the tests locally against the public site, then let CI run on the new copy.
 
 ## How we write tests
 
@@ -96,3 +119,14 @@ test('login works', { tag: '@sanity' }, async ({ loginPage, header }) => {
 - Each run leaves two throwaway accounts on Toolshop (one more per retry); there is no API to delete them, and
   the site's resets clear them.
 - Lockout after failed logins is not tested yet (Next: on an account made for it).
+- CI tests its own copy of Toolshop Sprint 5, not the public site; the public site is tested by local runs. Images
+  are pinned, so Toolshop changes reach CI only when the pins are updated. Starting Toolshop adds a few minutes to
+  every CI run.
+- The CI copy is not fully offline: Toolshop checks new passwords against the Have I Been Pwned service, so a slow
+  or unreachable service shows as "Could not register a test customer … environment problem".
+
+## Credits
+
+Toolshop is © Testsmith and is used with their permission for this non-commercial project:
+[practice-software-testing](https://github.com/testsmith-io/practice-software-testing). Nothing of Toolshop's code
+is copied into this repository; CI runs its published images privately and removes them after the run.
