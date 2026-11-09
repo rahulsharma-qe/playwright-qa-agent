@@ -1,4 +1,5 @@
 import { test as base } from '@playwright/test';
+import { BOT_CHECK_MESSAGE, isBotCheck, mightBeBotCheck } from './support/bot-check';
 import { CartPage } from './pages/CartPage';
 import { Header } from './pages/Header';
 import { LoginPage } from './pages/LoginPage';
@@ -19,6 +20,23 @@ type PageObjects = {
 };
 
 export const test = base.extend<PageObjects>({
+  // Every page the tests get is watched for a bot-check page. It can appear after login, so the site check alone
+  // would miss it; without this, the test would fail later with a confusing timeout.
+  page: async ({ page }, use) => {
+    let blocked = false;
+    page.on('response', async (response) => {
+      const headers = response.headers();
+      const isPage = response.request().resourceType() === 'document' && response.frame() === page.mainFrame();
+      if (!isPage && headers['cf-mitigated'] !== 'challenge') return;
+      const body = isPage && mightBeBotCheck(response.status()) ? await response.text().catch(() => '') : '';
+      if (isBotCheck({ status: response.status(), headers, body })) {
+        blocked = true;
+        await page.close({ reason: BOT_CHECK_MESSAGE }).catch(() => {});
+      }
+    });
+    await use(page);
+    if (blocked) throw new Error(BOT_CHECK_MESSAGE);
+  },
   header: async ({ page }, use) => use(new Header(page)),
   loginPage: async ({ page }, use) => use(new LoginPage(page)),
   productListPage: async ({ page }, use) => use(new ProductListPage(page)),

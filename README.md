@@ -25,6 +25,10 @@ Tests run against **Toolshop**, the Sprint 5 version of the practice web shop by
   a secret scan replaces this run's test-account values in the results, and stops the report if a password is left
   anywhere except the CI log-mask line. It cannot look inside compressed files (traces, screenshots); those come
   only from logged-in tests, where no password is typed or printed
+- Bot-check detection: if a site shows a bot check (such as Cloudflare's "Performing security verification")
+  instead of Toolshop, in the site check or later in any test, the run stops with one clear message: an
+  environment problem, not a test failure. We never try to get past it. Unit tests for the detector run in a
+  `unit` project with no browser
 - CI starts its own copy of Toolshop from pinned images, seeds it and waits for it, then runs the tests against it
 - GitHub Actions on every pull request and push to main: a pass/fail table on the run page, and the Allure report
   attached to the run (`allure-report`), even when tests fail

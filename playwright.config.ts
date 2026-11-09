@@ -25,6 +25,8 @@ export default defineConfig({
     trace: 'off', // traces record typed values and tokens; only logged-in keeps them (below)
   },
   projects: [
+    // Plain TypeScript checks of our own helpers: no browser, no Toolshop, no dependencies.
+    { name: 'unit', testMatch: /unit\/.*\.spec\.ts/ },
     { name: 'site-check', testMatch: /site-check\.setup\.ts/ },
     {
       name: 'auth-setup',
@@ -34,7 +36,7 @@ export default defineConfig({
     },
     {
       name: 'logged-in',
-      testIgnore: /login\.spec\.ts/,
+      testIgnore: [/login\.spec\.ts/, /unit\//],
       use: {
         ...devices['Desktop Chrome'],
         storageState: SESSION_FILE,
