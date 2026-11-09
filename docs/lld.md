@@ -11,7 +11,8 @@ playwright-qa-agent/
   fixtures.ts             gives the page objects to tests, watches every page for a bot check, re-exports test and expect
   tests/                  setup files, specs, and unit/ for our own helpers
   test-data/              search terms and product names
-  support/                settings, test-account registration, bot-check detector, secret scan
+  support/                settings, environment messages, test-account registration, bot-check detector,
+                          secret scan, planted-bug count and summary
   ci/                     start, wait for and stop the CI copy of Toolshop; image pins and the pin script
   docs/                   this design
   playwright.config.ts    projects, reporters, locale, screenshots and traces
@@ -100,6 +101,9 @@ instead of being skipped. `--grep @sanity` picks tests; their dependency project
   environment problem, not a test failure; we do not try to get past it. In CI, the run uses its own copy of
   Toolshop."
 - Unit tests (project `unit`) cover the detector with sample responses written for them.
+- All environment messages come from `support/environment-messages.ts` and share one phrase ("this is an
+  environment problem, not a test failure"), so the planted-bug count can tell them from test failures; unit tests
+  check the site-check, registration and bot-check messages against it.
 
 ## 7. CI and the Toolshop copy
 
@@ -109,6 +113,14 @@ secrets): Node from `.nvmrc` → `npm ci` → Chromium → QEMU for arm64 → `c
 logs → if Toolshop started, `npm run report:build` → if that passed, upload the report (and on main, prepare it for
 Pages) → always `ci/stop-toolshop.sh`. A second job on main deploys the report to GitHub Pages (`pages: write`,
 `id-token: write`, `concurrency: pages`), only when the scan passed.
+
+**Planted-bug run** (`.github/workflows/with-bugs.yml`, started by hand only): the same steps with
+`SPRINT=sprint5-with-bugs`; the test step has `continue-on-error: true`; Playwright also writes a JSON file
+(`RESULTS_JSON`), and `support/planted-bug-summary.ts` (run by Node directly; the counting is in
+`support/planted-bug-count.ts`, with unit tests) prints "Planted-bug run: X failed, Y not reached, Z passed
+(of 5 UI tests)", the setup and unit line, and the commit SHA, on the run page too. The report is scanned and
+uploaded as an artifact; nothing goes to GitHub Pages. The pins file for that copy is
+`toolshop-images.sprint5-with-bugs.yml`.
 
 **`ci/` scripts**
 

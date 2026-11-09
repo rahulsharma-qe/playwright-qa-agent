@@ -12,6 +12,8 @@ export default defineConfig({
   reporter: [
     ['list'],
     ['allure-playwright', { resultsDir: 'allure-results', detail: false }], // detail off: action steps would carry typed values
+    // For the planted-bug run: a JSON file the summary script counts from.
+    ...(process.env.RESULTS_JSON ? [['json', { outputFile: process.env.RESULTS_JSON }] as const] : []),
     // In CI: a pass/fail table on the GitHub Actions run page (job summary).
     ...(inCI
       ? [['@estruyf/github-actions-reporter', { title: 'Toolshop UI tests', showError: true, errorFormat: 'short' }] as const]

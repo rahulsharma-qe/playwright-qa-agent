@@ -30,6 +30,8 @@ Tests run against **Toolshop**, the Sprint 5 version of the practice web shop by
   instead of Toolshop, in the site check or later in any test, the run stops with one clear message: an
   environment problem, not a test failure. We never try to get past it. Unit tests for the detector run in a
   `unit` project with no browser
+- A hand-started planted-bug run on Toolshop's "with bugs" version; failures are matched to planted bugs by a
+  person in [docs/bug-hunt.md](docs/bug-hunt.md)
 - CI starts its own copy of Toolshop from pinned images, seeds it and waits for it, then runs the tests against it
 - GitHub Actions on every pull request and push to main: a pass/fail table on the run page, and the Allure report
   attached to the run (`allure-report`), even when tests fail
@@ -42,7 +44,7 @@ Tests run against **Toolshop**, the Sprint 5 version of the practice web shop by
 **Later**
 - A full agent: reads a requirement, plans tests, drafts them, heals broken locators; every change comes as a pull request a person approves
 - Accessibility checks · several environments · visual regression · UI error states by mocking API replies
-- Running the suite on the "with bugs" copy of Toolshop · Allure history and trends · GitLab CI (explained by mapping from Actions)
+- Allure history and trends · GitLab CI (explained by mapping from Actions)
 
 ## Design
 
@@ -53,7 +55,7 @@ secret scan, bot-check detection, CI and the Toolshop copy, settings and version
 ## Run it
 
 ```bash
-nvm use                      # Node version from .nvmrc
+nvm use                      # Node version from .nvmrc (22.18 or later: Node runs one TypeScript script directly)
 npm ci
 npx playwright install chromium
 cp .env.example .env         # optional: only to test another Toolshop copy
@@ -101,6 +103,16 @@ CI needs no secrets, so pull requests from forks run fully. Only a report that p
 or published. For the report on GitHub Pages, one-time setup: Settings → Pages → Source: "GitHub Actions". Pull
 requests do not publish. No AI runs in CI: runs stay repeatable and cost nothing per run.
 
+**Planted-bug run.** The hand-started workflow "Run on the with-bugs copy" runs the same tests on Toolshop's
+version with bugs planted on purpose, to see which of them the tests catch ([docs/bug-hunt.md](docs/bug-hunt.md)).
+Failed tests are the result there, so that workflow stays green when they fail. The same run on your machine:
+
+```bash
+SPRINT=sprint5-with-bugs ci/start-toolshop.sh
+BASE_URL=http://localhost:4200 API_URL=http://localhost:8091 npm test
+ci/stop-toolshop.sh
+```
+
 To update Toolshop in CI: change `TOOLSHOP_COMMIT` in `ci/toolshop-env.sh` and run `ci/pin-toolshop-images.sh`
 (the two are one pair), run the tests locally against the public site, then let CI run on the new copy.
 
@@ -145,4 +157,5 @@ test('login works', { tag: '@sanity' }, async ({ loginPage, header }) => {
 
 Toolshop is © Testsmith and is used with their permission for this non-commercial project:
 [practice-software-testing](https://github.com/testsmith-io/practice-software-testing). Nothing of Toolshop's code
-is copied into this repository; CI runs its published images privately and removes them after the run.
+is copied into this repository; CI runs its published images privately and removes them after the run, including
+the "with bugs" version, which is run only to measure how many planted bugs the tests catch.

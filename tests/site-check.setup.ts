@@ -1,6 +1,7 @@
 import type { APIRequestContext, APIResponse } from '@playwright/test';
 import { test as setup } from '../fixtures';
 import { BOT_CHECK_MESSAGE, isBotCheck, mightBeBotCheck } from '../support/bot-check';
+import { siteNotResponding } from '../support/environment-messages';
 import { settings } from '../support/settings';
 
 const TIMEOUT_MS = 15_000;
@@ -14,7 +15,7 @@ async function checkResponds(
   what: 'site' | 'API',
   url: string,
 ): Promise<void> {
-  const notResponding = `Toolshop ${what} is not responding at ${url}; this is an environment problem, not a test failure.`;
+  const notResponding = siteNotResponding(what, url);
   let response: APIResponse;
   try {
     response = await request.get(url, { timeout: TIMEOUT_MS });

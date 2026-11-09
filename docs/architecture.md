@@ -109,10 +109,13 @@ design comes separately. The README's Built / Next / Later list is the record. H
 ## 9. Steps
 
 - **Step 1 (built):** the framework, its report, CI with its own Toolshop copy, and the report on GitHub Pages.
+- **Planted-bug baseline (before step 2):** a hand-started workflow runs the same tests on Toolshop's "with bugs"
+  version; a person matches failures to planted bugs ([bug-hunt.md](bug-hunt.md)). After step 2, the same run
+  shows what the approved AI-drafted tests add.
 - **Step 2 (next; its design comes separately):** Playwright's own test agents: a planner writes a test plan, a
   generator drafts tests from it with our page objects, and a healer proposes fixes for failing tests. A person
   approves the plan, the tests and every fix in a pull request.
-- **Later:** account lockout test on our own copy · the suite on Toolshop's "with bugs" version · accessibility
+- **Later:** account lockout test on our own copy · accessibility
   checks · several environments · visual regression · UI error states by mocking API replies · plain-English
   steps to a test script · Allure history and trends · a weekly run on both the public site and the CI copy ·
   GitLab CI (explained by mapping from GitHub Actions) · GitHub Actions pinned to commit SHAs.

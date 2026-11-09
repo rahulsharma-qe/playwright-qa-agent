@@ -3,6 +3,7 @@ import { randomBytes, randomInt } from 'node:crypto';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { BOT_CHECK_MESSAGE, isBotCheck, mightBeBotCheck } from './bot-check';
+import { cannotRegister } from './environment-messages';
 import { RUN_ACCOUNTS_DIR, settings } from './settings';
 
 export type TestAccount = { email: string; password: string };
@@ -20,8 +21,7 @@ export async function registerTestCustomer(request: APIRequestContext, purpose: 
   hideInCiLogs(account.password);
   saveForSecretScan(`${purpose}-${unique}`, account);
 
-  const cannotRegister = (reason: string) =>
-    new Error(`Could not register a test customer on Toolshop (${reason}); this is an environment problem, not a test failure.`);
+  const environmentError = (reason: string) => new Error(cannotRegister(reason));
   let response: APIResponse;
   try {
     response = await request.post(`${settings.apiUrl}/users/register`, {
@@ -29,12 +29,12 @@ export async function registerTestCustomer(request: APIRequestContext, purpose: 
       timeout: 15_000,
     });
   } catch (error) {
-    throw cannotRegister((error as Error).message.split('\n')[0]);
+    throw environmentError((error as Error).message.split('\n')[0]);
   }
   const status = response.status();
   const body = mightBeBotCheck(status) ? await response.text().catch(() => '') : '';
   if (isBotCheck({ status, headers: response.headers(), body })) throw new Error(BOT_CHECK_MESSAGE);
-  if (status !== 201) throw cannotRegister(`HTTP ${status}`);
+  if (status !== 201) throw environmentError(`HTTP ${status}`);
   return account;
 }
 

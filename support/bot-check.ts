@@ -3,9 +3,7 @@
  * Public sites often show one to browsers on data-centre machines such as CI runners. We never try to get past it;
  * we say clearly that the environment, not a test, is the problem.
  */
-export const BOT_CHECK_MESSAGE =
-  "Toolshop's public site is blocking this machine with a bot check. This is an environment problem, not a test " +
-  'failure; we do not try to get past it. In CI, the run uses its own copy of Toolshop.';
+export { BOT_CHECK_MESSAGE } from './environment-messages';
 
 const CHALLENGE_TEXTS = ['Performing security verification', 'Just a moment'];
 

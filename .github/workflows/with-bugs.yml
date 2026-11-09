@@ -1,0 +1,72 @@
+name: Run on the with-bugs copy
+
+# Started by hand only. Runs the same tests on Toolshop's "with bugs" version, where bugs are planted on purpose,
+# to see which of them the tests catch. Failed tests are the result here, so the job stays green when they fail.
+# A person matches each failure to a planted bug in docs/bug-hunt.md. Nothing is published to GitHub Pages.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  planted-bug-run:
+    name: Planted-bug run
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      SPRINT: sprint5-with-bugs
+      BASE_URL: http://localhost:4200
+      API_URL: http://localhost:8091
+      RESULTS_JSON: test-results.json
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Allow arm64 images (emulation)
+        uses: docker/setup-qemu-action@v4
+        with:
+          platforms: arm64
+
+      - name: Start Toolshop with planted bugs (own copy, pinned images)
+        id: start
+        run: ci/start-toolshop.sh
+
+      # Failed tests are the result of this run, not a broken job.
+      - name: Run the tests
+        continue-on-error: true
+        run: npm test
+
+      - name: Count the results
+        if: ${{ !cancelled() && steps.start.outcome == 'success' }}
+        run: node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON support/planted-bug-summary.ts "$RESULTS_JSON"
+
+      - name: Build the Allure report and scan it for secrets
+        id: report
+        if: ${{ !cancelled() && steps.start.outcome == 'success' }}
+        run: npm run report:build
+
+      - name: Upload the Allure report
+        if: ${{ !cancelled() && steps.report.outcome == 'success' }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: allure-report-with-bugs
+          path: allure-report/
+          retention-days: 30
+
+      - name: Show the last Toolshop logs
+        if: ${{ failure() }}
+        run: docker compose -p toolshop logs --tail 60
+
+      - name: Stop Toolshop
+        if: ${{ always() }}
+        run: ci/stop-toolshop.sh
