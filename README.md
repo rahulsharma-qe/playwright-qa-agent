@@ -68,9 +68,9 @@ A trace attached to a failed test opens with `npx playwright show-trace <file>` 
 
 ## Settings
 
-`BASE_URL` and `API_URL` are the only settings, and both have defaults. There are no account values anywhere:
-shared demo accounts get locked by other visitors, and accounts registered by hand are removed when Toolshop
-resets its data. So each run registers two customers through Toolshop's API (one for the logged-in tests, one
+`BASE_URL`, `API_URL` and `SPRINT` (the Toolshop version) are the only settings, and all have defaults. There
+are no account values anywhere: shared demo accounts get locked by other visitors, and accounts registered by
+hand are removed when Toolshop resets its data. So each run registers two customers through Toolshop's API (one for the logged-in tests, one
 for the login tests; one more per retry). Their emails use the reserved `example.com` domain; the passwords are
 generated for the run and kept only in `playwright/.auth/run-accounts/` (git-ignored), where the secret scan
 reads them.
@@ -109,7 +109,7 @@ Failed tests are the result there, so that workflow stays green when they fail. 
 
 ```bash
 SPRINT=sprint5-with-bugs ci/start-toolshop.sh
-BASE_URL=http://localhost:4200 API_URL=http://localhost:8091 npm test
+SPRINT=sprint5-with-bugs BASE_URL=http://localhost:4200 API_URL=http://localhost:8091 npm test
 ci/stop-toolshop.sh
 ```
 

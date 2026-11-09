@@ -57,7 +57,13 @@ instead of being skipped. `--grep @sanity` picks tests; their dependency project
   `auth-setup` registers one for the logged-in tests; `login.spec.ts` registers one in `beforeAll` and runs its
   tests one after another in one worker. A failed test does not skip the others; the next worker registers one
   more account, as a retry does.
-- **Email** on the reserved `example.com` domain: `pqa-<run id>-<purpose>-<time>-<random>@example.com`.
+- **Sign-up fields by version:** `SIGN_UP_FIELDS` in `support/test-accounts.ts`, chosen by `SPRINT`. Sprint 5 needs
+  only name, email and password; the "with bugs" version also needs address, city and country as separate fields
+  (made-up values). Taken from each version's API contract in Toolshop's source at the pinned commit, never from
+  its planted bugs. An unknown `SPRINT` stops with a message; a refused sign-up stops the run with the environment
+  message (no retry with another shape).
+- **Email** on the reserved `example.com` domain: `pqa-<run id>-<purpose>-<time><random>@example.com`, at most 60
+  characters (the "with bugs" version's limit).
 - **Password:** 24 characters with upper and lower case, a number and a symbol (Toolshop's rules; it also refuses
   passwords known from breaches). Generated for the run and never printed.
 - Before registering, the account is written to `playwright/.auth/run-accounts/<purpose>-<time>-<random>.json`
@@ -153,7 +159,7 @@ uploaded as an artifact; nothing goes to GitHub Pages. The pins file for that co
 
 ## 8. Settings and versions
 
-- **Settings:** `BASE_URL` and `API_URL` only, both with defaults (the public Sprint 5 site and API); read from
+- **Settings:** `BASE_URL`, `API_URL` and `SPRINT`, all with defaults (the public Sprint 5 site and API); read from
   the environment or a git-ignored `.env`.
 - **Config:** `testIdAttribute: 'data-test'` (Toolshop's attribute); `locale: 'en-US'` (the site follows the
   browser language, so texts and role names stay in English); retries 1 in CI and 0 locally; 2 workers in CI.

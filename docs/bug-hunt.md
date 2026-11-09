@@ -66,4 +66,12 @@ contact, rentals, emails) are not on our path.
 
 ## Runs
 
-No run yet.
+Toolshop's two versions register customers differently: Sprint 5 needs only name, email and password; the
+with-bugs version also needs address, city and country as separate fields (from its API contract in Toolshop's
+source, not from its planted bugs). The set-up picks the sign-up fields by `SPRINT`; no test step or check changes.
+
+- **Run 1 (09-11-2026, commit 58d0961): not a baseline.** Summary: 0 failed, 5 not reached, 0 passed. The set-up
+  could not register a test customer, because it sent the Sprint 5 sign-up to the with-bugs API; no test reached
+  the app.
+
+No baseline run yet.

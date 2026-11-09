@@ -1,4 +1,7 @@
-/** Toolshop Sprint 5 site and API; both can be changed with environment variables. No account values: each run makes its own. */
+/**
+ * Toolshop's site, API and version (Sprint 5 by default); all can be changed with environment variables.
+ * No account values: each run makes its own.
+ */
 import dotenv from 'dotenv';
 
 dotenv.config({ quiet: true });
@@ -12,4 +15,6 @@ export const RUN_ACCOUNTS_DIR = 'playwright/.auth/run-accounts';
 export const settings = {
   baseUrl: process.env.BASE_URL || 'https://practicesoftwaretesting.com',
   apiUrl: process.env.API_URL || 'https://api.practicesoftwaretesting.com',
+  /** Which Toolshop version is under test (the same SPRINT the CI scripts use). */
+  sprint: process.env.SPRINT || 'sprint5',
 };
