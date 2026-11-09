@@ -86,12 +86,15 @@ ci/stop-toolshop.sh
 ```
 
 The copy uses host ports 3306 (database), 8000 and 8091 (API) and 4200 (site); free them first.
+Toolshop's web server image is published for arm64 only. A Mac with Apple silicon runs it natively; Docker
+Desktop on an Intel Mac or Windows emulates it on its own. On a Linux machine (amd64), turn on arm64 emulation
+once: `docker run --privileged --rm tonistiigi/binfmt --install arm64`.
 
 CI needs no secrets, so pull requests from forks run fully. Only a report that passed the secret scan is uploaded
 or published. For the report on GitHub Pages, one-time setup: Settings → Pages → Source: "GitHub Actions". Pull
 requests do not publish. No AI runs in CI: runs stay repeatable and cost nothing per run.
 
-To update Toolshop in CI: change `TOOLSHOP_COMMIT` in `ci/start-toolshop.sh` and run `ci/pin-toolshop-images.sh`
+To update Toolshop in CI: change `TOOLSHOP_COMMIT` in `ci/toolshop-env.sh` and run `ci/pin-toolshop-images.sh`
 (the two are one pair), run the tests locally against the public site, then let CI run on the new copy.
 
 ## How we write tests
