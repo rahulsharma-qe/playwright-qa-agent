@@ -44,6 +44,12 @@ Tests run against **Toolshop**, the Sprint 5 version of the practice web shop by
 - Accessibility checks · several environments · visual regression · UI error states by mocking API replies
 - Running the suite on the "with bugs" copy of Toolshop · Allure history and trends · GitLab CI (explained by mapping from Actions)
 
+## Design
+
+[High-level design](docs/architecture.md): goals, components, one run and one CI run step by step, safety,
+decisions and limits. [Low-level design](docs/lld.md): projects, page objects, test accounts, reporting and the
+secret scan, bot-check detection, CI and the Toolshop copy, settings and versions.
+
 ## Run it
 
 ```bash
