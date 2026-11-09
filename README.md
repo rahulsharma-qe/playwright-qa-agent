@@ -23,8 +23,9 @@ Tests run against **Toolshop**, the Sprint 5 version of the practice web shop by
   failed logged-in tests only, because they record what was typed, and the login tests type login details;
   a failed login test keeps a text snapshot of the page instead;
   a secret scan replaces this run's test-account values in the results, and stops the report if a password is left
-  anywhere except the CI log-mask line. It cannot look inside compressed files (traces, screenshots); those come
-  only from logged-in tests, where no password is typed or printed
+  anywhere except the CI log-mask line and the page snapshot of a failed test (both are replaced). It cannot
+  look inside compressed files (traces, screenshots); those come only from logged-in tests, where no password is
+  typed or printed
 - Bot-check detection: if a site shows a bot check (such as Cloudflare's "Performing security verification")
   instead of Toolshop, in the site check or later in any test, the run stops with one clear message: an
   environment problem, not a test failure. We never try to get past it. Unit tests for the detector run in a

@@ -1,9 +1,11 @@
 // Keeps this run's test-account passwords out of the public report (GitHub Pages and the run artifact).
 //   node support/secret-scan.mjs redact   before the report is built: replaces account emails and passwords in
 //                                          the text files of allure-results/ with <test account email|password>.
-//                                          The one expected place for a password is the CI log-mask line
-//                                          (::add-mask::), which Allure keeps with a test's output. A password
-//                                          anywhere else is a leak: in CI the job stops and nothing is uploaded.
+//                                          Two places are expected to hold a password: the CI log-mask line
+//                                          (::add-mask::), which Allure keeps with a test's output, and a
+//                                          textbox line in Playwright's page snapshot of a failed test (it shows
+//                                          what was typed into the password field). Both are replaced. A
+//                                          password anywhere else is a leak: in CI the job stops, nothing uploaded.
 //   node support/secret-scan.mjs check    after the report is built: reads every file in allure-results/ and
 //                                          allure-report/ as raw bytes; exit 1 if a password is found.
 // Limit: compressed files (trace archives, screenshots) cannot be read this way. They come only from the
@@ -40,6 +42,7 @@ const accounts = accountFiles.map((f) => JSON.parse(readFileSync(f, 'utf8')));
 
 if (mode === 'redact') {
   let maskLines = 0;
+  let snapshotLines = 0;
   const leaks = new Set();
   let changedFiles = 0;
   for (const file of filesUnder('allure-results').filter((f) => TEXT_FILES.has(extname(f)))) {
@@ -49,6 +52,17 @@ if (mode === 'redact') {
       const maskLine = `::add-mask::${password}`;
       maskLines += text.split(maskLine).length - 1;
       text = text.split(maskLine).join('::add-mask::<test account password>');
+      // Page snapshot: a line such as `- textbox "Password *" [ref=e5]: <value>` ends with the typed value.
+      text = text
+        .split('\n')
+        .map((line) => {
+          if (/^\s*- textbox\b/.test(line) && line.endsWith(`: ${password}`)) {
+            snapshotLines++;
+            return line.slice(0, -password.length) + '<test account password>';
+          }
+          return line;
+        })
+        .join('\n');
       if (text.includes(password)) leaks.add(file);
       text = text.split(password).join('<test account password>').split(email).join('<test account email>');
     }
@@ -57,9 +71,12 @@ if (mode === 'redact') {
       changedFiles++;
     }
   }
-  console.log(`Secret scan: ${accounts.length} test accounts; ${maskLines} log-mask lines and ${leaks.size} other places replaced (${changedFiles} result files changed).`);
+  console.log(
+    `Secret scan: ${accounts.length} test accounts; ${maskLines} log-mask lines, ${snapshotLines} page-snapshot lines ` +
+      `and ${leaks.size} other places replaced (${changedFiles} result files changed).`,
+  );
   if (leaks.size > 0) {
-    const message = `A test-account password was found outside the log-mask lines:\n  ${[...leaks].join('\n  ')}`;
+    const message = `A test-account password was found outside the log-mask and page-snapshot lines:\n  ${[...leaks].join('\n  ')}`;
     if (process.env.CI) stop(`${message}\nNothing uploaded.`);
     console.error(`${message}\n(Replaced locally; in CI this stops the report.)`);
   }
