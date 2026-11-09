@@ -10,6 +10,7 @@ COMPOSE_PROJECT="toolshop"
 CODE_VOLUME="${COMPOSE_PROJECT}_laravel-app-code"
 
 compose() {
-  SPRINT="$SPRINT" docker compose -p "$COMPOSE_PROJECT" \
+  # DISABLE_LOGGING is read by Toolshop's compose file; set it (empty, as in their default) to avoid a warning.
+  SPRINT="$SPRINT" DISABLE_LOGGING="${DISABLE_LOGGING:-}" docker compose -p "$COMPOSE_PROJECT" \
     -f "${TOOLSHOP_DIR}/docker-compose.prod.yml" -f "$IMAGES_FILE" "$@"
 }

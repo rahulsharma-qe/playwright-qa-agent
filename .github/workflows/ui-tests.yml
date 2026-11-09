@@ -32,6 +32,12 @@ jobs:
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
 
+      # Toolshop's web server image is published for arm64 only; QEMU lets this amd64 runner run it.
+      - name: Allow arm64 images (emulation)
+        uses: docker/setup-qemu-action@v4
+        with:
+          platforms: arm64
+
       - name: Start Toolshop (own copy, pinned images)
         id: start
         run: ci/start-toolshop.sh

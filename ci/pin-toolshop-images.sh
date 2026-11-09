@@ -34,6 +34,8 @@ digest_of() {
   for entry in "${IMAGES[@]}"; do
     IFS='|' read -r service image tag <<<"$entry"
     echo "  ${service}:"
+    # Toolshop publishes its web server image for arm64 only; amd64 machines run it under emulation.
+    [ "$service" = "web" ] && echo "    platform: linux/arm64  # published for arm64 only; CI runs it under emulation (QEMU)"
     echo "    image: ${image}@$(digest_of "$image" "$tag")  # ${tag}"
   done
 } >"$OUT"

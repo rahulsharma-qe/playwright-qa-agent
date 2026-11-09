@@ -126,6 +126,8 @@ test('login works', { tag: '@sanity' }, async ({ loginPage, header }) => {
 - CI tests its own copy of Toolshop Sprint 5, not the public site; the public site is tested by local runs. Images
   are pinned, so Toolshop changes reach CI only when the pins are updated. Starting Toolshop adds a few minutes to
   every CI run.
+- Toolshop's web server image is published for arm64 only, so CI (amd64) runs it under emulation (QEMU); the
+  other images run natively.
 - The CI copy is not fully offline: Toolshop checks new passwords against the Have I Been Pwned service, so a slow
   or unreachable service shows as "Could not register a test customer … environment problem".
 
