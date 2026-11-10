@@ -9,6 +9,9 @@ dotenv.config({ quiet: true });
 /** Where the logged-in session is saved; written fresh on every run, git-ignored. */
 export const SESSION_FILE = 'playwright/.auth/user.json';
 
+/** The login token of this run's session account, for pages that keep it where a saved session cannot (git-ignored). */
+export const SESSION_TOKEN_FILE = 'playwright/.auth/session-token.json';
+
 /** One file per account a run registers; git-ignored, read only by the secret scan, never attached to the report. */
 export const RUN_ACCOUNTS_DIR = 'playwright/.auth/run-accounts';
 

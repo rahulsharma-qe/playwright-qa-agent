@@ -71,8 +71,13 @@ instead of being skipped. `--grep @sanity` picks tests; their dependency project
 - Before registering, the account is written to `playwright/.auth/run-accounts/<purpose>-<time>-<random>.json`
   (git-ignored; one file per account, so parallel set-ups never overwrite each other). In GitHub Actions the
   password is also sent to GitHub's log mask (`::add-mask::`).
-- **Login is the test:** registration is set-up through the API; `auth-setup` then logs in through the UI and
-  saves the session (cookies and the login token in local storage), written fresh every run.
+- **Login is tested once, by the login tests:** they log in through the page. `auth-setup` makes the session for
+  the other tests through the API: register, `POST /users/login`, give the token to the site where it keeps it
+  (`TOKEN_STORE` in `support/api-session.ts`: localStorage in Sprint 5, sessionStorage in the "with bugs" version),
+  open the home page and check the signed-in menu, else stop with "The session made through the API was not
+  accepted by the site; check that SPRINT (…) matches the Toolshop copy you started". It saves the session (cookies, localStorage) and the token on its own
+  (`playwright/.auth/session-token.json`, git-ignored), because a saved session does not keep sessionStorage;
+  `fixtures.ts` gives the token to every page of a logged-in test. Both are written fresh every run.
 - **The wrong-password test** sends one wrong password to the run's own account, checks the message is the same
   as for an unknown email ("Invalid email or password", so an attacker cannot tell which emails exist), then logs
   in correctly, which proves the email exists and resets the site's failed-login count.
@@ -84,7 +89,8 @@ instead of being skipped. `--grep @sanity` picks tests; their dependency project
 - **Reporters:** `list` in the terminal; `allure-playwright` with `detail: false` (its automatic action steps
   would show typed values); in CI also `@estruyf/github-actions-reporter`, the pass/fail table on the run page.
 - **Screenshot** (`only-on-failure`) and **trace** (`retain-on-failure`, which also keeps the failed first try of
-  a test that passes on retry) on `logged-in` only. `site-check`, `auth-setup` and `login` have both off: they
+  a test that passes on retry) on `logged-in` only. A logged-in trace can hold that run's session token (a throwaway
+  account), never a typed password. `site-check`, `auth-setup` and `login` have both off: they
   type login details, and the scan cannot read inside these compressed files. A failed login test is explained by
   its message, its steps and Playwright's page snapshot (text).
 - **`npm run report:build`** runs, in order:

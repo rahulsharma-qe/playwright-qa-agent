@@ -1,5 +1,11 @@
 import { expect, test } from '../../fixtures';
-import { BOT_CHECK_MESSAGE, cannotRegister, isEnvironmentMessage, siteNotResponding } from '../../support/environment-messages';
+import {
+  BOT_CHECK_MESSAGE,
+  cannotLogInThroughApi,
+  cannotRegister,
+  isEnvironmentMessage,
+  siteNotResponding,
+} from '../../support/environment-messages';
 import { type CountedTest, outcomeOf, summaryLines } from '../../support/planted-bug-count';
 
 // Sample results written for these tests; no browser and no Toolshop needed.
@@ -7,11 +13,12 @@ const uiTest = (title: string, status: string, errors: string[] = [], project = 
 const assertionError = 'Error: expect(locator).toBeVisible() failed';
 
 test.describe('environment messages', () => {
-  test('the site check, registration and bot-check messages are all environment messages', () => {
+  test('the site check, registration, API login and bot-check messages are all environment messages', () => {
     for (const message of [
       siteNotResponding('site', 'http://localhost:4200'),
       siteNotResponding('API', 'http://localhost:8091/brands'),
       cannotRegister('HTTP 500'),
+      cannotLogInThroughApi('HTTP 401'),
       BOT_CHECK_MESSAGE,
     ]) {
       expect(isEnvironmentMessage(`Error: ${message}`), message).toBe(true);

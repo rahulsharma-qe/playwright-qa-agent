@@ -14,8 +14,8 @@ Tests run against **Toolshop**, the Sprint 5 version of the practice web shop by
 - Playwright config with four projects: a site check, a login setup, the logged-in tests and the logged-out login tests
 - Node version in `.nvmrc`; site and API addresses from `.env` (both have defaults)
 - Site check: stops the run with "Toolshop site (or API) is not responding … an environment problem, not a test failure"
-- Each run registers its own Toolshop customers through the API (no shared account, no account secrets), then
-  logs in once through the UI and saves the session for the logged-in tests
+- Each run registers its own Toolshop customers through the API (no shared account, no account secrets). The login
+  tests log in through the page; the other tests start from a session made through the API and checked on the site
 - Page objects (`pages/`) given to tests through `fixtures.ts`
 - Login tests: login works · unknown email shows an error · wrong password shows the same error (on this run's own account)
 - Search finds the product · add to cart makes the cart count go up; search terms and product names in `test-data/`
@@ -126,7 +126,8 @@ by hand, to see which planted bugs they catch.
   page, the email and password fields have no label, only hint text that disappears when you type, so the tests
   stopped there and reported it. Accessibility rules ask for a real label (Toolshop's bug 87).
 - Because every test logs in first, that one bug stopped all of them, so the other bugs on our path were not
-  checked in this run. They are not counted as missed.
+  checked in this run. They are not counted as missed. Since then, only the login tests log in through the page;
+  the other tests start from a session made through the API, so the next run can reach the rest.
 
 How we count, the list of bugs on our path and every run: [docs/bug-hunt.md](docs/bug-hunt.md).
 

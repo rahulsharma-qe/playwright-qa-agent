@@ -42,7 +42,7 @@ design comes separately. The README's Built / Next / Later list is the record. H
 | Component | What it does |
 |---|---|
 | `pages/` and `fixtures.ts` | Page objects (`Header`, `LoginPage`, `ProductListPage`, `ProductPage`, `CartPage`) given to tests through fixtures; the fixtures also watch every page for a bot check |
-| Setup projects | `site-check` (site and API up, not a bot check) and `auth-setup` (register a customer, log in once, save the session) |
+| Setup projects | `site-check` (site and API up, not a bot check) and `auth-setup` (register a customer, make the session through the API, check it on the site, save it) |
 | Tests | Login (3), search, cart; tagged `@sanity` or `@regression`; a `unit` project for our own helpers |
 | `support/` | Settings, test-account registration, the bot-check detector, the secret scan |
 | Allure | `allure-playwright` writes results; Allure 3 (on Node) builds the report |
@@ -55,7 +55,8 @@ design comes separately. The README's Built / Next / Later list is the record. H
 1. **Site check:** the site and the API's brands list answer, and neither is a bot-check page. Otherwise the run
    stops with an environment message.
 2. **Register:** `auth-setup` registers this run's customer through the API.
-3. **Log in once:** `auth-setup` logs in through the UI and saves the session for the logged-in tests.
+3. **Session:** `auth-setup` logs in through the API, gives the token to the site, checks the signed-in menu and
+   saves the session for the logged-in tests. Logging in through the page is tested by the login tests.
 4. **Tests:** the login tests start logged out and register their own customer; search and cart use the saved
    session. The `unit` tests run without a browser.
 5. **Report:** `npm run report` runs `redact`, builds the Allure report, runs `check`, and opens it.

@@ -64,19 +64,29 @@ contact, rentals, emails) are not on our path.
 | 8 | Cart | The total shows 0,00 | functional | no |
 | 86 | Cart | The checkout step labels have too little contrast | visual | no |
 
+## Differences between the copies
+
+Each difference below comes from Toolshop's source at the pinned commit and is chosen by `SPRINT`. A difference
+counts only when the source config shows it, never when it is inferred from a failing run alone. No locator, step or
+check changes because of one.
+
+| Difference | Sprint 5 | With bugs | Where we follow it |
+|---|---|---|---|
+| Sign-up fields | name, email, password | also address, city and country as separate fields | `SIGN_UP_FIELDS` (`support/test-accounts.ts`) |
+| Page addresses | plain paths (`/auth/login`) | hash routing (`/#/auth/login`) | `appUrl()` (`support/app-url.ts`) |
+| Where the site keeps the login token | localStorage, `auth-token` | sessionStorage, `auth-token` | `TOKEN_STORE` (`support/api-session.ts`) |
+
+The with-bugs sign-up also sends a date of birth, to work around a defect that is not on the planted list (below).
+
 ## Runs
 
-Toolshop's two versions register customers differently: Sprint 5 needs only name, email and password; the
-with-bugs version also needs address, city and country as separate fields (its API contract in Toolshop's source,
-not its planted bugs). The set-up picks the sign-up fields by `SPRINT`; no test step or check changes. The with-bugs
-sign-up also sends a date of birth, to work around a defect that is not on the planted list (below).
-
-The two versions also put pages in their addresses differently: Sprint 5 uses plain paths (`/auth/login`), the
-with-bugs version hash routing (`/#/auth/login`). Page objects open pages through one helper, `appUrl()`, chosen by
-`SPRINT`; no locator, step or check changes.
-
-A difference between the copies counts only when Toolshop's source config shows it (as with the sign-up rules and
-`useHash`), never when it is inferred from a failing run alone.
+**Two baselines.** Run 4 is **baseline A**: its login set-up logged in through the page, so the unlabelled login form
+(bug 87) stopped every test. Since then the set-up makes the logged-in session through the API (register, log in
+through the API, give the token to the site, check the signed-in menu); the three login tests still log in through
+the page, so bug 87 is still caught, by them alone. This was on the Later list before run 1 and was brought forward
+after run 4 so that the other bugs on our path can be checked. This is a set-up decision (an item from the Later
+list), not a workaround: the login flow is still checked, by the three login tests through the page. The first with-bugs run after this change is
+**baseline B**; step 2 is compared with baseline B only.
 
 - **Run 1 (09-11-2026, commit 58d0961): not a baseline.** Summary: 0 failed, 5 not reached, 0 passed. The set-up
   could not register a test customer, because it sent the Sprint 5 sign-up to the with-bugs API; no test reached
@@ -86,7 +96,7 @@ A difference between the copies counts only when Toolshop's source config shows 
 - **Run 3 (09-11-2026, commit b797180): not a baseline.** Summary: 3 failed, 2 not reached, 0 passed. Sign-up worked,
   but the tests opened plain paths (`/auth/login`) on the hash-routed copy, which showed the home page; no test
   reached the login form, so nothing on our path was checked.
-- **Run 4 (09-11-2026, commit ed603f4): the baseline.** Summary: 3 failed, 2 not reached, 0 passed (of 5 UI
+- **Run 4 (09-11-2026, commit ed603f4): baseline A.** Summary: 3 failed, 2 not reached, 0 passed (of 5 UI
   tests). Each failure was matched by reading its page snapshot in the report.
 
 | Test | Outcome | What the report shows | Planted bug |
@@ -98,7 +108,7 @@ A difference between the copies counts only when Toolshop's source config shows 
 | search finds the product | not reached | The login set-up failed first, so the test did not run | — |
 | add to cart makes the cart count go up | not reached | Same | — |
 
-**Baseline:** on our path 29 · of which functional 21 · caught 1 (87, the login form has no labels).
+**Baseline A:** on our path 29 · of which functional 21 · caught 1 (87, the login form has no labels).
 The other 28 bugs on our path were not checked in this run: the unlabelled login form stops every test at its
 first step. They are not counted as missed.
 

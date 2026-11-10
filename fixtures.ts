@@ -1,4 +1,5 @@
 import { test as base } from '@playwright/test';
+import { giveTokenToPage, readSessionToken } from './support/api-session';
 import { BOT_CHECK_MESSAGE, isBotCheck, mightBeBotCheck } from './support/bot-check';
 import { CartPage } from './pages/CartPage';
 import { Header } from './pages/Header';
@@ -22,7 +23,13 @@ type PageObjects = {
 export const test = base.extend<PageObjects>({
   // Every page the tests get is watched for a bot-check page. It can appear after login, so the site check alone
   // would miss it; without this, the test would fail later with a confusing timeout.
-  page: async ({ page }, use) => {
+  page: async ({ page }, use, testInfo) => {
+    // Logged-in tests: give the session's token to the site again, because a saved session does not keep
+    // sessionStorage (where some Toolshop versions keep it).
+    if (testInfo.project.name === 'logged-in') {
+      const token = readSessionToken();
+      if (token) await giveTokenToPage(page, token);
+    }
     let blocked = false;
     page.on('response', async (response) => {
       const headers = response.headers();
