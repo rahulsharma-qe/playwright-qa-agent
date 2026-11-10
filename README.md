@@ -48,6 +48,24 @@ Tests run against **Toolshop**, the Sprint 5 version of the practice web shop by
 
 ## Design
 
+```mermaid
+flowchart LR
+  SC["site-check<br/>site, API, bot check"] --> AS["auth-setup<br/>session through the API"] --> LI["Logged-in tests<br/>search, cart"]
+  SC --> LG["Login tests<br/>through the login page"]
+  UT["Unit tests<br/>no dependencies"]
+  LI --> REP["Allure report<br/>secret scan · Pages on main"]
+  LG --> REP
+  UT --> REP
+  S2["Step 2 (next)<br/>AI agents draft, a person approves"] -.-> LI
+  S2 -.-> LG
+  classDef box fill:#1e293b,stroke:#94a3b8,color:#f1f5f9
+  classDef later fill:#1e293b,stroke:#94a3b8,color:#cbd5e1,stroke-dasharray: 5 5
+  class SC,AS,LI,LG,UT,REP box
+  class S2 later
+```
+
+The whole picture, how one test runs, and the CI run: [docs/architecture.md](docs/architecture.md#diagrams).
+
 [High-level design](docs/architecture.md): goals, components, one run and one CI run step by step, safety,
 decisions and limits. [Low-level design](docs/lld.md): projects, page objects, test accounts, reporting and the
 secret scan, bot-check detection, CI and the Toolshop copy, settings and versions.
@@ -122,12 +140,16 @@ Toolshop has a second version with bugs planted on purpose, and Testsmith lists 
 by hand, to see which planted bugs they catch.
 
 - Of Toolshop's 94 planted bugs, 29 are on the pages these tests open (login, home and search, product page, cart).
-- **Baseline run (09-11-2026): one caught.** The tests find fields by their visible label. On the with-bugs login
+- **First baseline (09-11-2026): one caught.** The tests find fields by their visible label. On the with-bugs login
   page, the email and password fields have no label, only hint text that disappears when you type, so the tests
-  stopped there and reported it. Accessibility rules ask for a real label (Toolshop's bug 87).
-- Because every test logs in first, that one bug stopped all of them, so the other bugs on our path were not
-  checked in this run. They are not counted as missed. Since then, only the login tests log in through the page;
-  the other tests start from a session made through the API, so the next run can reach the rest.
+  stopped there and reported it. Accessibility rules ask for a real label (Toolshop's bug 87). Every test logged
+  in through that page first, so that one bug stopped all of them.
+- **Second baseline (10-11-2026): two caught.** Now only the login tests log in through the page; search and cart
+  start from a session made through the API, so they reached their pages. The search box has no label either, so
+  both tests stopped there and reported it (bug 93). The login tests caught bug 87 again. Both catches come from
+  the same habit: the tests find fields by their label, so missing labels stop them.
+- Not checked yet: the cart test stops at search, so the cart's own bugs are not reached; no test checks the
+  user's name in the header (bug 32). Bugs not reached are not counted as missed.
 
 How we count, the list of bugs on our path and every run: [docs/bug-hunt.md](docs/bug-hunt.md).
 

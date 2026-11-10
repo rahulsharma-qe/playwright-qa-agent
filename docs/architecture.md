@@ -6,6 +6,67 @@ Status: step 1, the framework, is built. Step 2, AI agents that plan and draft t
 design comes separately. The README's Built / Next / Later list is the record. How each part is built:
 [lld.md](lld.md).
 
+## Diagrams
+
+The whole picture:
+
+```mermaid
+flowchart TB
+  subgraph RUN["One run"]
+    SC["site-check<br/>site, API, bot check"]
+    AS["auth-setup<br/>customer and session through the API"]
+    LI["Logged-in tests<br/>search, cart"]
+    LG["Login tests<br/>through the login page"]
+    UT["Unit tests<br/>own helpers, no browser"]
+  end
+  FX["fixtures.ts<br/>page objects, session token, bot-check watch"]
+  PO["Page objects<br/>Header · LoginPage · ProductListPage · ProductPage · CartPage"]
+  TS["Toolshop site and API<br/>public site · CI copy · with-bugs copy"]
+  REP["Allure report<br/>redact → build → check"]
+  PG["GitHub Pages<br/>main only"]
+  S2["Step 2 (next)<br/>AI agents draft, a person approves"]
+  SC --> AS --> LI
+  SC --> LG
+  LI --> FX
+  LG --> FX
+  FX --> PO --> TS
+  AS -->|API| TS
+  RUN --> REP --> PG
+  S2 -.-> RUN
+  classDef box fill:#1e293b,stroke:#94a3b8,color:#f1f5f9
+  classDef later fill:#1e293b,stroke:#94a3b8,color:#cbd5e1,stroke-dasharray: 5 5
+  class SC,AS,LI,LG,UT,FX,PO,TS,REP,PG box
+  style RUN fill:transparent,stroke:#94a3b8,color:#94a3b8
+  class S2 later
+```
+
+Set-up, the site check and the login tests' account set-up also call Toolshop's API directly.
+
+How one test runs:
+
+```mermaid
+flowchart LR
+  T["Test"] --> FX["fixtures.ts"] --> PO["Page objects"] --> TS["Toolshop"]
+  T --> REP["Allure report"]
+  classDef box fill:#1e293b,stroke:#94a3b8,color:#f1f5f9
+  classDef later fill:#1e293b,stroke:#94a3b8,color:#cbd5e1,stroke-dasharray: 5 5
+  class T,FX,PO,TS,REP box
+```
+
+One CI run:
+
+```mermaid
+flowchart LR
+  PR["Pull request or main"] --> GA["GitHub Actions"] --> OWN["Own Toolshop copy<br/>pinned images, seeded"]
+  GA --> SU["Test suite"] --> SCAN["Secret scan"]
+  SCAN --> ART["Report as a run artifact<br/>every run"]
+  SCAN --> PG["Report on GitHub Pages<br/>main only"]
+  MAN["Started by hand"] --> WB["Toolshop with-bugs copy"] --> SUM["Planted-bug summary"]
+  classDef box fill:#1e293b,stroke:#94a3b8,color:#f1f5f9
+  classDef later fill:#1e293b,stroke:#94a3b8,color:#cbd5e1,stroke-dasharray: 5 5
+  class PR,GA,OWN,SU,SCAN,ART,PG,MAN,WB,SUM box
+```
+
 ## 1. Goals and non-goals
 
 **Goals**

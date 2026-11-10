@@ -119,6 +119,22 @@ first step. They are not counted as missed.
   in place of the name). Search and cart were not reached. Since then the set-up checks a session the same way on
   every copy.
 
+- **Run 6 (10-11-2026, commit 6d7f92f): baseline B.** Summary: 5 failed, 0 not reached, 0 passed (of 5 UI
+  tests). Set-up (site check, session through the API) passed. Each failure was matched by reading its page
+  snapshot in the report.
+
+| Test | Outcome | What the report shows | Planted bug |
+|---|---|---|---|
+| login works | failed | The login page is open; its email field has no label, only hint text ("Your E-mail *"), so the test cannot find the field by its label | 87: the login form has no labels |
+| login with an unknown email shows an error | failed | Same | 87 |
+| login with a wrong password shows the same error as an unknown email | failed | Same | 87 |
+| search finds the product | failed | The home page is open; the search box has no name, so the test cannot find it by its label | 93: the search form has no labels |
+| add to cart makes the cart count go up | failed | Same, at its search step | 93 |
+
+**Baseline B:** on our path 29 · of which functional 21 · caught 2 (87, the login form has no labels; 93, the
+search form has no labels). The cart test stops at its search step, so the cart's own bugs on our path were not
+checked in this run. They are not counted as missed.
+
 **Bug 32** (the header shows "User Data not found" instead of the user's name) cannot be caught by the current
 tests: no test checks the user's name.
 
