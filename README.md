@@ -11,7 +11,9 @@ Tests run against **Toolshop**, the Sprint 5 version of the practice web shop by
 ## Built / Next / Later
 
 **Built**
-- Playwright config with four projects: a site check, a login setup, the logged-in tests and the logged-out login tests
+- The suite runs in five groups (Playwright "projects"). First an environment check (is the shop up?). After it,
+  two paths: create a test user and sign in through the API, then the shopping tests (search, cart); and the login
+  tests through the real login page. Checks of our own helpers run on their own.
 - Node version in `.nvmrc`; site and API addresses from `.env` (both have defaults)
 - Site check: stops the run with "Toolshop site (or API) is not responding … an environment problem, not a test failure"
 - Each run registers its own Toolshop customers through the API (no shared account, no account secrets). The login
