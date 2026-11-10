@@ -116,6 +116,20 @@ ci/stop-toolshop.sh
 To update Toolshop in CI: change `TOOLSHOP_COMMIT` in `ci/toolshop-env.sh` and run `ci/pin-toolshop-images.sh`
 (the two are one pair), run the tests locally against the public site, then let CI run on the new copy.
 
+## How strong are the tests?
+
+Toolshop has a second version with bugs planted on purpose, and Testsmith lists them. We run the same tests on it,
+by hand, to see which planted bugs they catch.
+
+- Of Toolshop's 94 planted bugs, 29 are on the pages these tests open (login, home and search, product page, cart).
+- **Baseline run (09-11-2026): one caught.** The tests find fields by their visible label. On the with-bugs login
+  page, the email and password fields have no label, only hint text that disappears when you type, so the tests
+  stopped there and reported it. Accessibility rules ask for a real label (Toolshop's bug 87).
+- Because every test logs in first, that one bug stopped all of them, so the other bugs on our path were not
+  checked in this run. They are not counted as missed.
+
+How we count, the list of bugs on our path and every run: [docs/bug-hunt.md](docs/bug-hunt.md).
+
 ## How we write tests
 
 Page objects come from `fixtures.ts`; a test asks for the ones it needs:

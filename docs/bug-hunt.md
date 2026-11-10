@@ -86,8 +86,21 @@ A difference between the copies counts only when Toolshop's source config shows 
 - **Run 3 (09-11-2026, commit b797180): not a baseline.** Summary: 3 failed, 2 not reached, 0 passed. Sign-up worked,
   but the tests opened plain paths (`/auth/login`) on the hash-routed copy, which showed the home page; no test
   reached the login form, so nothing on our path was checked.
+- **Run 4 (09-11-2026, commit ed603f4): the baseline.** Summary: 3 failed, 2 not reached, 0 passed (of 5 UI
+  tests). Each failure was matched by reading its page snapshot in the report.
 
-No baseline run yet.
+| Test | Outcome | What the report shows | Planted bug |
+|---|---|---|---|
+| login works | failed | The login page is open; its email field has no label, only hint text ("Your E-mail *"), so the test cannot find the field by its label | 87: the login form has no labels |
+| login with an unknown email shows an error | failed | Same | 87 |
+| login with a wrong password shows the same error as an unknown email | failed | Same | 87 |
+| Login set-up (not a test: registers this run's customer, logs in, saves the session) | failed | Same | 87 |
+| search finds the product | not reached | The login set-up failed first, so the test did not run | — |
+| add to cart makes the cart count go up | not reached | Same | — |
+
+**Baseline:** on our path 29 · of which functional 21 · caught 1 (87, the login form has no labels).
+The other 28 bugs on our path were not checked in this run: the unlabelled login form stops every test at its
+first step. They are not counted as missed.
 
 ## Found, not on the planted list
 
