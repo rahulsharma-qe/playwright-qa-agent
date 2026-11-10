@@ -21,10 +21,10 @@ Tests run against **Toolshop**, the Sprint 5 version of the practice web shop by
 - Page objects (`pages/`) given to tests through `fixtures.ts`
 - Login tests: login works · unknown email shows an error · wrong password shows the same error (on this run's own account)
 - Search finds the product · add to cart makes the cart count go up; search terms and product names in `test-data/`
-- Allure report (Allure 3, runs on Node, no Java): steps, retries; a screenshot and a trace on
-  failed logged-in tests only, because they record what was typed, and the login tests type login details;
-  a failed login test keeps a text snapshot of the page instead;
-  a secret scan replaces this run's test-account values in the results, and stops the report if a password is left
+- Allure report (Allure 3, runs on Node, no Java): steps, retries. Screenshots and traces only on failed
+  logged-in tests: they record what was typed, and the login tests type login details. A failed login test keeps
+  a text snapshot instead.
+  A secret scan replaces this run's test-account values in the results, and stops the report if a password is left
   anywhere except the CI log-mask line and the page snapshot of a failed test (both are replaced). It cannot
   look inside compressed files (traces, screenshots); those come only from logged-in tests, where no password is
   typed or printed
@@ -45,7 +45,7 @@ Tests run against **Toolshop**, the Sprint 5 version of the practice web shop by
 
 **Later**
 - A full agent: reads a requirement, plans tests, drafts them, heals broken locators; every change comes as a pull request a person approves
-- Accessibility checks · several environments · visual regression · UI error states by mocking API replies
+- Account lockout test (on our own copy) · accessibility checks · several environments · visual regression · UI error states by mocking API replies
 - Allure history and trends · GitLab CI (explained by mapping from Actions)
 
 ## Design
@@ -165,6 +165,7 @@ Page objects come from `fixtures.ts`; a test asks for the ones it needs:
 import { expect, test } from '../fixtures';
 
 test('login works', { tag: '@sanity' }, async ({ loginPage, header }) => {
+  await loginPage.open();                          // the real test opens it in beforeEach
   await loginPage.login(user, password);          // page object performs an action
   await expect(header.accountMenu).toBeVisible();  // only the test decides what is right
 });
@@ -185,9 +186,9 @@ test('login works', { tag: '@sanity' }, async ({ loginPage, header }) => {
 - Toolshop is shared by everyone and can be slow or down; the site check says when the environment, not a test, is the problem.
 - Each run leaves two throwaway accounts on Toolshop (one more per retry); there is no API to delete them, and
   the site's resets clear them.
-- Lockout after failed logins is not tested yet (Next: on an account made for it).
+- Lockout after failed logins is not tested yet (Later: on an account made for it, on our own copy).
 - CI tests its own copy of Toolshop Sprint 5, not the public site; the public site is tested by local runs. Images
-  are pinned, so Toolshop changes reach CI only when the pins are updated. Starting Toolshop adds a few minutes to
+  are pinned, so Toolshop changes reach CI only when the pins are updated. Starting Toolshop adds about a minute (Toolshop ready after 42 s in the first measured run) to
   every CI run.
 - Toolshop's web server image is published for arm64 only, so CI (amd64) runs it under emulation (QEMU); the
   other images run natively.

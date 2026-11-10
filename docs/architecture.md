@@ -161,8 +161,8 @@ flowchart LR
 |---|---|---|
 | Each run registers its own customers | Shared demo accounts get locked by other visitors; accounts registered by hand disappear in the public site's hourly reset | Two throwaway accounts per run (one more per retry) left on the site |
 | Locators by role or label first, `data-test` as fallback | Playwright's own guidance; a role locator also breaks when the page's accessibility breaks | A few elements need the fallback, and the page object says why |
-| Own Toolshop copy in CI | The public site shows a bot check to CI machines; a pinned copy is not changed by other visitors | A few minutes per CI run; CI does not test the public site |
-| Toolshop's `cron` left out in CI | It re-seeds the database every hour | None for a run of a few minutes |
+| Own Toolshop copy in CI | The public site shows a bot check to CI machines; a pinned copy is not changed by other visitors | Adds about a minute (Toolshop ready after 42 s in the first measured run) to each CI run; CI does not test the public site |
+| Toolshop's `cron` left out in CI | It re-seeds the database every hour | None for a run of about a minute (Toolshop ready after 42 s in the first measured run) |
 | Toolshop's web server image under QEMU | It is published for arm64 only | Emulation on an amd64 runner (it only passes requests on) |
 | A Playwright project `unit` for our helpers | Runs TypeScript with no extra tool and never waits for Toolshop | Unit tests show in the same report as UI tests |
 | Screenshots and traces only on logged-in tests | They record what is typed, and the scan cannot read inside them | A failed login test has its message, steps and page snapshot, but no screenshot |
@@ -187,5 +187,5 @@ flowchart LR
   changes reach CI only when the pins are updated.
 - Each run leaves two throwaway accounts on the site it tests; the public site's hourly reset clears them.
 - Registration checks new passwords against the Have I Been Pwned service, so the CI copy is not fully offline.
-- Starting Toolshop adds about a minute to a CI run (first measured run: ready after 42 seconds).
+- Starting Toolshop adds about a minute (Toolshop ready after 42 s in the first measured run) to a CI run.
 - Five tests prove the framework, not the coverage of a shop.
