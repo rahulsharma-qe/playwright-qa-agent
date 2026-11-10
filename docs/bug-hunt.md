@@ -75,6 +75,7 @@ check changes because of one.
 | Sign-up fields | name, email, password | also address, city and country as separate fields | `SIGN_UP_FIELDS` (`support/test-accounts.ts`) |
 | Page addresses | plain paths (`/auth/login`) | hash routing (`/#/auth/login`) | `appUrl()` (`support/app-url.ts`) |
 | Where the site keeps the login token | localStorage, `auth-token` | sessionStorage, `auth-token` | `TOKEN_STORE` (`support/api-session.ts`) |
+| The signed-in menu's `data-test` | `nav-menu` | `nav-user-menu` | **Not followed.** The set-up checks a session the same way on every copy (the API's `/users/me`, and the "Sign in" link gone). The login tests confirm a login by `nav-menu`; on the with-bugs copy they stop at bug 87 first. If they ever get past it there, that failure is this difference, never a catch. |
 
 The with-bugs sign-up also sends a date of birth, to work around a defect that is not on the planted list (below).
 
@@ -82,7 +83,7 @@ The with-bugs sign-up also sends a date of birth, to work around a defect that i
 
 **Two baselines.** Run 4 is **baseline A**: its login set-up logged in through the page, so the unlabelled login form
 (bug 87) stopped every test. Since then the set-up makes the logged-in session through the API (register, log in
-through the API, give the token to the site, check the signed-in menu); the three login tests still log in through
+through the API, give the token to the site, check that it is accepted); the three login tests still log in through
 the page, so bug 87 is still caught, by them alone. This was on the Later list before run 1 and was brought forward
 after run 4 so that the other bugs on our path can be checked. This is a set-up decision (an item from the Later
 list), not a workaround: the login flow is still checked, by the three login tests through the page. The first with-bugs run after this change is
@@ -111,6 +112,15 @@ list), not a workaround: the login flow is still checked, by the three login tes
 **Baseline A:** on our path 29 · of which functional 21 · caught 1 (87, the login form has no labels).
 The other 28 bugs on our path were not checked in this run: the unlabelled login form stops every test at its
 first step. They are not counted as missed.
+
+- **Run 5 (10-11-2026, commit ac8b297): not a baseline.** Summary: 3 failed, 2 not reached, 0 passed. The login
+  tests stopped at bug 87, as in baseline A. The set-up's own check looked for `nav-menu`, which the with-bugs
+  header calls `nav-user-menu`; the session itself was accepted (the header showed the signed-in menu, with bug 32
+  in place of the name). Search and cart were not reached. Since then the set-up checks a session the same way on
+  every copy.
+
+**Bug 32** (the header shows "User Data not found" instead of the user's name) cannot be caught by the current
+tests: no test checks the user's name.
 
 ## Found, not on the planted list
 

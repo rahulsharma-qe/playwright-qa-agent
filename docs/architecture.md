@@ -55,8 +55,9 @@ design comes separately. The README's Built / Next / Later list is the record. H
 1. **Site check:** the site and the API's brands list answer, and neither is a bot-check page. Otherwise the run
    stops with an environment message.
 2. **Register:** `auth-setup` registers this run's customer through the API.
-3. **Session:** `auth-setup` logs in through the API, gives the token to the site, checks the signed-in menu and
-   saves the session for the logged-in tests. Logging in through the page is tested by the login tests.
+3. **Session:** `auth-setup` logs in through the API, checks the token with `/users/me`, gives it to the site,
+   checks that "Sign in" is gone, and saves the session for the logged-in tests. Logging in through the page is
+   tested by the login tests.
 4. **Tests:** the login tests start logged out and register their own customer; search and cart use the saved
    session. The `unit` tests run without a browser.
 5. **Report:** `npm run report` runs `redact`, builds the Allure report, runs `check`, and opens it.

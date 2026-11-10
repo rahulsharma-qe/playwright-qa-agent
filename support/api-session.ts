@@ -38,6 +38,23 @@ export async function logInThroughApi(request: APIRequestContext, account: TestA
   return token;
 }
 
+/** The one message for a session the API or the site did not accept, with the most likely cause. */
+export function sessionNotAccepted(sprint = settings.sprint): string {
+  return `The session made through the API was not accepted by the site (SPRINT=${sprint}; check where this copy keeps the token)`;
+}
+
+/** The API must accept the token: GET /users/me answers 200. Same check on every copy. */
+export async function checkSessionThroughApi(request: APIRequestContext, token: string): Promise<void> {
+  const response = await request.get(`${settings.apiUrl}/users/me`, {
+    headers: { Authorization: `Bearer ${token}` },
+    timeout: 15_000,
+  });
+  const status = response.status();
+  const body = mightBeBotCheck(status) ? await response.text().catch(() => '') : '';
+  if (isBotCheck({ status, headers: response.headers(), body })) throw new Error(BOT_CHECK_MESSAGE);
+  if (status !== 200) throw new Error(`${sessionNotAccepted()} (GET /users/me answered HTTP ${status})`);
+}
+
 /** Puts the token where the site keeps it, before the site's own scripts run on every page of this tab. */
 export async function giveTokenToPage(page: Page, token: string, sprint = settings.sprint): Promise<void> {
   const { storage, key } = tokenStoreFor(sprint);

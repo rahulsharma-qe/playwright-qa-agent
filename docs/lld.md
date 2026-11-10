@@ -74,8 +74,9 @@ instead of being skipped. `--grep @sanity` picks tests; their dependency project
 - **Login is tested once, by the login tests:** they log in through the page. `auth-setup` makes the session for
   the other tests through the API: register, `POST /users/login`, give the token to the site where it keeps it
   (`TOKEN_STORE` in `support/api-session.ts`: localStorage in Sprint 5, sessionStorage in the "with bugs" version),
-  open the home page and check the signed-in menu, else stop with "The session made through the API was not
-  accepted by the site; check that SPRINT (…) matches the Toolshop copy you started". It saves the session (cookies, localStorage) and the token on its own
+  check the session the same way on every copy (the API's `GET /users/me` answers 200; on the home page, once the
+  Home link (`nav-home`) has rendered, the "Sign in" link is gone), else stop with "The session made through the API was not
+  accepted by the site (SPRINT=…; check where this copy keeps the token)". It saves the session (cookies, localStorage) and the token on its own
   (`playwright/.auth/session-token.json`, git-ignored), because a saved session does not keep sessionStorage;
   `fixtures.ts` gives the token to every page of a logged-in test. Both are written fresh every run.
 - **The wrong-password test** sends one wrong password to the run's own account, checks the message is the same
