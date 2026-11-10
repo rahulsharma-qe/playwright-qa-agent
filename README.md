@@ -48,20 +48,22 @@ Tests run against **Toolshop**, the Sprint 5 version of the practice web shop by
 
 ## Design
 
+How a test run works, from checking the shop is up to a shareable report.
+
 ```mermaid
 flowchart LR
-  SC["site-check<br/>site, API, bot check"] --> AS["auth-setup<br/>session through the API"] --> LI["Logged-in tests<br/>search, cart"]
-  SC --> LG["Login tests<br/>through the login page"]
-  UT["Unit tests<br/>no dependencies"]
-  LI --> REP["Allure report<br/>secret scan · Pages on main"]
-  LG --> REP
-  UT --> REP
-  S2["Step 2 (next)<br/>AI agents draft, a person approves"] -.-> LI
-  S2 -.-> LG
+  ENV["Is the shop up?<br/>Environment check: site, API, not blocked<br/>(site-check)"] --> USER["Create a test user and sign in<br/>Through the API, once per run<br/>(auth-setup)"] --> SHOP["Shopping tests<br/>Search, add to cart, signed in<br/>(logged-in)"]
+  ENV --> LOGIN["Login tests<br/>Through the real login page<br/>(login)"]
+  UNIT["Checks of our own helpers<br/>No browser, no shop<br/>(unit)"]
+  SHOP --> REP["Test report<br/>Passwords removed before it is shared<br/>(Allure)"]
+  LOGIN --> REP
+  UNIT --> REP
+  NEXT["Next: AI drafts new tests<br/>A person approves each one"] -.-> SHOP
+  NEXT -.-> LOGIN
   classDef box fill:#1e293b,stroke:#94a3b8,color:#f1f5f9
   classDef later fill:#1e293b,stroke:#94a3b8,color:#cbd5e1,stroke-dasharray: 5 5
-  class SC,AS,LI,LG,UT,REP box
-  class S2 later
+  class ENV,USER,SHOP,LOGIN,UNIT,REP box
+  class NEXT later
 ```
 
 The whole picture, how one test runs, and the CI run: [docs/architecture.md](docs/architecture.md#diagrams).
