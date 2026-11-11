@@ -33,6 +33,9 @@ playwright-qa-agent/
 
 `login` does not depend on `auth-setup` on purpose: if login is broken, the login tests still run and say so,
 instead of being skipped. `--grep @sanity` picks tests; their dependency projects still run in full.
+`tests/seed.spec.ts` (tag `@seed`) is in `logged-in`: the AI test agents start from it
+([ai-assisted-tests.md](ai-assisted-tests.md)). `npm test` leaves it out (`--grep-invert @seed`), so the
+planted-bug run never runs it; CI runs it in its own step.
 
 ## 3. Page objects and fixtures
 
@@ -124,8 +127,9 @@ instead of being skipped. `--grep @sanity` picks tests; their dependency project
 
 **Workflow** (`.github/workflows/ui-tests.yml`, every pull request and push to main, `contents: read`, no
 secrets): Node from `.nvmrc` → `npm ci` → Chromium → QEMU for arm64 → `ci/start-toolshop.sh` (step `start`) →
-`npm test` with `BASE_URL=http://localhost:4200`, `API_URL=http://localhost:8091` → on failure, the last Toolshop
-logs → if Toolshop started, `npm run report:build` → if that passed, upload the report (and on main, prepare it for
+`npm test` with `BASE_URL=http://localhost:4200`, `API_URL=http://localhost:8091` → `npm run test:seed -- --reporter=list` (the AI
+agents' starting test, kept out of `npm test`; it re-runs the set-up and registers one more account, and its
+results stay out of the Allure report) → on failure, the last Toolshop logs → if Toolshop started, `npm run report:build` → if that passed, upload the report (and on main, prepare it for
 Pages) → always `ci/stop-toolshop.sh`. A second job on main deploys the report to GitHub Pages (`pages: write`,
 `id-token: write`, `concurrency: pages`), only when the scan passed.
 

@@ -4,9 +4,10 @@
   "description": "Playwright + TypeScript test framework for QA teams",
   "scripts": {
     "pretest": "node -e \"for (const d of ['allure-results', 'playwright/.auth/run-accounts']) require('fs').rmSync(d, { recursive: true, force: true })\"",
-    "test": "playwright test",
+    "test": "playwright test --grep-invert @seed",
     "pretest:sanity": "node -e \"for (const d of ['allure-results', 'playwright/.auth/run-accounts']) require('fs').rmSync(d, { recursive: true, force: true })\"",
     "test:sanity": "playwright test --grep @sanity",
+    "test:seed": "playwright test --grep @seed",
     "report:build": "node support/secret-scan.mjs redact && allure generate allure-results --clean -o allure-report --name \"Toolshop UI tests\" && node support/secret-scan.mjs check",
     "report": "npm run report:build && allure open allure-report",
     "typecheck": "tsc --noEmit"

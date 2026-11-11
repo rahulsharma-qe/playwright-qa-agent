@@ -41,7 +41,8 @@ Tests run against **Toolshop**, the Sprint 5 version of the practice web shop by
 - Tags: `@sanity` (login works, search) and `@regression` (the rest); `npm run test:sanity` for a quick check after a deploy or a fix
 
 **Next**
-- AI agents explore the site, write a test plan and draft tests with our page objects; a person approves each step in a pull request
+- AI agents explore the site, write a test plan and draft tests with our page objects; a person approves each step in a pull request.
+  Rules for the agents: [AGENTS.md](AGENTS.md); how to use them: [docs/ai-assisted-tests.md](docs/ai-assisted-tests.md)
 
 **Later**
 - A full agent: reads a requirement, plans tests, drafts them, heals broken locators; every change comes as a pull request a person approves
@@ -83,6 +84,7 @@ npx playwright install chromium
 cp .env.example .env         # optional: only to test another Toolshop copy
 npm test
 npm run test:sanity         # only @sanity tests (setup still runs)
+npm run test:seed           # only the AI agents' starting test (npm test leaves it out)
 npm run report              # build the Allure report and open it
 ```
 
@@ -93,7 +95,7 @@ A trace attached to a failed test opens with `npx playwright show-trace <file>` 
 `BASE_URL`, `API_URL` and `SPRINT` (the Toolshop version) are the only settings, and all have defaults. There
 are no account values anywhere: shared demo accounts get locked by other visitors, and accounts registered by
 hand are removed when Toolshop resets its data. So each run registers two customers through Toolshop's API (one for the logged-in tests, one
-for the login tests; one more per retry). Their emails use the reserved `example.com` domain; the passwords are
+for the login tests; one more per retry; in CI, one more for the agents' starting test). Their emails use the reserved `example.com` domain; the passwords are
 generated for the run and kept only in `playwright/.auth/run-accounts/` (git-ignored), where the secret scan
 reads them.
 
@@ -144,18 +146,12 @@ Toolshop has a second version with bugs planted on purpose, and Testsmith lists 
 by hand, to see which planted bugs they catch.
 
 - Of Toolshop's 94 planted bugs, 29 are on the pages these tests open (login, home and search, product page, cart).
-- **First baseline (09-11-2026): one caught.** The tests find fields by their visible label. On the with-bugs login
-  page, the email and password fields have no label, only hint text that disappears when you type, so the tests
-  stopped there and reported it. Accessibility rules ask for a real label (Toolshop's bug 87). Every test logged
-  in through that page first, so that one bug stopped all of them.
-- **Second baseline (10-11-2026): two caught.** Now only the login tests log in through the page; search and cart
-  start from a session made through the API, so they reached their pages. The search box has no label either, so
-  both tests stopped there and reported it (bug 93). The login tests caught bug 87 again. Both catches come from
-  the same habit: the tests find fields by their label, so missing labels stop them.
-- Not checked yet: the cart test stops at search, so the cart's own bugs are not reached; no test checks the
-  user's name in the header (bug 32). Bugs not reached are not counted as missed.
+- **First baseline (09-11-2026):** 1 caught. **Second baseline (10-11-2026):** 2 caught, after search and cart began
+  to start from a session made through the API. Bugs the tests did not reach are not counted as missed.
 
-How we count, the list of bugs on our path and every run: [docs/bug-hunt.md](docs/bug-hunt.md).
+Which bugs were caught and why, how we count, and every run: [docs/bug-hunt.md](docs/bug-hunt.md). The AI test
+agents are kept away from that file and from the "with bugs" copy; these are guards, not a guarantee
+([docs/ai-assisted-tests.md](docs/ai-assisted-tests.md)).
 
 ## How we write tests
 

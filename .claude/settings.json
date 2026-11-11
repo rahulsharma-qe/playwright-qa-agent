@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "deny": [
+      "Read(./docs/bug-hunt.md)",
+      "Read(./ci/toolshop-images.sprint5-with-bugs.yml)",
+      "Read(./.github/workflows/with-bugs.yml)",
+      "Read(~/.cache/toolshop-source/**)"
+    ]
+  }
+}

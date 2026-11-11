@@ -45,6 +45,14 @@ jobs:
       - name: Run the tests
         run: npm test
 
+      # The AI test agents' starting test (tests/seed.spec.ts), kept out of `npm test` and run here on its own,
+      # so a change to the fixtures cannot break it unnoticed. Never run by the with-bugs workflow.
+      # Its own reporter only: its results stay out of the Allure report (it re-runs the set-up, which would show twice).
+      # It registers one more test account, which the secret scan also checks.
+      - name: Check the agents' starting test (seed)
+        if: ${{ !cancelled() && steps.start.outcome == 'success' }}
+        run: npm run test:seed -- --reporter=list
+
       - name: Show the last Toolshop logs
         if: ${{ failure() }}
         run: docker compose -p toolshop logs --tail 60

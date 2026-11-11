@@ -6,3 +6,15 @@ playwright-report/
 allure-results/
 allure-report/
 test-results.json
+
+# Files written by `npx playwright init-agents` (generated; regenerate after a Playwright update).
+# Only these generated files are ignored: the rest of .claude/, .github/ and specs/ stays tracked.
+.claude/agents/playwright-test-*
+.github/agents/playwright-test-*
+.github/chatmodes/*🎭*.chatmode.md
+.github/workflows/copilot-setup-steps.yml
+.codex/agents/playwright_test_*
+.opencode/prompts/playwright-test-*
+.mcp.json
+.vscode/mcp.json
+opencode.json
