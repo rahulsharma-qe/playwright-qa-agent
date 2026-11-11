@@ -45,6 +45,42 @@ Sprint 5 copy; stop it and start with SPRINT=sprint5" if it is on any other copy
 3. **Fix.** When a test breaks, ask "heal <the test>". The healer proposes a fix. **Pull request 3: the fix**, checked
    against the list in the pull-request template: no new wait, no new `skip`, no weaker assertion.
 
+## How a flow goes through pull requests
+
+1. **Plan pull request.** First commit: the plan as the AI test planner wrote it. Second commit: the QA engineer's
+   edits, plus the line `Approved by: QA engineer, pull request #<n>` (the number exists once the pull request is
+   open). With no edits, the second commit is that one line. Merging is the approval. A plan the QA engineer writes
+   has only the Approved-by line in its second commit.
+2. **Tests pull request.** First commit: the raw draft. Second commit: the QA engineer's edits. The drafting-log rows
+   go in the same pull request.
+
+Every plan starts with a header, like the "prepared by / approved by" block of a test plan (roles, not names):
+
+```
+Prepared by: AI test planner (AI-01) · Edited by: QA engineer (second commit)
+Approved by: QA engineer, pull request #<n>
+```
+
+(`Edited by: none` when there were no edits; `Prepared by: QA engineer` for a plan a person wrote.)
+
+## AI tool IDs
+
+Each AI tool gets an ID, in the style QA teams use for test cases (`TC-001`). A new assistant, or a new model of the
+same one, gets the next ID. An ID covers the period its dates show.
+
+| ID | What it is | From |
+|---|---|---|
+| AI-01 | AI coding assistant with Playwright's test agents (first set-up) | 11-11-2026 |
+
+## The first slice
+
+1. Category filters: plan by the AI test planner.
+2. Checkout: plan by the AI test planner.
+3. Contact form: plan written by the QA engineer in plain English, then given to the AI test generator. Its plan
+   pull request has the checklist line "Written from the normal Sprint 5 site only, nothing from the planted-bug
+   list". Its results are reported on their own, labelled "plan by a person who had read the planted-bug list", and
+   never added to the AI plans' numbers.
+
 The rules every assistant follows (locators, page objects, tags, what not to read) are in [AGENTS.md](../AGENTS.md).
 
 ## Keeping the planted bugs away from the agents
@@ -62,4 +98,6 @@ in the drafting log.
 
 - The AI drafts; a person decides.
 - The numbers come from small samples.
+- One plan each, on different flows: an illustration, not a comparison.
+- The contact-form plan is written and approved by the same role.
 - The healer is shown on a deliberately broken locator, as a demo on a branch that is not merged.
