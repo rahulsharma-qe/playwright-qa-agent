@@ -157,6 +157,9 @@ Page facts observed (use for expectations):
 
 #### 3.3. Category plus price range slider
 
+**Left out** (pull request #21): flaky at 2 workers; see the drafting log and observed note 6. To be redone with a
+slider move that sends one change.
+
 **File:** `tests/category-filters/category-with-other-filters.spec.ts`
 
 **Steps:**

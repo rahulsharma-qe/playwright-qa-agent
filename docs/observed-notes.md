@@ -2,7 +2,7 @@
 
 Behaviour seen on the normal Sprint 5 site that the tests do **not** assert, because the team has not yet said what
 is intended. One row per note; the plan or test that met it links here. Every note says who saw it and when, and
-whether a person has checked it on the normal site. When the team answers, the note records the
+whether a person has checked it on the normal site. (Number 5 is not used: that note was removed.) When the team answers, the note records the
 answer and the date, and a test may then assert it.
 
 Not a bug list: the team's bug-tracking tool stays the place for defects. A note moves there once the team calls it
@@ -22,3 +22,9 @@ a defect.
 4. **A parent stays fully ticked after one child is unticked.** Tick "Hand Tools", then untick "Wrench": the list
    is right, but "Hand Tools" still shows a full tick; a partial tick (dash) would show that only some children are
    chosen. Team to confirm. Seen by: QA engineer, 11-11-2026, reviewing the plan. Status: open.
+6. **Quick key presses on the price slider can leave the list on an older price.** In an automated run at 2 workers
+   (category filters, 3.3), the slider showed 15 but the list stayed on Hand Tools without the price limit (3 pages)
+   for 5 s. Each key press asks the site for a new list, and the answers may arrive out of order. Team to confirm.
+   Seen by: automated test run, 12-11-2026, 2 workers; not reproduced by hand (the QA engineer tried on the normal
+   site; it was slow). The trace was not kept: the next run cleared test-results/ first. What is kept is the error
+   output: the slider at 15 (aria-valuenow), the list still on 3 pages after 5 s. Status: open.

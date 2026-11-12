@@ -68,6 +68,9 @@ it, and wrote its own empty seed over ours. That session was discarded.
      proposed by AI-01, accepted by the QA engineer", with its reason. `drafts/` is empty again.
    - The description gives the prompt used and, per file,
      `git diff <commit 1>:drafts/<flow>/<file> <commit 2>:tests/<flow>/<file>`.
+   - When a run fails, copy its traces out of `test-results/` before running anything else: Playwright clears that
+     folder at the start of every run. For example:
+     `for d in test-results/*/; do [ -f "$d/trace.zip" ] && cp "$d/trace.zip" ~/evidence/"$(basename "$d").zip"; done`
    - Ready only when `--repeat-each=3` at CI's workers passes every time. One failure is a flaky test: fixed or left
      out, never merged.
    - The drafting-log rows go in the same pull request.

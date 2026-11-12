@@ -4,7 +4,6 @@ import { Locator, Page, test } from '@playwright/test';
 export class FilterSidebar {
   /** Every ticked box in the sidebar (categories, brands and the eco-friendly option). */
   readonly checkedBoxes: Locator;
-  readonly maxPriceHandle: Locator;
   private readonly categories: Locator;
   private readonly brands: Locator;
   private readonly sort: Locator;
@@ -14,7 +13,6 @@ export class FilterSidebar {
     this.brands = page.getByRole('group', { name: 'Brands' });
     this.checkedBoxes = page.getByRole('checkbox', { checked: true });
     this.sort = page.getByRole('combobox', { name: 'sort' });
-    this.maxPriceHandle = page.getByRole('slider', { name: 'ngx-slider-max' });
   }
 
   /** A category checkbox, by its exact label ("Saw" is not "Hand Saw"). */
@@ -49,18 +47,5 @@ export class FilterSidebar {
 
   async sortBy(label: string): Promise<void> {
     await test.step(`Sort by "${label}"`, () => this.sort.selectOption({ label }));
-  }
-
-  /**
-   * Moves the upper price handle down from its default of 100 to `price`. The slider moves only with keys:
-   * PageDown moves it by 20, ArrowLeft by 1. Home is not used: on this handle it collapses the range.
-   */
-  async setMaxPrice(price: number): Promise<void> {
-    await test.step(`Set the highest price to ${price}`, async () => {
-      await this.maxPriceHandle.focus();
-      const bigSteps = Math.floor((100 - price) / 20);
-      for (let i = 0; i < bigSteps; i++) await this.maxPriceHandle.press('PageDown');
-      for (let i = 0; i < 100 - bigSteps * 20 - price; i++) await this.maxPriceHandle.press('ArrowLeft');
-    });
   }
 }

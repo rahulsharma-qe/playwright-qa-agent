@@ -1,7 +1,6 @@
 // spec: specs/category-filters.md
 // seed: tests/seed.spec.ts
 import { expect, test } from '../../fixtures';
-import { READ_ALL_PAGES_TIMEOUT } from '../../pages/ProductListPage';
 import {
   brandCase,
   categoryProducts,
@@ -9,7 +8,6 @@ import {
   hammerCategory,
   listCounts,
   noResultsText,
-  priceCase,
   searchAcrossCategories,
   sortCase,
 } from '../../test-data/category-filters';
@@ -57,25 +55,6 @@ test.describe('Category filter: combined with other controls', () => {
     // 3. Uncheck the first brand
     await filterSidebar.uncheckBrand(brandCase.forgeFlex);
     await expect.poll(() => productListPage.namesSorted()).toEqual([brandCase.hammerNotForgeFlex]);
-  });
-
-  test('Category plus price range slider', { tag: '@regression' }, async ({ productListPage, filterSidebar }) => {
-    // 1. Check a category, then move the upper price handle
-    await filterSidebar.checkCategory(priceCase.category);
-    // The Hand Tools results first, then the next control.
-    await expect(productListPage.pageButtons).toHaveCount(listCounts.handToolsPages);
-    await filterSidebar.setMaxPrice(priceCase.maxPrice);
-    await expect(filterSidebar.maxPriceHandle).toHaveAttribute('aria-valuenow', String(priceCase.maxPrice));
-    await expect(productListPage.pageButtons).toHaveCount(priceCase.pages);
-    await expect(filterSidebar.category(priceCase.category)).toBeChecked();
-
-    // 2. Every price on every page is within the range (the list itself is not hard-coded)
-    await expect
-      .poll(async () => {
-        const prices = (await productListPage.readAllPages()).flat().map((card) => card.price);
-        return { anyShown: prices.length > 0, aboveMax: prices.filter((price) => price > priceCase.maxPrice) };
-      }, { timeout: READ_ALL_PAGES_TIMEOUT })
-      .toEqual({ anyShown: true, aboveMax: [] });
   });
 
   test('Category plus eco-friendly checkbox gives no results when none match', { tag: '@regression' }, async ({ productListPage, filterSidebar }) => {

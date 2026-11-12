@@ -10,7 +10,7 @@ import { isEnvironmentMessage } from './environment-messages.ts';
 
 export const UI_PROJECTS = ['login', 'logged-in'];
 // Update when UI tests are added or removed (step 2 adds tests); the summary warns when the count differs.
-export const EXPECTED_UI_TESTS = 18;
+export const EXPECTED_UI_TESTS = 17;
 
 export type CountedTest = { title: string; project: string; status: string; errors: string[] };
 type Outcome = 'failed' | 'not reached' | 'passed';

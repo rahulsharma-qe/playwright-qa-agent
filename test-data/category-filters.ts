@@ -108,8 +108,6 @@ export const brandCase = {
   hammerNotForgeFlex: 'Claw Hammer',
 };
 
-export const priceCase = { category: 'Hand Tools', maxPrice: 15, pages: 2 };
-
 export const ecoLabel = 'Show only eco-friendly products';
 
 export const searchAcrossCategories = {
