@@ -4,6 +4,7 @@ import { expect, test } from '../../fixtures';
 import { READ_ALL_PAGES_TIMEOUT } from '../../pages/ProductListPage';
 import {
   categoryProducts,
+  drillProductsByProductPage,
   emptyCategory,
   hammerCategory,
   listCounts,
@@ -84,14 +85,14 @@ test.describe('Category filter: basics', () => {
     await filterSidebar.checkCategory('Power Tools');
     for (const child of children) await expect(filterSidebar.category(child)).toBeChecked();
     // No count: it would include the drills of observed note 2. The Sander and Saw products show, and any other
-    // card is a Drill product, never a product from another category.
+    // card is one of the four drills whose product page says "Drill", never a product from another category.
     const settled = [...categoryProducts.Sander, ...categoryProducts.Saw];
     await expect
       .poll(async () => {
         const names = await productListPage.namesSorted();
         return {
           missing: settled.filter((name) => !names.includes(name)),
-          fromElsewhere: names.filter((name) => !settled.includes(name) && !categoryProducts.Drill.includes(name)),
+          fromElsewhere: names.filter((name) => !settled.includes(name) && !drillProductsByProductPage.includes(name)),
         };
       })
       .toEqual({ missing: [], fromElsewhere: [] });

@@ -24,7 +24,6 @@ export const categoryProducts: Record<string, string[]> = {
   Sander: ['Sheet Sander', 'Belt Sander'],
   Saw: ['Circular Saw'],
   // As observed; see observed note 2 (docs/observed-notes.md): no test asserts this row or a count that includes it.
-  // Test 1.4 uses it only to allow a drill among the Power Tools results.
   Drill: ['Cordless Drill 24V', 'Cordless Drill 12V'],
   'Tool Belts': ['Leather toolbelt'],
   'Storage Solutions': ['Drawer Tool Cabinet', 'Tool Cabinet'],
@@ -60,6 +59,13 @@ export const subCategoriesChecked = [
   'Tool Belts',
   'Fasteners',
 ];
+
+/**
+ * The four cordless drills whose product pages show the category "Drill" (seen by the QA engineer on the normal
+ * site). The filter shows only two of them today (observed note 2); test 1.4 allows any of the four, so it passes
+ * whatever the team decides.
+ */
+export const drillProductsByProductPage = ['Cordless Drill 20V', 'Cordless Drill 24V', 'Cordless Drill 18V', 'Cordless Drill 12V'];
 
 export const listCounts = {
   pageSize: 9,
@@ -110,5 +116,5 @@ export const searchAcrossCategories = {
   firstTerm: 'Claw',
   firstNames: ['Claw Hammer with Shock Reduction Grip', 'Claw Hammer', 'Claw Hammer with Fiberglass Handle'],
   secondTerm: 'Drill',
-  secondNames: ['Cordless Drill 20V', 'Cordless Drill 24V', 'Cordless Drill 18V', 'Cordless Drill 12V'],
+  secondNames: drillProductsByProductPage,
 };

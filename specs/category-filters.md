@@ -71,7 +71,8 @@ Page facts observed (use for expectations):
 **Steps:**
   1. Tag: @regression. Start state: fresh home page. Check "Power Tools"
     - expect: The children Grinder, Sander, Saw and Drill become checked
-    - expect: Sheet Sander, Belt Sander and Circular Saw show; any other card is a Drill product; no product from
+    - expect: Sheet Sander, Belt Sander and Circular Saw show; any other card is one of the four cordless drills
+      whose product page shows the category "Drill"; no product from
       another category; no count (it would include the drills of observed note 2; changed in pull request #20)
     - expect: No pagination
   2. Uncheck "Power Tools"
