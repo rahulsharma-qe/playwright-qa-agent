@@ -1,7 +1,7 @@
 // spec: specs/category-filters.md
 // seed: tests/seed.spec.ts
 import { expect, test } from '../../fixtures';
-import { READ_ALL_PAGES_TIMEOUT } from '../../pages/ProductListPage';
+import { READ_ALL_PAGES_POLL } from '../../pages/ProductListPage';
 import {
   categoryProducts,
   drillProductsByProductPage,
@@ -117,7 +117,7 @@ test.describe('Category filter: basics', () => {
 
     // The list only: the parent's own tick is an open question (docs/observed-notes.md, note 4).
     await expect
-      .poll(async () => sorted((await productListPage.readAllPages()).flat().map((card) => card.name)), { timeout: READ_ALL_PAGES_TIMEOUT })
+      .poll(async () => sorted((await productListPage.readAllPages()).flat().map((card) => card.name)), READ_ALL_PAGES_POLL)
       .toEqual(sorted(expected));
   });
 

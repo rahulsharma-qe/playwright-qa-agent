@@ -1,7 +1,7 @@
 // spec: specs/category-filters.md
 // seed: tests/seed.spec.ts
 import { expect, test } from '../../fixtures';
-import { READ_ALL_PAGES_TIMEOUT } from '../../pages/ProductListPage';
+import { READ_ALL_PAGES_POLL } from '../../pages/ProductListPage';
 import { categoryProducts, listCounts, parentCategories } from '../../test-data/category-filters';
 
 const namesOf = (children: string[]) => children.flatMap((child) => categoryProducts[child]).sort();
@@ -28,7 +28,7 @@ test.describe('Category filter: pagination', () => {
           sizes: pages.map((cards) => cards.length),
           names: pages.flat().map((card) => card.name).sort(),
         };
-      }, { timeout: READ_ALL_PAGES_TIMEOUT })
+      }, READ_ALL_PAGES_POLL)
       .toEqual({ sizes: [listCounts.pageSize, listCounts.pageSize, lastPageSize], names: handTools });
 
     // 3. Switch from one parent to another
@@ -39,7 +39,7 @@ test.describe('Category filter: pagination', () => {
     await expect(productListPage.pageButtons).toHaveCount(listCounts.otherPages);
     await expect(productListPage.pageItem(1)).toHaveClass(/active/);
     await expect
-      .poll(async () => (await productListPage.readAllPages()).flat().map((card) => card.name).sort(), { timeout: READ_ALL_PAGES_TIMEOUT })
+      .poll(async () => (await productListPage.readAllPages()).flat().map((card) => card.name).sort(), READ_ALL_PAGES_POLL)
       .toEqual(namesOf(parentCategories.Other));
   });
 });

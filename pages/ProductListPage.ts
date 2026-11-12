@@ -7,6 +7,15 @@ import { appUrl } from '../support/app-url';
  */
 export const READ_ALL_PAGES_TIMEOUT = 15_000;
 
+/** Options for an expect.poll that reads every page: the time limit above and a clear message when it runs out. */
+export const READ_ALL_PAGES_POLL = {
+  timeout: READ_ALL_PAGES_TIMEOUT,
+  message: 'Reading every page did not show the expected products within 15 s',
+};
+
+/** The most one step of the page walk may take; see readAllPages. */
+const PAGE_CHANGE_TIMEOUT = 3_000;
+
 /** The home page: product cards, the search box and the page buttons under the list. */
 export class ProductListPage {
   readonly searchedFor: Locator;
@@ -81,9 +90,11 @@ export class ProductListPage {
 
   /**
    * The cards of every page, page 1 first. A simple walk: for each page, click its button (unless it is the page
-   * shown), wait until the first card is a different product, then read the cards. The page button turns active
-   * at once, but the products of the new page load after it, so the active button alone is not enough.
-   * With no page buttons, it reads the one page shown.
+   * shown), wait a little for the first card to change, then read the cards. The page button turns active at
+   * once, but the products of the new page load after it.
+   * Every step has a short limit (actions have none by default): a page button that has just gone, or a page that
+   * has not changed yet, ends this round instead of hanging it, and the expect.poll around the walk reads again.
+   * So the walk can be wrong or fail for one round, but it can never hang.
    */
   async readAllPages(): Promise<{ name: string; price: number }[][]> {
     return test.step('Read the products on every page', async () => {
@@ -91,13 +102,18 @@ export class ProductListPage {
       if (pages === 0) return [await this.cardsShown()];
       const result: { name: string; price: number }[][] = [];
       for (let n = 1; n <= pages; n++) {
-        const isShown = (await this.pageItem(n).getAttribute('class'))?.includes('active') ?? false;
+        const step = { timeout: PAGE_CHANGE_TIMEOUT };
+        const isShown = (await this.pageItem(n).getAttribute('class', step))?.includes('active') ?? false;
         if (!isShown) {
-          const firstBefore = (await this.productNames.first().textContent())?.trim() ?? '';
-          await this.pageButton(n).click();
+          const firstBefore = (await this.productNames.first().textContent(step))?.trim() ?? '';
+          await this.pageButton(n).click(step);
           // Exact match: "Hammer" must not hide "Claw Hammer".
           const exactly = new RegExp(`^\\s*${firstBefore.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*$`);
-          await this.productNames.first().filter({ hasNotText: exactly }).waitFor();
+          await this.productNames
+            .first()
+            .filter({ hasNotText: exactly })
+            .waitFor(step)
+            .catch(() => {}); // a late read is caught by the expect.poll around the walk
         }
         result.push(await this.cardsShown());
       }
