@@ -2,6 +2,7 @@ import { test as base } from '@playwright/test';
 import { giveTokenToPage, readSessionToken } from './support/api-session';
 import { BOT_CHECK_MESSAGE, isBotCheck, mightBeBotCheck } from './support/bot-check';
 import { CartPage } from './pages/CartPage';
+import { FilterSidebar } from './pages/FilterSidebar';
 import { Header } from './pages/Header';
 import { LoginPage } from './pages/LoginPage';
 import { ProductListPage } from './pages/ProductListPage';
@@ -16,6 +17,7 @@ type PageObjects = {
   header: Header;
   loginPage: LoginPage;
   productListPage: ProductListPage;
+  filterSidebar: FilterSidebar;
   productPage: ProductPage;
   cartPage: CartPage;
 };
@@ -47,6 +49,7 @@ export const test = base.extend<PageObjects>({
   header: async ({ page }, use) => use(new Header(page)),
   loginPage: async ({ page }, use) => use(new LoginPage(page)),
   productListPage: async ({ page }, use) => use(new ProductListPage(page)),
+  filterSidebar: async ({ page }, use) => use(new FilterSidebar(page)),
   productPage: async ({ page }, use) => use(new ProductPage(page)),
   cartPage: async ({ page }, use) => use(new CartPage(page)),
 });

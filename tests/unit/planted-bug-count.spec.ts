@@ -6,7 +6,7 @@ import {
   isEnvironmentMessage,
   siteNotResponding,
 } from '../../support/environment-messages';
-import { type CountedTest, outcomeOf, summaryLines } from '../../support/planted-bug-count';
+import { type CountedTest, EXPECTED_UI_TESTS, outcomeOf, summaryLines } from '../../support/planted-bug-count';
 
 // Sample results written for these tests; no browser and no Toolshop needed.
 const uiTest = (title: string, status: string, errors: string[] = [], project = 'login'): CountedTest => ({ title, project, status, errors });
@@ -44,10 +44,11 @@ test.describe('planted-bug count', () => {
     expect(lines[0]).toContain('0 failed, 0 not reached, 2 passed');
   });
 
-  test('says so when fewer than five UI tests are found', () => {
-    const four = ['a', 'b', 'c', 'd'].map((t) => uiTest(t, 'expected'));
-    expect(summaryLines(four, 'abc')).toContain('Expected 5 UI tests, found 4: a spec may have failed to load.');
-    expect(summaryLines([...four, uiTest('e', 'expected')], 'abc').join('\n')).not.toContain('Expected 5 UI tests');
+  test('says so when fewer UI tests are found than expected', () => {
+    const oneShort = Array.from({ length: EXPECTED_UI_TESTS - 1 }, (_, i) => uiTest(`t${i}`, 'expected'));
+    const expectedLine = `Expected ${EXPECTED_UI_TESTS} UI tests, found ${EXPECTED_UI_TESTS - 1}: a spec may have failed to load.`;
+    expect(summaryLines(oneShort, 'abc')).toContain(expectedLine);
+    expect(summaryLines([...oneShort, uiTest('last', 'expected')], 'abc').join('\n')).not.toContain('Expected');
   });
 
   test('setup and unit projects are counted on their own line', () => {

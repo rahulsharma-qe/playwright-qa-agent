@@ -1,6 +1,7 @@
 // spec: specs/category-filters.md
 // seed: tests/seed.spec.ts
 import { expect, test } from '../../fixtures';
+import { READ_ALL_PAGES_TIMEOUT } from '../../pages/ProductListPage';
 import {
   brandCase,
   categoryProducts,
@@ -19,11 +20,15 @@ const hammers = categoryProducts[hammerCategory];
 test.describe('Category filter: combined with other controls', () => {
   test.beforeEach(async ({ productListPage }) => {
     await productListPage.open();
+    // The unfiltered list first, then the first control: a tick made while the list loads can be lost.
+    await expect(productListPage.cards).toHaveCount(listCounts.pageSize);
   });
 
   test('Category plus sort keeps the filter and orders the results', { tag: '@regression' }, async ({ productListPage, filterSidebar }) => {
     // 1. Check a category, then sort by name
     await filterSidebar.checkCategory(hammerCategory);
+    // The Hammer results first, then the next control.
+    await expect.poll(() => productListPage.namesSorted()).toEqual(sorted(hammers));
     await filterSidebar.sortBy(sortCase.nameAZ);
     await expect(productListPage.productNames).toHaveText(sortCase.hammersByName);
 
@@ -57,6 +62,8 @@ test.describe('Category filter: combined with other controls', () => {
   test('Category plus price range slider', { tag: '@regression' }, async ({ productListPage, filterSidebar }) => {
     // 1. Check a category, then move the upper price handle
     await filterSidebar.checkCategory(priceCase.category);
+    // The Hand Tools results first, then the next control.
+    await expect(productListPage.pageButtons).toHaveCount(listCounts.handToolsPages);
     await filterSidebar.setMaxPrice(priceCase.maxPrice);
     await expect(filterSidebar.maxPriceHandle).toHaveAttribute('aria-valuenow', String(priceCase.maxPrice));
     await expect(productListPage.pageButtons).toHaveCount(priceCase.pages);
@@ -64,10 +71,11 @@ test.describe('Category filter: combined with other controls', () => {
 
     // 2. Every price on every page is within the range (the list itself is not hard-coded)
     await expect
-      .poll(async () => Math.max(...(await productListPage.readAllPages()).flat().map((card) => card.price)))
-      .toBeLessThanOrEqual(priceCase.maxPrice);
-    const cards = (await productListPage.readAllPages()).flat();
-    expect(cards.length).toBeGreaterThan(0);
+      .poll(async () => {
+        const prices = (await productListPage.readAllPages()).flat().map((card) => card.price);
+        return { anyShown: prices.length > 0, aboveMax: prices.filter((price) => price > priceCase.maxPrice) };
+      }, { timeout: READ_ALL_PAGES_TIMEOUT })
+      .toEqual({ anyShown: true, aboveMax: [] });
   });
 
   test('Category plus eco-friendly checkbox gives no results when none match', { tag: '@regression' }, async ({ productListPage, filterSidebar }) => {

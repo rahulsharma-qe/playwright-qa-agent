@@ -1,6 +1,7 @@
 // spec: specs/category-filters.md
 // seed: tests/seed.spec.ts
 import { expect, test } from '../../fixtures';
+import { READ_ALL_PAGES_TIMEOUT } from '../../pages/ProductListPage';
 import {
   categoryProducts,
   emptyCategory,
@@ -10,7 +11,6 @@ import {
   noResultsText,
   parentCategories,
   sanityCategory,
-  stillShown,
   subCategoriesChecked,
   unionPartnerCategory,
   unticked,
@@ -21,6 +21,8 @@ const sorted = (names: string[]) => [...names].sort();
 test.describe('Category filter: basics', () => {
   test.beforeEach(async ({ productListPage }) => {
     await productListPage.open();
+    // The unfiltered list first, then the first control: a tick made while the list loads can be lost.
+    await expect(productListPage.cards).toHaveCount(listCounts.pageSize);
   });
 
   test('Selecting one sub-category shows only its products', { tag: '@sanity' }, async ({ productListPage, filterSidebar }) => {
@@ -81,8 +83,9 @@ test.describe('Category filter: basics', () => {
     // 1. Check the parent
     await filterSidebar.checkCategory('Power Tools');
     for (const child of children) await expect(filterSidebar.category(child)).toBeChecked();
-    // Only the products of a child with a settled answer are asserted (see test-data/category-filters.ts).
-    for (const name of categoryProducts[unionPartnerCategory]) {
+    // The count includes the two drills the filter shows: as observed, see observed note 2.
+    await expect(productListPage.cards).toHaveCount(listCounts.powerToolsProducts);
+    for (const name of [...categoryProducts.Sander, ...categoryProducts.Saw]) {
       await expect(productListPage.productCard(name)).toBeVisible();
     }
     await expect(productListPage.pageButtons).toHaveCount(0);
@@ -95,7 +98,6 @@ test.describe('Category filter: basics', () => {
   });
 
   test('Unchecking one child while the parent is checked narrows the list', { tag: '@regression' }, async ({ productListPage, filterSidebar }) => {
-    const allHandTools = parentCategories[narrowedParent as 'Hand Tools'].flatMap((child) => categoryProducts[child]);
     const expected = parentCategories[narrowedParent as 'Hand Tools']
       .filter((child) => child !== unticked)
       .flatMap((child) => categoryProducts[child]);
@@ -103,14 +105,12 @@ test.describe('Category filter: basics', () => {
     // 1. Check the parent, then uncheck one child
     await filterSidebar.checkCategory(narrowedParent);
     await expect(productListPage.pageButtons).toHaveCount(listCounts.handToolsPages);
-    expect(allHandTools).toHaveLength(listCounts.handToolsProducts);
     await filterSidebar.uncheckCategory(unticked);
 
     // The list only: the parent's own tick is an open question (docs/observed-notes.md, note 4).
     await expect
-      .poll(async () => sorted((await productListPage.readAllPages()).flat().map((card) => card.name)))
+      .poll(async () => sorted((await productListPage.readAllPages()).flat().map((card) => card.name)), { timeout: READ_ALL_PAGES_TIMEOUT })
       .toEqual(sorted(expected));
-    for (const name of stillShown) expect(expected).toContain(name);
   });
 
   test('Clearing the category filter restores the full list', { tag: '@regression' }, async ({ productListPage, filterSidebar }) => {

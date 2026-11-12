@@ -38,7 +38,7 @@ Tests run against **Toolshop**, the Sprint 5 version of the practice web shop by
 - GitHub Actions on every pull request and push to main: a pass/fail table on the run page, and the Allure report
   attached to the run (`allure-report`), even when tests fail
 - The report from main published on GitHub Pages (link at the top), also when tests fail
-- Tags: `@sanity` (login works, search) and `@regression` (the rest); `npm run test:sanity` for a quick check after a deploy or a fix
+- Tags: `@sanity` (login works, search, one category filter) and `@regression` (the rest); `npm run test:sanity` for a quick check after a deploy or a fix
 
 **Next**
 - AI agents explore the site, write a test plan and draft tests with our page objects; a person approves each step in a pull request.
