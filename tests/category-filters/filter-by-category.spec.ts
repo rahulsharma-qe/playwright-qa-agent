@@ -83,11 +83,18 @@ test.describe('Category filter: basics', () => {
     // 1. Check the parent
     await filterSidebar.checkCategory('Power Tools');
     for (const child of children) await expect(filterSidebar.category(child)).toBeChecked();
-    // The count includes the two drills the filter shows: as observed, see observed note 2.
-    await expect(productListPage.cards).toHaveCount(listCounts.powerToolsProducts);
-    for (const name of [...categoryProducts.Sander, ...categoryProducts.Saw]) {
-      await expect(productListPage.productCard(name)).toBeVisible();
-    }
+    // No count: it would include the drills of observed note 2. The Sander and Saw products show, and any other
+    // card is a Drill product, never a product from another category.
+    const settled = [...categoryProducts.Sander, ...categoryProducts.Saw];
+    await expect
+      .poll(async () => {
+        const names = await productListPage.namesSorted();
+        return {
+          missing: settled.filter((name) => !names.includes(name)),
+          fromElsewhere: names.filter((name) => !settled.includes(name) && !categoryProducts.Drill.includes(name)),
+        };
+      })
+      .toEqual({ missing: [], fromElsewhere: [] });
     await expect(productListPage.pageButtons).toHaveCount(0);
 
     // 2. Uncheck the parent

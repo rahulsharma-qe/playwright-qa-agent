@@ -118,6 +118,7 @@ in the drafting log.
 
 - The AI drafts; a person decides.
 - The numbers come from small samples.
+- At 4 workers the local copy sometimes takes over 5 s for the home list; CI runs 2 workers.
 - One plan each, on different flows: an illustration, not a comparison.
 - The contact-form plan is written and approved by the same role.
 - The healer is shown on a deliberately broken locator, as a demo on a branch that is not merged.

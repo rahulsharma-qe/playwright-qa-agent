@@ -18,8 +18,8 @@ Page facts observed (use for expectations):
 - Empty result text: "There are no products found." (data-test="no-results").
 - No category checkbox is checked initially; unfiltered list shows 5 pages.
 - Product names and counts per category (used by 1.2, 1.3, 1.4, 2.1, 3.2) live in one table in `test-data/`, not
-  inline in the tests. The Drill row (2: 24V, 12V) and the Power Tools count (5) are marked there "as observed; see
-  observed note 2".
+  inline in the tests. The Drill row (2: 24V, 12V) is marked there "as observed; see observed note 2" and no test
+  asserts it or a count that includes it (changed in pull request #20, with the tests).
 
 ## Test Scenarios
 
@@ -45,9 +45,9 @@ Page facts observed (use for expectations):
 **File:** `tests/category-filters/filter-by-category.spec.ts`
 
 **Steps:**
-  1. Tag: @regression. Start state: fresh home page. For each row in the test-data table (Hammer, Pliers, Drill, Sander, Saw, Wrench, Screwdriver, Chisels, Measures, Tool Belts, Fasteners): check only that sub-category, read the card names, then uncheck it.
+  1. Tag: @regression. Start state: fresh home page. For each row in the test-data table except Drill (observed note 2): Hammer, Pliers, Sander, Saw, Wrench, Screwdriver, Chisels, Measures, Tool Belts, Fasteners: check only that sub-category, read the card names, then uncheck it.
     - expect: Hammer: 7 products (Claw Hammer with Shock Reduction Grip, Hammer, Claw Hammer, Thor Hammer, Sledgehammer, Claw Hammer with Fiberglass Handle, Court Hammer)
-    - expect: Pliers: 5; Drill: 2 (Cordless Drill 24V, Cordless Drill 12V); Sander: 2 (Sheet Sander, Belt Sander); Saw: 1 (Circular Saw)
+    - expect: Pliers: 5; Sander: 2 (Sheet Sander, Belt Sander); Saw: 1 (Circular Saw)
     - expect: Wrench: 3; Screwdriver: 2; Chisels: 3; Measures: 4; Tool Belts: 1; Fasteners: 6
     - expect: The list contains exactly the expected names, no product from another category
 
@@ -56,12 +56,13 @@ Page facts observed (use for expectations):
 **File:** `tests/category-filters/filter-by-category.spec.ts`
 
 **Steps:**
-  1. Tag: @regression. Start state: fresh home page. Check "Hammer", then check "Drill"
+  1. Tag: @regression. Start state: fresh home page. Check "Hammer", then check "Sander" (not Drill: observed note 2;
+     changed in pull request #20)
     - expect: After Hammer only, 7 hammer products are shown
-    - expect: After Drill is also checked, 9 cards are shown: the 7 hammer products plus Cordless Drill 24V and Cordless Drill 12V
+    - expect: After Sander is also checked, 9 cards are shown: the 7 hammer products plus Sheet Sander and Belt Sander
     - expect: Both checkboxes stay checked and no pagination is shown (9 fit on one page)
   2. Uncheck "Hammer"
-    - expect: Only the 2 drill products remain
+    - expect: Only the 2 sander products remain
 
 #### 1.4. Selecting a parent category selects its children and shows all their products
 
@@ -70,7 +71,8 @@ Page facts observed (use for expectations):
 **Steps:**
   1. Tag: @regression. Start state: fresh home page. Check "Power Tools"
     - expect: The children Grinder, Sander, Saw and Drill become checked
-    - expect: 5 cards: Sheet Sander, Belt Sander, Circular Saw, Cordless Drill 24V, Cordless Drill 12V
+    - expect: Sheet Sander, Belt Sander and Circular Saw show; any other card is a Drill product; no product from
+      another category; no count (it would include the drills of observed note 2; changed in pull request #20)
     - expect: No pagination
   2. Uncheck "Power Tools"
     - expect: All children become unchecked (e.g. Drill is unchecked)

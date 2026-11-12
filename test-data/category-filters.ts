@@ -23,7 +23,8 @@ export const categoryProducts: Record<string, string[]> = {
   Grinder: [],
   Sander: ['Sheet Sander', 'Belt Sander'],
   Saw: ['Circular Saw'],
-  // As observed; see observed note 2 (docs/observed-notes.md): not used by a test until the team answers.
+  // As observed; see observed note 2 (docs/observed-notes.md): no test asserts this row or a count that includes it.
+  // Test 1.4 uses it only to allow a drill among the Power Tools results.
   Drill: ['Cordless Drill 24V', 'Cordless Drill 12V'],
   'Tool Belts': ['Leather toolbelt'],
   'Storage Solutions': ['Drawer Tool Cabinet', 'Tool Cabinet'],
@@ -65,8 +66,6 @@ export const listCounts = {
   unfilteredPages: 5,
   handToolsProducts: 25,
   handToolsPages: 3,
-  // As observed; see observed note 2: includes the two drills the filter shows.
-  powerToolsProducts: 5,
   otherProducts: 15,
   otherPages: 2,
 };
