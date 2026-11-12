@@ -19,6 +19,8 @@ and approves every change in a pull request. How to use the agents: [docs/ai-ass
   same.
 - Do not read the history of `README.md` or `docs/` (`git log`, `git show`).
 - A test must come from what the normal site does, never from a list of planted bugs.
+- Behaviour listed in `docs/observed-notes.md` is an open question for the team, never an assertion. A test may
+  assert it only after the team has answered and the note records the answer.
 
 ## How tests are written here
 
