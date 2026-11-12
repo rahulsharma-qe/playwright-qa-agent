@@ -33,6 +33,7 @@ playwright-qa-agent/
 
 `login` does not depend on `auth-setup` on purpose: if login is broken, the login tests still run and say so,
 instead of being skipped. `--grep @sanity` picks tests; their dependency projects still run in full.
+`logged-in` is the first project on purpose: the AI test agents' tools use the first project when none is named.
 `tests/seed.spec.ts` (tag `@seed`) is in `logged-in`: the AI test agents start from it
 ([ai-assisted-tests.md](ai-assisted-tests.md)). `npm test` leaves it out (`--grep-invert @seed`), so the
 planted-bug run never runs it; CI runs it in its own step.

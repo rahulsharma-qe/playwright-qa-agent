@@ -7,7 +7,8 @@ and approves every change in a pull request. How to use the agents: [docs/ai-ass
 
 - Run against the **normal Sprint 5 copy of Toolshop only**, started locally with `ci/start-toolshop.sh`
   (`SPRINT=sprint5`). Never open Toolshop's "with bugs" copy.
-- Start from `tests/seed.spec.ts`. It stops if it is not on the normal Sprint 5 copy.
+- Start from `tests/seed.spec.ts`, in the project `logged-in`; name both in every agent call. It stops if it is not
+  on the normal Sprint 5 copy. **Never edit `tests/seed.spec.ts`.**
 - **Do not read** these (they describe the planted bugs this suite is measured against):
   - `docs/bug-hunt.md`
   - `ci/toolshop-images.sprint5-with-bugs.yml`

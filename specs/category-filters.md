@@ -1,7 +1,7 @@
 # Category filters on the Toolshop home page
 
 Prepared by: AI test planner (AI-01) · Edited by: QA engineer (second commit)
-Scope also proposed by the AI assistant (AI-01)
+Scope set by: AI assistant (AI-01)
 Approved by: QA engineer, pull request #15
 
 ## Application Overview

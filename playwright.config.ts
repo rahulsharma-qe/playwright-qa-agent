@@ -27,15 +27,8 @@ export default defineConfig({
     trace: 'off', // traces record typed values and tokens; only logged-in keeps them (below)
   },
   projects: [
-    // Plain TypeScript checks of our own helpers: no browser, no Toolshop, no dependencies.
-    { name: 'unit', testMatch: /unit\/.*\.spec\.ts/ },
-    { name: 'site-check', testMatch: /site-check\.setup\.ts/ },
-    {
-      name: 'auth-setup',
-      testMatch: /auth\.setup\.ts/,
-      use: { ...devices['Desktop Chrome'], screenshot: 'off' }, // the page shows the typed email
-      dependencies: ['site-check'],
-    },
+    // First on purpose: the AI test agents' tools use the first project when none is named, and the seed
+    // (tests/seed.spec.ts) is in this one. The order does not change dependencies or what runs.
     {
       name: 'logged-in',
       testIgnore: [/login\.spec\.ts/, /unit\//],
@@ -45,6 +38,15 @@ export default defineConfig({
         trace: 'retain-on-failure', // no password is typed here
       },
       dependencies: ['auth-setup'],
+    },
+    // Plain TypeScript checks of our own helpers: no browser, no Toolshop, no dependencies.
+    { name: 'unit', testMatch: /unit\/.*\.spec\.ts/ },
+    { name: 'site-check', testMatch: /site-check\.setup\.ts/ },
+    {
+      name: 'auth-setup',
+      testMatch: /auth\.setup\.ts/,
+      use: { ...devices['Desktop Chrome'], screenshot: 'off' }, // the page shows the typed email
+      dependencies: ['site-check'],
     },
     {
       // Starts logged out and does not depend on auth-setup:

@@ -13,7 +13,9 @@
 - [ ] Nothing here is taken from the planted-bug list.
 
 **Tests drafted by an AI agent**
-- [ ] First commit: the raw draft, under `drafts/`. Second commit: moved into `tests/`, with the person's edits.
+- [ ] First commit: the generator's files moved unchanged to `drafts/<flow>/`, with its report and checksums; searched for account values and "token" first. Second commit: moved into `tests/`, with the QA engineer's decisions (AI-proposed edits logged).
+- [ ] `--repeat-each=3` at CI's workers passed every time.
+- [ ] `tests/seed.spec.ts` unchanged.
 - [ ] `drafts/` is empty after this pull request.
 - [ ] One row per drafted test in `docs/ai-drafting-log.md` (approved as drafted, edited or rejected, with one line why).
 

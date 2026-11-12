@@ -23,3 +23,7 @@ Seen by the QA engineer on 11-11-2026 while reviewing the plan.
 4. **A parent stays fully ticked after one child is unticked.** Tick "Hand Tools", then untick "Wrench": the list
    is right, but "Hand Tools" still shows a full tick; a partial tick (dash) would show that only some children are
    chosen. Team to confirm. Status: open.
+5. **A second control used before the first one's results load can be lost.** Seen in the first generator session
+   (12-11-2026): a sort chosen right after ticking "Hammer" sometimes did not apply; ticking "Other" right after
+   unticking "Hand Tools" showed the unfiltered list. Tests wait for each control's result before the next. Team to
+   confirm. Status: open.

@@ -25,8 +25,8 @@ approval.
    other than `sprint5`.
 2. Write the agent files for your assistant:
    `npx playwright init-agents --loop=<your assistant> --project logged-in`
-   (`--loop` is one of `claude`, `codex`, `copilot`, `opencode`, `vscode`). `--project logged-in` matters: without it,
-   the agents use the first project in the config, which is `unit`.
+   (`--loop` is one of `claude`, `codex`, `copilot`, `opencode`, `vscode`). The agents' tools use the first project in
+   the config when none is named; `logged-in` is first on purpose, because the seed is in it. Still name it.
 3. The files it writes are generated and git-ignored; write them again after each Playwright update. Only the
    generated `copilot-setup-steps.yml` is ignored in `.github/workflows/`; the folder and our workflows stay tracked.
 
@@ -36,12 +36,15 @@ Sprint 5 copy; stop it and start with SPRINT=sprint5" if it is on any other copy
 
 ## Plan, draft, fix
 
+Every prompt to an agent names the project and the seed: "… project logged-in, seed file tests/seed.spec.ts". In the
+first generator session (12-11-2026) a tool given no project used `unit` (then the first project), found no seed in
+it, and wrote its own empty seed over ours. That session was discarded.
+
 1. **Plan.** Ask your assistant "plan tests for <a part of the site>". The planner writes `specs/<name>.md`. Open
    **pull request 1: the plan**. A person edits and approves it. A plan can also be written by a person in plain
    English and given to the generator.
-2. **Draft.** Ask "generate tests from specs/<name>.md". Open **pull request 2: the tests**. First commit: the raw
-   draft as the agent wrote it. Second commit: the person's edits. Add one row per drafted test to
-   [ai-drafting-log.md](ai-drafting-log.md) in the same pull request. CI green, then merge.
+2. **Draft.** Ask "generate tests from specs/<name>.md". Open **pull request 2: the tests** (steps below). Add one
+   row per drafted test to [ai-drafting-log.md](ai-drafting-log.md) in the same pull request. CI green, then merge.
 3. **Fix.** When a test breaks, ask "heal <the test>". The healer proposes a fix. **Pull request 3: the fix**, checked
    against the list in the pull-request template: no new wait, no new `skip`, no weaker assertion.
 
@@ -51,20 +54,34 @@ Sprint 5 copy; stop it and start with SPRINT=sprint5" if it is on any other copy
    edits, plus the line `Approved by: QA engineer, pull request #<n>` (the number exists once the pull request is
    open). With no edits, the second commit is that one line. Merging is the approval. A plan the QA engineer writes
    has only the Approved-by line in its second commit.
-2. **Tests pull request.** First commit: the raw draft, byte for byte, under `drafts/<flow>/` (outside `tests/`, so
-   nothing runs, and left out of the typecheck); the agent's changes to existing files go in as a patch file there,
-   not applied. Second commit: the files moved into `tests/`, the patch applied, and the QA engineer's edits;
-   `drafts/` is empty again. The drafting-log rows
-   go in the same pull request.
+2. **Tests pull request**, one per flow:
+   - The generator writes where its tool can, under `tests/<flow>/`. Right after the session: take the `sha256sum`
+     of its files (listed in the pull request description), keep its report as returned, and check
+     `git diff tests/seed.spec.ts` is empty.
+   - Before anything is committed: search the report and every generated file for this run's test-account emails
+     and passwords and for "token". The report's secret scan does not cover files in the repository.
+   - First commit: the files moved unchanged to `drafts/<flow>/` (outside the folders Playwright runs, and left out
+     of the typecheck), `drafts/<flow>/generator-report.md`, and the agent's changes to existing files as
+     `drafts/<flow>/changes-to-existing-files.patch`, not applied.
+   - Second commit: the QA engineer's decisions on the raw draft: files moved into `tests/<flow>/`, the patch
+     applied, and the edits. The QA engineer may ask the AI assistant for a change; each one is logged as "edit
+     proposed by AI-01, accepted by the QA engineer", with its reason. `drafts/` is empty again.
+   - The description gives the prompt used and, per file,
+     `git diff <commit 1>:drafts/<flow>/<file> <commit 2>:tests/<flow>/<file>`.
+   - Ready only when `--repeat-each=3` at CI's workers passes every time. One failure is a flaky test: fixed or left
+     out, never merged.
+   - The drafting-log rows go in the same pull request.
 
 Every plan starts with a header, like the "prepared by / approved by" block of a test plan (roles, not names):
 
 ```
 Prepared by: AI test planner (AI-01) · Edited by: QA engineer (second commit)
+Scope set by: AI assistant (AI-01)
 Approved by: QA engineer, pull request #<n>
 ```
 
-(`Edited by: none` when there were no edits; `Prepared by: QA engineer` for a plan a person wrote.)
+(`Edited by: none` when there were no edits; `Prepared by: QA engineer` for a plan a person wrote; `Scope set by: QA
+engineer` when the QA engineer chose what to cover. The prompts used go in the plan pull request's description.)
 
 ## AI tool IDs
 
