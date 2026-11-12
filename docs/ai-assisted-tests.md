@@ -51,7 +51,10 @@ Sprint 5 copy; stop it and start with SPRINT=sprint5" if it is on any other copy
    edits, plus the line `Approved by: QA engineer, pull request #<n>` (the number exists once the pull request is
    open). With no edits, the second commit is that one line. Merging is the approval. A plan the QA engineer writes
    has only the Approved-by line in its second commit.
-2. **Tests pull request.** First commit: the raw draft. Second commit: the QA engineer's edits. The drafting-log rows
+2. **Tests pull request.** First commit: the raw draft, byte for byte, under `drafts/<flow>/` (outside `tests/`, so
+   nothing runs, and left out of the typecheck); the agent's changes to existing files go in as a patch file there,
+   not applied. Second commit: the files moved into `tests/`, the patch applied, and the QA engineer's edits;
+   `drafts/` is empty again. The drafting-log rows
    go in the same pull request.
 
 Every plan starts with a header, like the "prepared by / approved by" block of a test plan (roles, not names):

@@ -13,7 +13,8 @@
 - [ ] Nothing here is taken from the planted-bug list.
 
 **Tests drafted by an AI agent**
-- [ ] First commit: the raw draft. Second commit: the person's edits.
+- [ ] First commit: the raw draft, under `drafts/`. Second commit: moved into `tests/`, with the person's edits.
+- [ ] `drafts/` is empty after this pull request.
 - [ ] One row per drafted test in `docs/ai-drafting-log.md` (approved as drafted, edited or rejected, with one line why).
 
 **A fix for a broken test**
