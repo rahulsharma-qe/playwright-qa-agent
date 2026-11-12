@@ -1,5 +1,9 @@
 # Category filters on the Toolshop home page
 
+Prepared by: AI test planner (AI-01) · Edited by: QA engineer (second commit)
+Scope also proposed by the AI assistant (AI-01)
+Approved by: QA engineer, pull request #15
+
 ## Application Overview
 
 Test plan for the "By category:" checkboxes in the filter sidebar on the home page of the normal Sprint 5 Toolshop copy (http://localhost:4200/, started with ci/start-toolshop.sh, SPRINT=sprint5). Every observation comes from the live page. All scenarios start from a fresh state: open the home page through productListPage.open() (seed: tests/seed.spec.ts, signed-in session), no filter set, default sort, empty search box.
@@ -13,6 +17,9 @@ Page facts observed (use for expectations):
 - Filtering updates the list without a page reload; the URL stays http://localhost:4200/ (no query string). Filter results need a moment to load, so use web-first assertions or expect.poll, never fixed waits.
 - Empty result text: "There are no products found." (data-test="no-results").
 - No category checkbox is checked initially; unfiltered list shows 5 pages.
+- Product names and counts per category (used by 1.2, 1.3, 1.4, 2.1, 3.2) live in one table in `test-data/`, not
+  inline in the tests. The Drill row (2: 24V, 12V) and the Power Tools count (5) are marked there "as observed; see
+  observed note 2".
 
 ## Test Scenarios
 
@@ -22,7 +29,7 @@ Page facts observed (use for expectations):
 
 #### 1.1. Selecting one sub-category shows only its products (post-deploy check)
 
-**File:** `tests/category-filters/single-subcategory.spec.ts`
+**File:** `tests/category-filters/filter-by-category.spec.ts`
 
 **Steps:**
   1. Tag: @sanity. Start state: fresh home page, nothing filtered. Note the unfiltered list shows 9 cards and pagination with 5 pages.
@@ -35,7 +42,7 @@ Page facts observed (use for expectations):
 
 #### 1.2. Each sub-category shows the expected product names
 
-**File:** `tests/category-filters/subcategory-contents.spec.ts`
+**File:** `tests/category-filters/filter-by-category.spec.ts`
 
 **Steps:**
   1. Tag: @regression. Start state: fresh home page. For each row in the test-data table (Hammer, Pliers, Drill, Sander, Saw, Wrench, Screwdriver, Chisels, Measures, Tool Belts, Fasteners): check only that sub-category, read the card names, then uncheck it.
@@ -46,7 +53,7 @@ Page facts observed (use for expectations):
 
 #### 1.3. Selecting several sub-categories shows the union of their products
 
-**File:** `tests/category-filters/multiple-subcategories.spec.ts`
+**File:** `tests/category-filters/filter-by-category.spec.ts`
 
 **Steps:**
   1. Tag: @regression. Start state: fresh home page. Check "Hammer", then check "Drill"
@@ -58,7 +65,7 @@ Page facts observed (use for expectations):
 
 #### 1.4. Selecting a parent category selects its children and shows all their products
 
-**File:** `tests/category-filters/parent-category.spec.ts`
+**File:** `tests/category-filters/filter-by-category.spec.ts`
 
 **Steps:**
   1. Tag: @regression. Start state: fresh home page. Check "Power Tools"
@@ -67,30 +74,31 @@ Page facts observed (use for expectations):
     - expect: No pagination
   2. Uncheck "Power Tools"
     - expect: All children become unchecked (e.g. Drill is unchecked)
-    - expect: The full unfiltered list returns: 9 cards, 5 pages, first card Combination Pliers
+    - expect: The full unfiltered list returns: 9 cards, 5 pages
 
 #### 1.5. Unchecking one child while the parent is checked narrows the list
 
-**File:** `tests/category-filters/parent-minus-child.spec.ts`
+**File:** `tests/category-filters/filter-by-category.spec.ts`
 
 **Steps:**
   1. Tag: @regression. Start state: fresh home page. Check "Hand Tools" (25 products over 3 pages). Uncheck the child "Wrench"
     - expect: Adjustable Wrench, Angled Spanner and Open-end Spanners (Set) no longer appear on any page
     - expect: Other Hand Tools products (e.g. Phillips Screwdriver, Wood Saw) still appear
-    - expect: Observed: the "Hand Tools" checkbox stayed checked while one child was unchecked; record this as current behaviour and assert the list, not the parent state, unless the team decides otherwise
+    - expect: The test asserts the list only, not the parent checkbox
+    - Observed note 4 (docs/observed-notes.md): "Hand Tools" stays fully ticked after one child is unticked
 
 #### 1.6. Clearing the category filter restores the full list
 
-**File:** `tests/category-filters/clear-filter.spec.ts`
+**File:** `tests/category-filters/filter-by-category.spec.ts`
 
 **Steps:**
-  1. Tag: @sanity. Start state: fresh home page. Check "Hammer", confirm 7 cards, then uncheck "Hammer"
-    - expect: The list returns to the unfiltered state: 9 cards, pagination with 5 pages, first card Combination Pliers
+  1. Tag: @regression. Start state: fresh home page. Check "Hammer", confirm 7 cards, then uncheck "Hammer"
+    - expect: The list returns to the unfiltered state: 9 cards, pagination with 5 pages
     - expect: No category checkbox is checked
 
 #### 1.7. Category with no products shows the empty-results message
 
-**File:** `tests/category-filters/no-results.spec.ts`
+**File:** `tests/category-filters/filter-by-category.spec.ts`
 
 **Steps:**
   1. Tag: @regression. Start state: fresh home page. Check "Grinder" (a Power Tools child that has no products)
@@ -105,18 +113,17 @@ Page facts observed (use for expectations):
 
 #### 2.1. Pagination follows the filtered result set
 
-**File:** `tests/category-filters/pagination.spec.ts`
+**File:** `tests/category-filters/filtered-results-across-pages.spec.ts`
 
 **Steps:**
   1. Tag: @regression. Start state: fresh home page. Check "Hand Tools"
     - expect: Page-1 shows 9 cards; pagination has exactly 3 pages (25 products in total)
-    - expect: Page 1 begins with the hammer products and includes Wood Saw and Adjustable Wrench
   2. Click the "Page-2" button, then "Page-3"
-    - expect: Page 2 shows 9 cards starting with Angled Spanner, Open-end Spanners (Set), Phillips Screwdriver, Mini Screwdriver, then the 5 pliers products
-    - expect: Page 3 shows the remaining 7 cards (Chisels Set, Wood Carving Chisels, Swiss Woodcarving Chisels, Tape Measure 7.5m, Measuring Tape, Tape Measure 5m, Square Ruler)
+    - expect: Page 2 shows 9 cards and page 3 the remaining 7
     - expect: No product repeats across the three pages and every name belongs to Hand Tools
+    - expect: No check of the exact order on a page (the order follows the default sort, not pagination)
   3. Switch from "Hand Tools" to the "Other" parent (uncheck Hand Tools, check Other)
-    - expect: The list shows page 1 of the new result set, with 2 pages in total (15 products: first Leather toolbelt)
+    - expect: The list shows page 1 of the new result set, with 2 pages in total (15 products)
 
 ### 3. Category filter: combined with other controls
 
@@ -124,7 +131,7 @@ Page facts observed (use for expectations):
 
 #### 3.1. Category plus sort keeps the filter and orders the results
 
-**File:** `tests/category-filters/with-sort.spec.ts`
+**File:** `tests/category-filters/category-with-other-filters.spec.ts`
 
 **Steps:**
   1. Tag: @regression. Start state: fresh home page. Check "Hammer", then choose "Name (A - Z)" in the "sort" combobox
@@ -135,7 +142,7 @@ Page facts observed (use for expectations):
 
 #### 3.2. Category plus brand narrows to the intersection
 
-**File:** `tests/category-filters/with-brand.spec.ts`
+**File:** `tests/category-filters/category-with-other-filters.spec.ts`
 
 **Steps:**
   1. Tag: @regression. Start state: fresh home page. Check brand "ForgeFlex Tools", then check "Hammer"
@@ -147,10 +154,10 @@ Page facts observed (use for expectations):
 
 #### 3.3. Category plus price range slider
 
-**File:** `tests/category-filters/with-price-range.spec.ts`
+**File:** `tests/category-filters/category-with-other-filters.spec.ts`
 
 **Steps:**
-  1. Tag: @regression. Start state: fresh home page. Check "Hand Tools". Focus the slider handle named "ngx-slider-max" and press ArrowLeft repeatedly until its aria-valuenow is 15 (default is 100)
+  1. Tag: @regression. Start state: fresh home page. Check "Hand Tools". Move the slider handle named "ngx-slider-max" until its aria-valuenow is 15 (default is 100). Hint: Home/End or setting the value takes one or two steps, instead of about 85 ArrowLeft presses
     - expect: Only Hand Tools products priced at or below $15 remain: observed Phillips Screwdriver $4.92, Tape Measure 7.5m $7.23, Slip Joint Pliers $9.17, Measuring Tape $10.07, Thor Hammer $11.14, Claw Hammer $11.48, Pliers $12.01, Wood Saw $12.18, Hammer $12.58
     - expect: Pagination now shows 2 pages; the "Hand Tools" checkbox stays checked
     - expect: Every price shown is within the slider range
@@ -159,7 +166,7 @@ Page facts observed (use for expectations):
 
 #### 3.4. Category plus eco-friendly checkbox gives no results when none match
 
-**File:** `tests/category-filters/with-eco-filter.spec.ts`
+**File:** `tests/category-filters/category-with-other-filters.spec.ts`
 
 **Steps:**
   1. Tag: @regression. Start state: fresh home page. Check "Hammer", then check "Show only eco-friendly products"
@@ -167,15 +174,20 @@ Page facts observed (use for expectations):
   2. Uncheck the eco-friendly checkbox
     - expect: The 7 hammer products return
 
-#### 3.5. Searching replaces the category filter (observed behaviour)
+#### 3.5. Search looks across all categories
 
-**File:** `tests/category-filters/with-search.spec.ts`
+**File:** `tests/category-filters/category-with-other-filters.spec.ts`
 
 **Steps:**
   1. Tag: @regression. Start state: fresh home page. Check "Hammer", type "Claw" in the "Search" textbox and click the "Search" button
     - expect: 3 cards: Claw Hammer with Shock Reduction Grip, Claw Hammer, Claw Hammer with Fiberglass Handle
   2. Replace the search text with "Drill" and click "Search"
-    - expect: Observed: 4 Cordless Drill products appear (20V, 24V, 18V, 12V), i.e. results are not limited to Hammer, and the "Hammer" checkbox is now unchecked
-    - expect: Test should assert this documented behaviour; flag to the team if they consider it a defect
+    - expect: 4 Cordless Drill products appear (20V, 24V, 18V, 12V): the search looks across all categories
+    - expect: No check of the category tick after a search (see observed note 1)
   3. Click the "X" button next to the search box
     - expect: Full unfiltered list returns (9 cards, 5 pages); no category is checked; sort selection (if set) is kept
+
+## Observed notes for the team (not asserted)
+
+Seen by the QA engineer on the normal Sprint 5 site while reviewing this plan. Kept in one list the team reads:
+[docs/observed-notes.md](../docs/observed-notes.md) (notes 1 to 4 for category filters).
