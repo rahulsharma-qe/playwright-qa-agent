@@ -48,3 +48,13 @@ a defect.
 11. **The cart page logs errors in the browser console while it loads.** "TypeError: Cannot read properties of
     undefined (reading 'cart_items')", from the cart component, though the cart then shows correctly. Team to
     confirm. Seen by: QA engineer, 13-11-2026, on the normal site (also seen by the AI test planner). Status: open.
+12. **/checkout opened directly shows no empty-cart message.** With no cart, or after the cart was emptied, opening
+    /checkout shows only the step bar; the console shows "TypeError: Cannot read properties of null (reading
+    'cart_items')" (compare note 11). "The cart is empty. Nothing to display." shows only right after the last item
+    is removed on the cart page. Team to confirm. Seen by: found by the AI test generator, checked by hand by the QA
+    engineer, 13-11-2026, on the normal site. Status: open.
+13. **Confirm is enabled on an empty payment form.** Right after choosing Bank Transfer, Gift Card or Credit Card,
+    before anything is filled, Confirm is enabled and can be clicked (it was not clicked). An invalid value in a
+    field disables it. Team to confirm whether Confirm should stay disabled until the form is valid. Seen by: found
+    by the AI test generator, checked by hand by the QA engineer, 13-11-2026, on the normal site (the generator's
+    report also named Buy Now Pay Later; the hand check covered the three methods above). Status: open.
