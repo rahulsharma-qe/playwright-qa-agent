@@ -4,6 +4,7 @@ Prepared by: AI test planner (AI-01) · Edited by: QA engineer (second commit)
 Scope set by: QA engineer (the prompt was passed to the planner word for word)
 Verified by hand: QA engineer, 13-11-2026 (section 4 and every item the planner marked UNVERIFIED)
 Approved by: QA engineer, pull request #22
+Corrected 13-11-2026 after the AI test generator's report (1.4, 3.1, 3.3, 3.4), checked by hand by the QA engineer; 3.3 and 3.4 split after review
 
 ## Application overview
 
@@ -17,8 +18,9 @@ Seen on the normal site:
   <name>, you are already logged in. You can proceed to checkout." with one Proceed button.
 - Billing Address needs Country, Postal code and House number; the site fills in Street, City and State (the values
   are made up by the demo site and are not asserted). Proceed stays disabled until the form is complete.
-- Payment offers Bank Transfer, Cash on Delivery, Credit Card, Buy Now Pay Later and Gift Card. Confirm stays
-  disabled until the chosen method is valid. Fields per method: Bank Transfer: Bank Name, Account Name, Account
+- Payment offers Bank Transfer, Cash on Delivery, Credit Card, Buy Now Pay Later and Gift Card. Confirm is
+  disabled until a method is chosen; once one is chosen it is enabled even while the form is empty (observed note
+  13), and an invalid value in a field disables it again. Fields per method: Bank Transfer: Bank Name, Account Name, Account
   Number. Buy Now Pay Later: monthly installments (3, 6, 9 or 12). Gift Card: Gift card number, Validation Code.
   Credit Card: card number (0000-0000-0000-0000), expiry (MM/YYYY), CVV, card holder name.
 - Placing an order takes two clicks on Confirm: the first shows "Payment was successful" and stays on the Payment
@@ -81,8 +83,10 @@ Checkout tests leave orders on the site they run against (the public site resets
 **File:** `tests/checkout/cart.spec.ts`
 
 **Steps:**
-  1. With nothing in the cart, open /checkout
+  1. Add a product, open the cart, and remove the product on the cart page
     - expect: The message "The cart is empty. Nothing to display." is shown
+    - Not asserted: /checkout opened directly, with no cart or with an emptied cart, shows no message (observed
+      note 12)
 
 #### 1.5. An out-of-stock product cannot be added to the cart
 
@@ -131,6 +135,10 @@ Checkout tests leave orders on the site they run against (the public site resets
 
 **Seed:** `tests/seed.spec.ts`
 
+Each scenario starts from the beginning of checkout (add a product, then through to the Payment step). Buy Now Pay
+Later has no scenario here: its only field is a list, so nothing invalid can be entered. Credit Card's invalid
+values are covered by 3.1.
+
 #### 3.1. Invalid credit card fields show their messages and keep Confirm disabled
 
 **File:** `tests/checkout/payment.spec.ts`
@@ -151,16 +159,25 @@ Checkout tests leave orders on the site they run against (the public site resets
   1. Choose Credit Card and enter a well-formed expiry date in the past (MM/YYYY)
     - expect: "Expiration date must be in the future." is shown
 
-#### 3.3. Bank Transfer, Buy Now Pay Later and Gift Card enable Confirm when filled
+#### 3.3. An invalid Bank Name shows its message and disables Confirm
 
 **File:** `tests/checkout/payment.spec.ts`
 
 **Steps:**
-  1. For each of Bank Transfer, Buy Now Pay Later and Gift Card (one table in test-data/), choose it
+  1. Choose Bank Transfer and enter a Bank Name with a digit, then leave the field
+    - expect: "Bank name can only contain letters and spaces." is shown
     - expect: Confirm is disabled
-  2. Fill its fields with valid values
-    - expect: Confirm is enabled
-    - Not asserted: what remains of another method's errors after switching (observed note 10)
+    - Not asserted: Confirm on an empty form (observed note 13)
+
+#### 3.4. An invalid Gift Card Number shows its message and disables Confirm
+
+**File:** `tests/checkout/payment.spec.ts`
+
+**Steps:**
+  1. Choose Gift Card and enter a Gift Card Number that is not 16 letters or digits, then leave the field
+    - expect: "Please enter a valid gift card number: exactly 16 letters and/or digits." is shown
+    - expect: Confirm is disabled
+    - Not asserted: Confirm on an empty form (observed note 13)
 
 ### 4. Order confirmation
 
@@ -205,4 +222,6 @@ Left out because what the planner expected is not what the normal site does, or 
 
 In docs/observed-notes.md, each seen by the QA engineer on the normal site on 13-11-2026: 7 (two Confirms),
 8 (cart total while the quantity is 0 or -1), 9 (house number lost when going back), 10 (a CVV error stays after
-switching methods), 11 (console errors on the cart page). Never asserted.
+switching methods), 11 (console errors on the cart page). Found by the AI test generator and checked by hand by the
+QA engineer on 13-11-2026: 12 (no empty-cart message on a direct /checkout), 13 (Confirm enabled on an empty payment
+form). Never asserted.
