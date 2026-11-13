@@ -23,7 +23,8 @@ Seen on the normal site:
   Credit Card: card number (0000-0000-0000-0000), expiry (MM/YYYY), CVV, card holder name.
 - Placing an order takes two clicks on Confirm: the first shows "Payment was successful" and stays on the Payment
   step; the second shows "Thanks for your order! Your invoice number is INV-…". The address stays /checkout. This is
-  observed note 7: tests click Confirm twice because the site works this way, and assert only the final confirmation.
+  observed note 7: tests click Confirm, then click it again only if "Payment was successful" shows on the Payment
+  step, and assert only the final confirmation, so they pass whether the site needs one click or two.
 - After the order the cart is empty, and the invoice is listed under My account > Invoices with the same number.
 - Reloading the confirmation removes it from the screen; Back goes to the product list. Neither places a second
   order (checked by hand on 13-11-2026).
@@ -82,6 +83,14 @@ Checkout tests leave orders on the site they run against (the public site resets
 **Steps:**
   1. With nothing in the cart, open /checkout
     - expect: The message "The cart is empty. Nothing to display." is shown
+
+#### 1.5. An out-of-stock product cannot be added to the cart
+
+**File:** `tests/checkout/cart.spec.ts`
+
+**Steps:**
+  1. Open a product marked "Out of stock" (the product name is in test-data/)
+    - expect: The Add to cart button is disabled
 
 ### 2. Sign in and billing address steps
 
@@ -163,7 +172,8 @@ Checkout tests leave orders on the site they run against (the public site resets
 
 **Steps:**
   1. Tag: @sanity. Add a product, open the cart, Proceed; Proceed on the Sign in step; fill the address; Proceed;
-     choose Credit Card and fill valid, plainly fake data; click Confirm, then Confirm again (observed note 7)
+     choose Credit Card and fill valid, plainly fake data; click Confirm; if "Payment was successful" shows on the
+     Payment step, click Confirm again (observed note 7)
     - expect: "Thanks for your order! Your invoice number is INV-" followed by digits is shown
     - expect: The cart icon shows no items
   2. Open My account, then Invoices
@@ -174,16 +184,8 @@ Checkout tests leave orders on the site they run against (the public site resets
 **File:** `tests/checkout/place-order.spec.ts`
 
 **Steps:**
-  1. Same as 4.1, but choose Cash on Delivery
+  1. Same as 4.1 (including the conditional second Confirm), but choose Cash on Delivery
     - expect: The same confirmation, with an invoice number
-
-#### 4.3. An out-of-stock product cannot be added to the cart
-
-**File:** `tests/checkout/place-order.spec.ts`
-
-**Steps:**
-  1. Open a product marked "Out of stock" (for example Long Nose Pliers)
-    - expect: The Add to cart button is disabled
 
 ## Later (not in this slice)
 

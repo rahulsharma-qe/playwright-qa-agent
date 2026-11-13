@@ -32,8 +32,9 @@ a defect.
 ## Checkout ([specs/checkout.md](../specs/checkout.md))
 
 7. **Placing an order takes two clicks on Confirm.** The first click shows "Payment was successful" and stays on the
-   Payment step; the second shows "Thanks for your order! Your invoice number is INV-…". Tests click twice because
-   the site works this way and assert only the final confirmation. Team to confirm whether one click should place
+   Payment step; the second shows "Thanks for your order! Your invoice number is INV-…". Tests click Confirm again
+   only if "Payment was successful" shows on the Payment step, and assert only the final confirmation, so they pass
+   with one click or two. Team to confirm whether one click should place
    the order. Seen by: QA engineer, 13-11-2026, on the normal site. Status: open.
 8. **The cart shows a total of 0 or below while the quantity field holds 0 or -1.** As soon as the field is left,
    the quantity goes back to 1 and the total is right again. Team to confirm. Seen by: QA engineer, 13-11-2026, on
