@@ -81,7 +81,9 @@ planted-bug run never runs it; CI runs it in its own step.
   check the session the same way on every copy (the API's `GET /users/me` answers 200; on the home page, once the
   Home link (`nav-home`) has rendered, the "Sign in" link is gone), else stop with "The session made through the API was not
   accepted by the site (SPRINT=…; check where this copy keeps the token)". It saves the session (cookies, localStorage) and the token on its own
-  (`playwright/.auth/session-token.json`, git-ignored), because a saved session does not keep sessionStorage;
+  (`playwright/.auth/session-token.json`, git-ignored), because a saved session does not keep sessionStorage.
+  Toolshop's login lasts 5 minutes (seen by the QA engineer on the normal site, 13-11-2026), so a run that takes
+  longer than that can meet an expired session in its last tests: keep runs short, or log in again per run part.
   `fixtures.ts` gives the token to every page of a logged-in test. Both are written fresh every run.
 - **The wrong-password test** sends one wrong password to the run's own account, checks the message is the same
   as for an unknown email ("Invalid email or password", so an attacker cannot tell which emails exist), then logs

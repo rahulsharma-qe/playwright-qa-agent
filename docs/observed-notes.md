@@ -28,3 +28,22 @@ a defect.
    Seen by: automated test run, 12-11-2026, 2 workers; not reproduced by hand (the QA engineer tried on the normal
    site; it was slow). The trace was not kept: the next run cleared test-results/ first. What is kept is the error
    output: the slider at 15 (aria-valuenow), the list still on 3 pages after 5 s. Status: open.
+
+## Checkout ([specs/checkout.md](../specs/checkout.md))
+
+7. **Placing an order takes two clicks on Confirm.** The first click shows "Payment was successful" and stays on the
+   Payment step; the second shows "Thanks for your order! Your invoice number is INV-…". Tests click twice because
+   the site works this way and assert only the final confirmation. Team to confirm whether one click should place
+   the order. Seen by: QA engineer, 13-11-2026, on the normal site. Status: open.
+8. **The cart shows a total of 0 or below while the quantity field holds 0 or -1.** As soon as the field is left,
+   the quantity goes back to 1 and the total is right again. Team to confirm. Seen by: QA engineer, 13-11-2026, on
+   the normal site. Status: open.
+9. **The house number is lost when going back to the Billing Address step.** Fill the address, Proceed, then click
+   Billing Address in the step bar: the other values are still there, the house number is empty. Team to confirm.
+   Seen by: QA engineer, 13-11-2026, on the normal site. Status: open.
+10. **A credit card error stays after switching payment methods.** Enter a one-digit CVV, switch to Cash on
+    Delivery, then back to Credit Card: "CVV must be 3 or 4 digits." is still shown. Team to confirm. Seen by: QA
+    engineer, 13-11-2026, on the normal site. Status: open.
+11. **The cart page logs errors in the browser console while it loads.** "TypeError: Cannot read properties of
+    undefined (reading 'cart_items')", from the cart component, though the cart then shows correctly. Team to
+    confirm. Seen by: QA engineer, 13-11-2026, on the normal site (also seen by the AI test planner). Status: open.
