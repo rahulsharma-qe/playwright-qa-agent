@@ -80,9 +80,17 @@ test.describe('Cart step', () => {
     await expect(cartPage.total).toHaveText(formatPrice(inStockProduct.price));
   });
 
-  test('An empty cart says so', { tag: '@regression' }, async ({ cartPage }) => {
-    // 1. With nothing in the cart, open /checkout
-    await cartPage.open();
+  test('An empty cart says so', { tag: '@regression' }, async ({ productListPage, productPage, cartPage, header }) => {
+    // 1. Add a product, open the cart, and remove the product on the cart page
+    //    (a direct /checkout shows no message: observed note 12, not asserted)
+    await productListPage.open();
+    await productListPage.search(inStockProduct.name);
+    await productListPage.openProduct(inStockProduct.name);
+    await expect(productPage.productName).toContainText(inStockProduct.name);
+    await productPage.addToCart();
+    await expect.poll(() => header.cartCount()).toBe(1);
+    await header.openCart();
+    await cartPage.removeProduct(inStockProduct.name);
     await expect(cartPage.emptyMessage).toBeVisible();
   });
 

@@ -21,6 +21,14 @@ export function cannotRegister(reason: string): string {
   return `Could not register a test customer on Toolshop (${reason}); ${ENVIRONMENT_PHRASE}.`;
 }
 
+/** A logged-in test met "Sign in" after the run's login had expired by its own expiry. */
+export function loginExpired(minutesSinceLogin: number, lifetimeMinutes: number, source: string): string {
+  return (
+    `The run's login expired before this test ended (${minutesSinceLogin} min after login; it lasts ${lifetimeMinutes} min, ` +
+    `from ${source}); ${ENVIRONMENT_PHRASE}. Shorten the run or log in again per part.`
+  );
+}
+
 /** A bot-check page (for example Cloudflare's "Performing security verification") instead of Toolshop. */
 export const BOT_CHECK_MESSAGE =
   "Toolshop's public site is blocking this machine with a bot check. " +

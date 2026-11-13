@@ -6,17 +6,28 @@
  * Which planted bug a failure caught is decided by a person reading the report, not here.
  * Plain TypeScript (no enums), so Node can run it directly.
  */
+import { ADDRESS_FORM_REFILL, refillSummaryLine } from './address-refill.ts';
 import { isEnvironmentMessage } from './environment-messages.ts';
 
 export const UI_PROJECTS = ['login', 'logged-in'];
 // Update when UI tests are added or removed (step 2 adds tests); the summary warns when the count differs.
-export const EXPECTED_UI_TESTS = 17;
+export const EXPECTED_UI_TESTS = 31;
 
-export type CountedTest = { title: string; project: string; status: string; errors: string[] };
+export type CountedTest = { title: string; project: string; status: string; errors: string[]; refills?: number };
 type Outcome = 'failed' | 'not reached' | 'passed';
 
+type JsonAnnotation = { type: string };
+
 type JsonSuite = {
-  specs?: { title: string; tests?: { projectName: string; status: string; results?: { errors?: { message?: string }[] }[] }[] }[];
+  specs?: {
+    title: string;
+    tests?: {
+      projectName: string;
+      status: string;
+      annotations?: JsonAnnotation[];
+      results?: { errors?: { message?: string }[]; annotations?: JsonAnnotation[] }[];
+    }[];
+  }[];
   suites?: JsonSuite[];
 };
 
@@ -26,8 +37,11 @@ export function collectTests(report: { suites?: JsonSuite[] }): CountedTest[] {
   const walk = (suite: JsonSuite) => {
     for (const spec of suite.specs ?? []) {
       for (const test of spec.tests ?? []) {
-        const errors = (test.results?.at(-1)?.errors ?? []).map((e) => e.message ?? '');
-        tests.push({ title: spec.title, project: test.projectName, status: test.status, errors });
+        const last = test.results?.at(-1);
+        const errors = (last?.errors ?? []).map((e) => e.message ?? '');
+        const annotations = last?.annotations ?? test.annotations ?? [];
+        const refills = annotations.filter((a) => a.type === ADDRESS_FORM_REFILL).length;
+        tests.push({ title: spec.title, project: test.projectName, status: test.status, errors, refills });
       }
     }
     (suite.suites ?? []).forEach(walk);
@@ -37,6 +51,10 @@ export function collectTests(report: { suites?: JsonSuite[] }): CountedTest[] {
 }
 
 const stoppedOnEnvironment = (t: CountedTest) => t.errors.some(isEnvironmentMessage);
+
+export function totalRefills(tests: CountedTest[]): number {
+  return tests.reduce((sum, t) => sum + (t.refills ?? 0), 0);
+}
 
 /** Playwright: expected (passed), flaky (passed on retry), unexpected (failed), skipped (did not run). */
 export function outcomeOf(t: CountedTest): Outcome {
@@ -63,11 +81,15 @@ export function summaryLines(tests: CountedTest[], commit: string): string[] {
   if (ui.length !== EXPECTED_UI_TESTS) {
     lines.push(`Expected ${EXPECTED_UI_TESTS} UI tests, found ${ui.length}: a spec may have failed to load.`);
   }
-  lines.push(`Setup and unit: ${projectLines.join(' · ') || 'none'}`, `Commit: ${commit}`, '');
+  lines.push(`Setup and unit: ${projectLines.join(' · ') || 'none'}`);
+  lines.push(refillSummaryLine(totalRefills(tests)));
+  lines.push(`Commit: ${commit}`, '');
   for (const t of ui) {
     const why =
       t.status === 'flaky' ? ' (passed on retry: flaky)' : t.status === 'unexpected' && stoppedOnEnvironment(t) ? ' (environment message)' : '';
-    lines.push(`- ${outcomeOf(t)}: [${t.project}] ${t.title}${why}`);
+    // A refill on the with-bugs copy may be the development server or a planted bug: a person decides.
+    const refilled = t.refills ? ` (billing address refilled ${t.refills}×: development server or planted bug? a person decides)` : '';
+    lines.push(`- ${outcomeOf(t)}: [${t.project}] ${t.title}${why}${refilled}`);
   }
   return lines;
 }

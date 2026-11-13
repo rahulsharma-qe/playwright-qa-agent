@@ -1,5 +1,12 @@
 import { expect, test as setup } from '../fixtures';
-import { checkSessionThroughApi, giveTokenToPage, logInThroughApi, saveSessionToken, sessionNotAccepted } from '../support/api-session';
+import {
+  checkSessionThroughApi,
+  describeSession,
+  giveTokenToPage,
+  logInThroughApi,
+  saveSession,
+  sessionNotAccepted,
+} from '../support/api-session';
 import { SESSION_FILE } from '../support/settings';
 import { registerTestCustomer } from '../support/test-accounts';
 
@@ -9,7 +16,9 @@ import { registerTestCustomer } from '../support/test-accounts';
 // Never touches the cart.
 setup('log in through the API and save the session', async ({ page, request, productListPage, header }) => {
   const account = await registerTestCustomer(request, 'session');
-  const token = await logInThroughApi(request, account);
+  const loggedInAt = Date.now();
+  const login = await logInThroughApi(request, account);
+  const token = login.token;
   await checkSessionThroughApi(request, token);
 
   await giveTokenToPage(page, token);
@@ -17,6 +26,7 @@ setup('log in through the API and save the session', async ({ page, request, pro
   await expect(header.homeLink).toBeVisible();
   await expect(header.signInLink, sessionNotAccepted()).toBeHidden();
 
-  saveSessionToken(token);
+  // With the login time and expiry, so a later "Sign in" can be told apart from an expired login (fixtures.ts).
+  saveSession(describeSession(login, loggedInAt));
   await page.context().storageState({ path: SESSION_FILE });
 });

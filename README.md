@@ -118,6 +118,9 @@ BASE_URL=http://localhost:4200 API_URL=http://localhost:8091 npm test
 ci/stop-toolshop.sh
 ```
 
+Before long runs, restart the local copy (`ci/stop-toolshop.sh`, then `ci/start-toolshop.sh`): it keeps every order
+and cart it is given, and a copy left running for hours gets slower.
+
 The copy uses host ports 3306 (database), 8000 and 8091 (API) and 4200 (site); free them first.
 Toolshop's web server image is published for arm64 only. A Mac with Apple silicon runs it natively; Docker
 Desktop on an Intel Mac or Windows emulates it on its own. On a Linux machine (amd64), turn on arm64 emulation
@@ -180,7 +183,8 @@ test('login works', { tag: '@sanity' }, async ({ loginPage, header }) => {
 
 - Five tests prove the framework, not the coverage of a shop. Small on purpose.
 - Toolshop is shared by everyone and can be slow or down; the site check says when the environment, not a test, is the problem.
-- Each run leaves two throwaway accounts on Toolshop (one more per retry); there is no API to delete them, and
+- Each run leaves throwaway accounts on Toolshop: two, plus one per order-placing test (orders on one account at
+  the same moment collide, observed note 17), plus one more each time a retry starts a new worker; there is no API to delete them, and
   the site's resets clear them.
 - Lockout after failed logins is not tested yet (Later: on an account made for it, on our own copy).
 - CI tests its own copy of Toolshop Sprint 5, not the public site; the public site is tested by local runs. Images
@@ -188,6 +192,9 @@ test('login works', { tag: '@sanity' }, async ({ loginPage, header }) => {
   every CI run.
 - Toolshop's web server image is published for arm64 only, so CI (amd64) runs it under emulation (QEMU); the
   other images run natively.
+- The local copy (CI's own too) runs Toolshop's development server, which sometimes rebuilds the billing address
+  form after a test has filled it; the checkout tests fill it again, at most twice, and each refill is shown in the
+  report and counted on the run page. At 4 workers on a laptop, refills were more than 1 in 10 runs.
 - The CI copy is not fully offline: Toolshop checks new passwords against the Have I Been Pwned service, so a slow
   or unreachable service shows as "Could not register a test customer … environment problem".
 

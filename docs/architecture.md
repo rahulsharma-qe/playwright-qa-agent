@@ -185,7 +185,8 @@ flowchart LR
 
 - CI tests a pinned copy of Toolshop, not the public site; the public site is tested by local runs. Toolshop
   changes reach CI only when the pins are updated.
-- Each run leaves two throwaway accounts on the site it tests; the public site's hourly reset clears them.
+- Each run leaves throwaway accounts on the site it tests (two, plus one per order-placing test, plus one per new
+  worker after a retry); the public site's hourly reset clears them.
 - Registration checks new passwords against the Have I Been Pwned service, so the CI copy is not fully offline.
 - Starting Toolshop adds about a minute (Toolshop ready after 42 s in the first measured run) to a CI run.
 - Five tests prove the framework, not the coverage of a shop.

@@ -3,8 +3,8 @@ import { appUrl } from '../support/app-url';
 
 export class LoginPage {
   readonly errorMessage: Locator;
-  private readonly emailInput: Locator;
-  private readonly passwordInput: Locator;
+  readonly emailInput: Locator;
+  readonly passwordInput: Locator;
   private readonly loginButton: Locator;
 
   constructor(private readonly page: Page) {

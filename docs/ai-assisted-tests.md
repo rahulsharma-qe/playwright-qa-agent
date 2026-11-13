@@ -22,7 +22,9 @@ approval.
 
 1. Start the normal Sprint 5 copy: `ci/start-toolshop.sh` (it uses `SPRINT=sprint5` by default). In `.env`, set
    `BASE_URL=http://localhost:4200` and `API_URL=http://localhost:8091` (the addresses it prints), and no `SPRINT`
-   other than `sprint5`.
+   other than `sprint5`. Before a long or measured run (for example `--repeat-each=3`), restart the local copy
+   (`ci/stop-toolshop.sh`, then `ci/start-toolshop.sh`): a copy left running for hours keeps every order and cart
+   and gets slower.
 2. Write the agent files for your assistant:
    `npx playwright init-agents --loop=<your assistant> --project logged-in`
    (`--loop` is one of `claude`, `codex`, `copilot`, `opencode`, `vscode`). The agents' tools use the first project in
@@ -125,4 +127,6 @@ in the drafting log.
 - One plan each, on different flows: an illustration, not a comparison.
 - The contact-form plan is written and approved by the same role.
 - Checkout tests leave orders on the site they run against (the public site resets every hour).
+- The local copy (CI's own, and `ci/start-toolshop.sh`) runs a development server; its billing address form resets
+  (observed note 15) are refilled there and counted on the run page. A production-build copy is Next.
 - The healer is shown on a deliberately broken locator, as a demo on a branch that is not merged.
