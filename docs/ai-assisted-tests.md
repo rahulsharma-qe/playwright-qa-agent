@@ -88,6 +88,10 @@ Approved by: QA engineer, pull request #<n>
 (`Edited by: none` when there were no edits; `Prepared by: QA engineer` for a plan a person wrote; `Scope set by: QA
 engineer` when the QA engineer chose what to cover. The prompts used go in the plan pull request's description.)
 
+**Before coding a plan change:** any change to a plan that depends on how the site behaves is first checked by hand
+on the normal site. (A reload of /checkout was coded in the checkout tests without that check, and every run failed:
+the reloaded page shows neither the account nor Sign in, observed note 12.)
+
 ## AI tool IDs
 
 Each AI tool gets an ID, in the style QA teams use for test cases (`TC-001`). A new assistant, or a new model of the

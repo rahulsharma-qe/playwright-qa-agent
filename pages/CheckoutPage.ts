@@ -1,7 +1,11 @@
 import { Locator, Page, test } from '@playwright/test';
 import { ADDRESS_FORM_REFILL } from '../support/address-refill';
-import { refillResetAddressForm } from '../support/settings';
+import { CART_EMPTIED, CART_EMPTIED_BOUND_MS, cartEmptiedDescription } from '../support/cart-emptied';
+import { refillResetAddressForm, settings } from '../support/settings';
 import type { Address, Card } from '../test-data/checkout';
+
+/** What placeOrder() saw of the site emptying the cart: the DELETE answer's status and the measured times. */
+export type CartEmptied = { cartId: string; status: number; spanMs: number; deleteMs: number };
 
 /** Checkout after the cart: the step bar, Sign in, Billing Address, Payment and the order confirmation. */
 export class CheckoutPage {
@@ -174,13 +178,46 @@ export class CheckoutPage {
    * Clicks Confirm, then clicks it again only if the site shows "Payment was successful" and stays on the Payment
    * step (observed note 7), so this works whether the site needs one click or two. First waits for either message,
    * so a slow answer is not read as "one click was enough".
+   *
+   * Then waits for the site to empty the cart: after the invoice is answered the page sends DELETE /carts/<cart id>
+   * and clears the badge only when that DELETE is answered, so a page load before the answer keeps the badge at 1
+   * (observed note 16; checked by hand on the local copy and the public site). The wait starts before the first
+   * Confirm click, so a fast answer is never missed whether the site needs one click or two; it matches the method
+   * and this cart's exact address only, never the status (an error answer is still an answer). Returns the answer's
+   * status and times, or null if no answer came; the test decides what is right. If the order itself fails, the
+   * pending wait adds no error of its own, so the report shows only that failure.
    */
-  async placeOrder(): Promise<void> {
-    await test.step('Place the order', async () => {
+  async placeOrder(): Promise<CartEmptied | null> {
+    return test.step('Place the order', async () => {
+      const cartId = await this.page.evaluate(() => sessionStorage.getItem('cart_id'));
+      if (!cartId) throw new Error('No cart id in the browser before Confirm, so the order cannot be followed.');
+      const cartUrl = `${settings.apiUrl.replace(/\/$/, '')}/carts/${cartId}`;
+      const firstClickAt = Date.now();
+      const answer = this.page
+        .waitForResponse((r) => r.request().method() === 'DELETE' && r.url() === cartUrl, { timeout: CART_EMPTIED_BOUND_MS })
+        .then(async (response) => {
+          const answeredAt = Date.now();
+          await response.finished();
+          return { response, spanMs: answeredAt - firstClickAt };
+        })
+        .catch(() => null);
+
       await this.confirmButton.click();
       await this.orderConfirmation.or(this.paymentWasSuccessful).first().waitFor();
       if (await this.paymentWasSuccessful.isVisible()) await this.confirmButton.click();
       await this.orderConfirmation.waitFor();
+
+      const answered = await answer;
+      if (!answered) {
+        await test.step('The site sent no answer to DELETE /carts/<cart id>', async () => {});
+        return null;
+      }
+      const deleteMs = Math.round(answered.response.request().timing().responseEnd);
+      const times = { spanMs: answered.spanMs, deleteMs };
+      test.info().annotations.push({ type: CART_EMPTIED, description: cartEmptiedDescription(times) });
+      // The step name shows the DELETE request's own time only (sent to answered).
+      await test.step(`The site emptied the cart: DELETE answered in ${deleteMs} ms`, async () => {});
+      return { cartId, status: answered.response.status(), ...times };
     });
   }
 
