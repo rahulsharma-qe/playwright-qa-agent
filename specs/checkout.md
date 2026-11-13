@@ -4,7 +4,7 @@ Prepared by: AI test planner (AI-01) · Edited by: QA engineer (second commit)
 Scope set by: QA engineer (the prompt was passed to the planner word for word)
 Verified by hand: QA engineer, 13-11-2026 (section 4 and every item the planner marked UNVERIFIED)
 Approved by: QA engineer, pull request #22
-Corrected 13-11-2026 after the AI test generator's report (1.4, 3.1, 3.3), checked by hand by the QA engineer
+Corrected 13-11-2026 after the AI test generator's report (1.4, 3.1, 3.3, 3.4), checked by hand by the QA engineer; 3.3 and 3.4 split after review
 
 ## Application overview
 
@@ -135,6 +135,10 @@ Checkout tests leave orders on the site they run against (the public site resets
 
 **Seed:** `tests/seed.spec.ts`
 
+Each scenario starts from the beginning of checkout (add a product, then through to the Payment step). Buy Now Pay
+Later has no scenario here: its only field is a list, so nothing invalid can be entered. Credit Card's invalid
+values are covered by 3.1.
+
 #### 3.1. Invalid credit card fields show their messages and keep Confirm disabled
 
 **File:** `tests/checkout/payment.spec.ts`
@@ -155,7 +159,7 @@ Checkout tests leave orders on the site they run against (the public site resets
   1. Choose Credit Card and enter a well-formed expiry date in the past (MM/YYYY)
     - expect: "Expiration date must be in the future." is shown
 
-#### 3.3. An invalid Bank Transfer or Gift Card field shows its message and disables Confirm
+#### 3.3. An invalid Bank Name shows its message and disables Confirm
 
 **File:** `tests/checkout/payment.spec.ts`
 
@@ -163,14 +167,17 @@ Checkout tests leave orders on the site they run against (the public site resets
   1. Choose Bank Transfer and enter a Bank Name with a digit, then leave the field
     - expect: "Bank name can only contain letters and spaces." is shown
     - expect: Confirm is disabled
-  2. Choose Gift Card and enter a Gift Card Number that is not 16 letters or digits, then leave the field
+    - Not asserted: Confirm on an empty form (observed note 13)
+
+#### 3.4. An invalid Gift Card Number shows its message and disables Confirm
+
+**File:** `tests/checkout/payment.spec.ts`
+
+**Steps:**
+  1. Choose Gift Card and enter a Gift Card Number that is not 16 letters or digits, then leave the field
     - expect: "Please enter a valid gift card number: exactly 16 letters and/or digits." is shown
     - expect: Confirm is disabled
-    - Not asserted: Confirm on an empty form (observed note 13); what remains of another method's errors after
-      switching (observed note 10)
-
-Buy Now Pay Later is not in 3.3: its only field is a list, so nothing invalid can be entered. Credit Card: covered by
-3.1.
+    - Not asserted: Confirm on an empty form (observed note 13)
 
 ### 4. Order confirmation
 
