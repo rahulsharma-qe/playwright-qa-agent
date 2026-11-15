@@ -8,6 +8,11 @@ Tests run against **Toolshop**, the Sprint 5 version of the practice web shop by
 [Testsmith](https://github.com/testsmith-io/practice-software-testing). Local runs use the public site
 (practicesoftwaretesting.com); CI runs Toolshop's published images privately inside the runner (see [CI](#ci)).
 
+> **The public site is ahead of the pinned Toolshop version (seen 15-11-2026).** Its Payment step now shows a "Check
+> payment" button before "Confirm", so a run with the default settings fails 5 checkout tests (3.1, 3.3, 3.4, 4.1,
+> 4.2). Until the pinned version is updated, run the pinned copy: `ci/start-toolshop.sh`, then
+> `BASE_URL=http://localhost:4200 API_URL=http://localhost:8091 npm test` (see [CI](#ci)).
+
 ## Built / Next / Later
 
 **Built**

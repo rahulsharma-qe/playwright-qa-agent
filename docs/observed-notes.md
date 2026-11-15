@@ -83,8 +83,9 @@ a defect.
     from the browser only when that DELETE is answered, success or error (the site's code: `cart.service.ts`,
     `payment.component.ts`). A page loaded before that answer keeps the badge at 1 for a cart already ordered. Checked
     by hand by the QA engineer, 14-11-2026, in Chrome DevTools with the DELETE's answer delayed by 10 s, then a full
-    load of home: badge 1, on the local development copy and on the public site (a production build), so this is the
-    site's own timing, not a development-server effect. DELETE answer times seen by hand: 68 and 116 ms locally, 167
+    load of home: badge 1, on the local development copy and on the public site (a production build of a newer
+    Toolshop version than the pinned one, whose first payment button is named "Check payment" where the pinned copy
+    shows "Confirm", note 19), so this is the site's own timing, not a development-server effect. DELETE answer times seen by hand: 68 and 116 ms locally, 167
     ms on the public site. This explains the earlier automated numbers (4.1 alone, 2 workers, local copy, 13-11-2026):
     badge 1 on the confirmation page in about 1 of 12 runs (1 of 40 with the wait for the add-to-cart message), after
     reloading /checkout in 9 of 14 runs (the other 5 lost the account menu, note 12), and on a full load of home in 25
@@ -102,3 +103,10 @@ a defect.
     properties of undefined (reading 'cart_items')" at `cart.component.html:4` (compare note 12, the same error with
     "null" after the cart was emptied). How often, and whether anything on the page breaks, was not checked. Team to
     confirm. Seen by: QA engineer by hand, 14-11-2026, on the local development copy. Never asserted. Status: open.
+19. **On the public site's newer version, Confirm stays disabled after switching the payment method.** The public
+    site runs a newer Toolshop version than the pinned one: after choosing a payment method its button is "Check
+    payment", which shows "Payment was successful" and then a "Confirm" button (on the pinned copy both are named
+    "Confirm", note 7). With Cash on Delivery, Check payment, then switching the method to Credit Card, Confirm shows
+    disabled. With an invalid card number, Check payment is disabled. Team to confirm what is intended. Not met by the
+    tests, which run on the pinned copy. Seen by: QA engineer by hand, 15-11-2026, on the public site. Never
+    asserted. Status: open.
