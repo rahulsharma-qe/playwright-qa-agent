@@ -44,6 +44,18 @@ jobs:
 
       - name: Run the tests
         run: npm test
+        env:
+          RESULTS_JSON: test-results.json
+
+      # How often the billing address form was filled again on this local copy (observed note 15).
+      - name: Count billing address refills
+        if: ${{ !cancelled() && steps.start.outcome == 'success' }}
+        run: node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON support/address-refill-summary.ts test-results.json
+
+      # How long the order tests waited for the site to empty the cart, against the wait's bound (observed note 16).
+      - name: Time the cart being emptied after the order
+        if: ${{ !cancelled() && steps.start.outcome == 'success' }}
+        run: node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON support/cart-emptied-summary.ts test-results.json
 
       # The AI test agents' starting test (tests/seed.spec.ts), kept out of `npm test` and run here on its own,
       # so a change to the fixtures cannot break it unnoticed. Never run by the with-bugs workflow.

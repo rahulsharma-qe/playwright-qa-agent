@@ -3,7 +3,7 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { BOT_CHECK_MESSAGE, isBotCheck, mightBeBotCheck } from './bot-check';
 import { cannotLogInThroughApi } from './environment-messages';
 import { SESSION_TOKEN_FILE, settings } from './settings';
-import type { TestAccount } from './test-accounts';
+import { registerTestCustomer, type TestAccount } from './test-accounts';
 
 /**
  * Where each Toolshop version's site keeps the login token, from its token-storage service in Toolshop's source at
@@ -21,8 +21,11 @@ export function tokenStoreFor(sprint: string) {
   return store;
 }
 
-/** Logs the account in through the API and returns its token. A refusal is an environment problem. */
-export async function logInThroughApi(request: APIRequestContext, account: TestAccount): Promise<string> {
+/** What the API login gives back: the token, and its lifetime in seconds if the reply says. */
+export type ApiLogin = { token: string; expiresInSeconds?: number };
+
+/** Logs the account in through the API. A refusal is an environment problem. */
+export async function logInThroughApi(request: APIRequestContext, account: TestAccount): Promise<ApiLogin> {
   let response: APIResponse;
   try {
     response = await request.post(`${settings.apiUrl}/users/login`, { data: account, timeout: 15_000 });
@@ -33,9 +36,52 @@ export async function logInThroughApi(request: APIRequestContext, account: TestA
   const body = mightBeBotCheck(status) ? await response.text().catch(() => '') : '';
   if (isBotCheck({ status, headers: response.headers(), body })) throw new Error(BOT_CHECK_MESSAGE);
   if (status !== 200) throw new Error(cannotLogInThroughApi(`HTTP ${status}`));
-  const token = ((await response.json().catch(() => ({}))) as { access_token?: string }).access_token;
-  if (!token) throw new Error(cannotLogInThroughApi('no token in the reply'));
-  return token;
+  const reply = (await response.json().catch(() => ({}))) as { access_token?: string; expires_in?: unknown };
+  if (!reply.access_token) throw new Error(cannotLogInThroughApi('no token in the reply'));
+  const expiresInSeconds = typeof reply.expires_in === 'number' && reply.expires_in > 0 ? reply.expires_in : undefined;
+  return { token: reply.access_token, expiresInSeconds };
+}
+
+/**
+ * How long a Toolshop login lasts when the login reply does not say: measured on the normal Sprint 5 site by the QA
+ * engineer, 13-11-2026 (docs/lld.md). Used only as a fallback.
+ */
+export const MEASURED_LOGIN_LIFETIME_SECONDS = 5 * 60;
+
+/** The run's session as auth-setup saved it: the token, when it was made, and when it expires. */
+export type SavedSession = {
+  token: string;
+  loggedInAt: number;
+  expiresAt: number;
+  expirySource: 'the login reply' | 'the measured lifetime';
+};
+
+export function describeSession(login: ApiLogin, loggedInAt: number): SavedSession {
+  const fromReply = login.expiresInSeconds !== undefined;
+  const seconds = login.expiresInSeconds ?? MEASURED_LOGIN_LIFETIME_SECONDS;
+  return {
+    token: login.token,
+    loggedInAt,
+    expiresAt: loggedInAt + seconds * 1000,
+    expirySource: fromReply ? 'the login reply' : 'the measured lifetime',
+  };
+}
+
+export function sessionHasExpired(session: SavedSession, now: number): boolean {
+  return now >= session.expiresAt;
+}
+
+/**
+ * Gives this page a session of its own customer, registered and logged in through the API now. For tests that place
+ * an order: two workers ordering on one account at the same moment got the same invoice number (observed note 17),
+ * so orders never share an account. The password goes to the run's account files like every other, so the report's
+ * redact and check steps cover it.
+ */
+export async function useOwnCustomer(page: Page, request: APIRequestContext, purpose: string): Promise<void> {
+  const account = await registerTestCustomer(request, purpose);
+  const { token } = await logInThroughApi(request, account);
+  await checkSessionThroughApi(request, token);
+  await giveTokenToPage(page, token); // added after the run's session, so this token is the one the site reads
 }
 
 /** The one message for a session the API or the site did not accept, with the most likely cause. */
@@ -65,11 +111,11 @@ export async function giveTokenToPage(page: Page, token: string, sprint = settin
 }
 
 /** A saved session keeps cookies and localStorage but not sessionStorage, so the token is also saved on its own. */
-export function saveSessionToken(token: string): void {
-  writeFileSync(SESSION_TOKEN_FILE, JSON.stringify({ token }));
+export function saveSession(session: SavedSession): void {
+  writeFileSync(SESSION_TOKEN_FILE, JSON.stringify(session));
 }
 
-export function readSessionToken(): string | undefined {
+export function readSavedSession(): SavedSession | undefined {
   if (!existsSync(SESSION_TOKEN_FILE)) return undefined;
-  return (JSON.parse(readFileSync(SESSION_TOKEN_FILE, 'utf8')) as { token?: string }).token;
+  return JSON.parse(readFileSync(SESSION_TOKEN_FILE, 'utf8')) as SavedSession;
 }

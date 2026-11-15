@@ -51,10 +51,62 @@ a defect.
 12. **/checkout opened directly shows no empty-cart message.** With no cart, or after the cart was emptied, opening
     /checkout shows only the step bar; the console shows "TypeError: Cannot read properties of null (reading
     'cart_items')" (compare note 11). "The cart is empty. Nothing to display." shows only right after the last item
-    is removed on the cart page. Team to confirm. Seen by: found by the AI test generator, checked by hand by the QA
-    engineer, 13-11-2026, on the normal site. Status: open.
+    is removed on the cart page. Reloading /checkout after an order also shows a header with neither the account
+    name nor Sign in, although the customer is still logged in (the home page shows the account). Team to confirm.
+    Seen by: found by the AI test generator, checked by hand by the QA engineer, 13-11-2026, on the normal site (the
+    reload after an order: seen in automated runs and by hand, 13-11-2026). Status: open.
 13. **Confirm is enabled on an empty payment form.** Right after choosing Bank Transfer, Gift Card or Credit Card,
     before anything is filled, Confirm is enabled and can be clicked (it was not clicked). An invalid value in a
     field disables it. Team to confirm whether Confirm should stay disabled until the form is valid. Seen by: found
     by the AI test generator, checked by hand by the QA engineer, 13-11-2026, on the normal site (the generator's
     report also named Buy Now Pay Later; the hand check covered the three methods above). Status: open.
+14. **The cart's remove control has no name.** Each cart row removes its product with an icon in a link with no
+    address, no text, no label and no data-test, so a screen reader announces nothing useful and tests can find it
+    only by its class. Team to confirm whether it should be a button with a name (for example "Remove"). Seen by: QA
+    engineer, 13-11-2026, on the normal site (browser developer tools). Status: open.
+15. **The billing address form can be emptied after it was filled.** In an automated run (checkout, 2 of 42 runs at 2
+    workers), Country, Postal code and House number were filled and still held their values when Proceed was
+    clicked; no address lookup followed, and 30 s later every address field was empty and Proceed stayed disabled.
+    In later runs, the site had filled in the street within about 1 s and the form was empty again by the time
+    Proceed was clicked (1 of 42 at 4 workers), and 2.2 met the same reset (1 of 42 at 2 workers).
+    Once (1 of 42 at 4 workers) Country, Postal code and House number were empty while Street and City still held the
+    site's values. This is the last shape the refill accepts: a third one would move the production-build copy
+    from Next to Now, and the affected tests would be left out until then.
+    The only request in that time was the Angular development server loading the address component, so the likely
+    cause is the local copy, which runs the development server (ng serve), rebuilding the form; the public site uses
+    a production build. On the local copy only, the checkout tests fill the form again (at most twice, each time
+    shown in the report and counted in the run summary); 2.2 only before its "enabled" check, and 2.3 never. Team to confirm. Seen by: automated
+    test runs at 2 and 4 workers on the local development copy, 13-11-2026; not reproduced by hand; the public site was not
+    tried for this. The trace is kept outside the repository. Status: open.
+16. **The cart badge stays at 1 if the page is left before the site has emptied the cart.** After the invoice is
+    answered (second Confirm), the page sends DELETE /carts/<cart id> and clears the cart id and the badge's count
+    from the browser only when that DELETE is answered, success or error (the site's code: `cart.service.ts`,
+    `payment.component.ts`). A page loaded before that answer keeps the badge at 1 for a cart already ordered. Checked
+    by hand by the QA engineer, 14-11-2026, in Chrome DevTools with the DELETE's answer delayed by 10 s, then a full
+    load of home: badge 1, on the local development copy and on the public site (a production build of a newer
+    Toolshop version than the pinned one, whose first payment button is named "Check payment" where the pinned copy
+    shows "Confirm", note 19), so this is the site's own timing, not a development-server effect. DELETE answer times seen by hand: 68 and 116 ms locally, 167
+    ms on the public site. This explains the earlier automated numbers (4.1 alone, 2 workers, local copy, 13-11-2026):
+    badge 1 on the confirmation page in about 1 of 12 runs (1 of 40 with the wait for the add-to-cart message), after
+    reloading /checkout in 9 of 14 runs (the other 5 lost the account menu, note 12), and on a full load of home in 25
+    of 40. The payment story (AC9) says the cart is cleared, not when. Open question for the team: should a customer
+    who leaves the confirmation page at once keep a badge and a cart id for a cart already ordered? 4.1 and 4.2 wait
+    for the DELETE answer before leaving the page, so they do not meet this case; it is not tested. Seen by: automated
+    test runs and the QA engineer by hand, 13-11-2026 and 14-11-2026. The traces are kept outside the repository.
+    Never asserted. Status: open.
+17. **Two orders placed at the same moment by one customer got the same invoice number.** In an automated run (4.1
+    alone, two workers using the run's one account), the Invoices page twice listed two rows with one number
+    (INV-2026000006); every order should have its own number. Team to confirm. Seen by: automated test run at 2
+    workers on the local development copy, 13-11-2026; not reproduced by hand. The tests now use one account per
+    order-placing test, so they no longer meet this case; it is not tested. Never asserted. Status: open.
+18. **The checkout page logs a script error.** On the checkout page the console shows "TypeError: Cannot read
+    properties of undefined (reading 'cart_items')" at `cart.component.html:4` (compare note 12, the same error with
+    "null" after the cart was emptied). How often, and whether anything on the page breaks, was not checked. Team to
+    confirm. Seen by: QA engineer by hand, 14-11-2026, on the local development copy. Never asserted. Status: open.
+19. **On the public site's newer version, Confirm stays disabled after switching the payment method.** The public
+    site runs a newer Toolshop version than the pinned one: after choosing a payment method its button is "Check
+    payment", which shows "Payment was successful" and then a "Confirm" button (on the pinned copy both are named
+    "Confirm", note 7). With Cash on Delivery, Check payment, then switching the method to Credit Card, Confirm shows
+    disabled. With an invalid card number, Check payment is disabled. Team to confirm what is intended. Not met by the
+    tests, which run on the pinned copy. Seen by: QA engineer by hand, 15-11-2026, on the public site. Never
+    asserted. Status: open.

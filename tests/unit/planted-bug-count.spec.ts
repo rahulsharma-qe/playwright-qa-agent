@@ -6,7 +6,8 @@ import {
   isEnvironmentMessage,
   siteNotResponding,
 } from '../../support/environment-messages';
-import { type CountedTest, EXPECTED_UI_TESTS, outcomeOf, summaryLines } from '../../support/planted-bug-count';
+import { ADDRESS_FORM_REFILL } from '../../support/address-refill';
+import { collectTests, type CountedTest, EXPECTED_UI_TESTS, outcomeOf, summaryLines } from '../../support/planted-bug-count';
 
 // Sample results written for these tests; no browser and no Toolshop needed.
 const uiTest = (title: string, status: string, errors: string[] = [], project = 'login'): CountedTest => ({ title, project, status, errors });
@@ -57,5 +58,36 @@ test.describe('planted-bug count', () => {
       'abc',
     );
     expect(lines).toContain('Setup and unit: auth-setup: 1 failed of 1 (1 with an environment message)');
+  });
+});
+
+test.describe('billing address refills (observed note 15)', () => {
+  test('are read from the last attempt\'s annotations', () => {
+    const refill = { type: ADDRESS_FORM_REFILL };
+    const report = {
+      suites: [
+        {
+          specs: [
+            {
+              title: 'pay',
+              tests: [{ projectName: 'logged-in', status: 'expected', results: [{ annotations: [refill, refill] }] }],
+            },
+          ],
+        },
+      ],
+    };
+    expect(collectTests(report)[0].refills).toBe(2);
+  });
+
+  test('are counted in the summary, and a refilled test is marked for a person to judge', () => {
+    const lines = summaryLines([{ ...uiTest('pay', 'expected', [], 'logged-in'), refills: 1 }, uiTest('b', 'expected')], 'abc');
+    expect(lines).toContain('Billing address form refilled: 1 time (local development copy only; observed note 15)');
+    expect(lines.join('\n')).toContain('pay (billing address refilled 1×: development server or planted bug? a person decides)');
+  });
+
+  test('a run with none says 0', () => {
+    expect(summaryLines([uiTest('a', 'expected')], 'abc')).toContain(
+      'Billing address form refilled: 0 times (local development copy only; observed note 15)',
+    );
   });
 });

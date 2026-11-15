@@ -59,10 +59,12 @@ planted-bug run never runs it; CI runs it in its own step.
 
 ## 4. Test accounts
 
-- **Two per run, through the API** (`registerTestCustomer(request, purpose)` posts to `<API_URL>/users/register`):
-  `auth-setup` registers one for the logged-in tests; `login.spec.ts` registers one in `beforeAll` and runs its
-  tests one after another in one worker. A failed test does not skip the others; the next worker registers one
-  more account, as a retry does.
+- **Two per run, plus one per order-placing test, through the API** (`registerTestCustomer(request, purpose)`
+  posts to `<API_URL>/users/register`): `auth-setup` registers one for the logged-in tests; `login.spec.ts`
+  registers one in `beforeAll` and runs its tests one after another in one worker. A failed test does not skip the
+  others; the next worker registers one more account, as a retry does. Each checkout test that places an order
+  (4.x) registers its own customer in its set-up (`useOwnCustomer()` in `support/api-session.ts`), because two
+  workers ordering on one account at the same moment got the same invoice number (observed note 17).
 - **Sign-up fields by version:** `SIGN_UP_FIELDS` in `support/test-accounts.ts`, chosen by `SPRINT`. Sprint 5 needs
   only name, email and password; the "with bugs" version's contract also asks for address, city and country as
   separate fields, and it gets a date of birth to work around a defect not on the planted list (recorded in
@@ -84,6 +86,10 @@ planted-bug run never runs it; CI runs it in its own step.
   (`playwright/.auth/session-token.json`, git-ignored), because a saved session does not keep sessionStorage.
   Toolshop's login lasts 5 minutes (seen by the QA engineer on the normal site, 13-11-2026), so a run that takes
   longer than that can meet an expired session in its last tests: keep runs short, or log in again per run part.
+  The token file also holds the login time and the expiry (from the login reply's `expires_in` when it gives one,
+  otherwise the measured 5 minutes). When a logged-in test fails and the page shows "Sign in", `fixtures.ts` adds an
+  environment message only if the login had expired by then; any other "Sign in" stays a test failure, since it may
+  be a real logout bug.
   `fixtures.ts` gives the token to every page of a logged-in test. Both are written fresh every run.
 - **The wrong-password test** sends one wrong password to the run's own account, checks the message is the same
   as for an unknown email ("Invalid email or password", so an attacker cannot tell which emails exist), then logs

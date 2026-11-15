@@ -1,4 +1,4 @@
-import { Locator, Page } from '@playwright/test';
+import { Locator, Page, test } from '@playwright/test';
 
 /** The top bar on every page: sign-in state, cart link and cart count. */
 export class Header {
@@ -8,7 +8,7 @@ export class Header {
   readonly homeLink: Locator;
   private readonly cartQuantity: Locator;
 
-  constructor(page: Page) {
+  constructor(private readonly page: Page) {
     this.signInLink = page.getByRole('link', { name: 'Sign in' });
     this.homeLink = page.getByTestId('nav-home');
     // Shows the customer's name, which changes per account, so data-test is the fallback.
@@ -20,5 +20,17 @@ export class Header {
   async cartCount(): Promise<number> {
     if ((await this.cartQuantity.count()) === 0) return 0;
     return Number((await this.cartQuantity.innerText()).trim());
+  }
+
+  /** The cart link shows only when the cart has items. */
+  async openCart(): Promise<void> {
+    await test.step('Open the cart', () => this.page.getByRole('link', { name: 'cart', exact: true }).click());
+  }
+
+  async openMyAccount(): Promise<void> {
+    await test.step('Open My account', async () => {
+      await this.accountMenu.click();
+      await this.page.getByTestId('nav-my-account').click();
+    });
   }
 }

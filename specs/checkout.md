@@ -5,6 +5,8 @@ Scope set by: QA engineer (the prompt was passed to the planner word for word)
 Verified by hand: QA engineer, 13-11-2026 (section 4 and every item the planner marked UNVERIFIED)
 Approved by: QA engineer, pull request #22
 Corrected 13-11-2026 after the AI test generator's report (1.4, 3.1, 3.3, 3.4), checked by hand by the QA engineer; 3.3 and 3.4 split after review
+Corrected 13-11-2026 and 15-11-2026 after review, in the checkout tests pull request: 4.1 and 4.2 wait for the site to
+empty the cart, then check it on the home page (payment story, AC9)
 
 ## Application overview
 
@@ -183,6 +185,13 @@ values are covered by 3.1.
 
 **Seed:** `tests/seed.spec.ts`
 
+**User story:** Toolshop Sprint 5, "Checkout – Payment (Advanced)", AC9 – Successful order
+(`docs/user-stories/v5.md` in Toolshop's repository, at the pinned commit): "Given valid payment details are provided
+When I click confirm Then the payment is validated, the order is placed, a confirmation with the invoice number is
+shown, and the cart is cleared". The story does not say when the cart is cleared: the site sends DELETE
+/carts/<cart id> after the invoice is answered and clears the cart icon only when that DELETE is answered (observed
+note 16, checked by hand on the local copy and the public site).
+
 #### 4.1. Happy path with a credit card
 
 **File:** `tests/checkout/place-order.spec.ts`
@@ -192,8 +201,13 @@ values are covered by 3.1.
      choose Credit Card and fill valid, plainly fake data; click Confirm; if "Payment was successful" shows on the
      Payment step, click Confirm again (observed note 7)
     - expect: "Thanks for your order! Your invoice number is INV-" followed by digits is shown
+  2. Wait for the site's answer to DELETE /carts/<cart id> (the wait starts before the first Confirm), then open
+     the home page
+    - expect: The DELETE is answered with a success (2xx)
     - expect: The cart icon shows no items
-  2. Open My account, then Invoices
+    - Not asserted: the cart icon on the confirmation page (observed note 16); a reload of /checkout (observed
+      note 12)
+  3. Open My account, then Invoices
     - expect: An invoice with the number from the confirmation is listed
 
 #### 4.2. Happy path with Cash on Delivery
@@ -203,6 +217,9 @@ values are covered by 3.1.
 **Steps:**
   1. Same as 4.1 (including the conditional second Confirm), but choose Cash on Delivery
     - expect: The same confirmation, with an invoice number
+  2. Same as 4.1: wait for the site's answer to DELETE /carts/<cart id>, then open the home page
+    - expect: The DELETE is answered with a success (2xx)
+    - expect: The cart icon shows no items
 
 ## Later (not in this slice)
 
