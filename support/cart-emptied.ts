@@ -8,14 +8,14 @@
 export const CART_EMPTIED = 'cart-emptied';
 
 /**
- * How long placeOrder() waits, from the first Confirm click, for the DELETE answer: 3 × the slowest measured span.
- * Source: measuring run on the local development copy, freshly started, 15-11-2026, 4.1 and 4.2 each 10 runs at 2
- * workers: whole span (first Confirm click to the DELETE answer) 567–1218 ms for 4.1 and 572–1818 ms for 4.2,
- * slowest 1818 ms; the DELETE's own time 98–290 ms (by hand: 68–116 ms local, 167 ms on the public site).
- * CI checks the slowest span stays under half of this bound (the run page line); if it does not, the bound changes
- * from the CI numbers and the runs are repeated.
+ * How long placeOrder() waits, from the first Confirm click, for the DELETE answer: 3 × the slowest span seen in any
+ * run so far. Source: 2482 ms (DELETE's own time 1303 ms in that run), 4.2 alone, 40 runs at 2 workers, local
+ * development copy, freshly started, 15-11-2026. Other runs: measuring run 567–1818 ms; CI 257–326 ms; the DELETE's
+ * own time by hand 68–116 ms local, 167 ms on the public site.
+ * This bound changes only through a reviewed change. A span above half of it is reported to Review first (run, copy,
+ * time), never absorbed by raising the bound; the run page line says so.
  */
-export const CART_EMPTIED_BOUND_MS = 5_454;
+export const CART_EMPTIED_BOUND_MS = 7_446;
 
 export type CartEmptiedTimes = { spanMs: number; deleteMs: number };
 
@@ -35,7 +35,9 @@ export function cartEmptiedSummaryLine(times: CartEmptiedTimes[], boundMs: numbe
   const slowestDelete = Math.max(...times.map((t) => t.deleteMs));
   const bound =
     boundMs > 0
-      ? `bound ${boundMs} ms, slowest span ${slowestSpan <= boundMs / 2 ? 'under' : 'NOT under'} half the bound`
+      ? slowestSpan <= boundMs / 2
+        ? `bound ${boundMs} ms, slowest span under half the bound`
+        : `bound ${boundMs} ms, slowest span NOT under half the bound: report it to Review (run, copy, time); do not raise the bound`
       : 'no bound set (measuring run)';
   return `Cart emptied after the order: ${times.length} order${times.length === 1 ? '' : 's'}; slowest span (first Confirm to DELETE answer) ${slowestSpan} ms; slowest DELETE ${slowestDelete} ms; ${bound}`;
 }

@@ -16,7 +16,9 @@ test.describe('cart emptied after the order', () => {
     ];
     expect(cartEmptiedSummaryLine(times, 0)).toContain('slowest span (first Confirm to DELETE answer) 2100 ms; slowest DELETE 167 ms; no bound set (measuring run)');
     expect(cartEmptiedSummaryLine(times, 6300)).toContain('bound 6300 ms, slowest span under half the bound');
-    expect(cartEmptiedSummaryLine(times, 4000)).toContain('bound 4000 ms, slowest span NOT under half the bound');
+    expect(cartEmptiedSummaryLine(times, 4000)).toContain(
+      'bound 4000 ms, slowest span NOT under half the bound: report it to Review (run, copy, time); do not raise the bound',
+    );
     expect(cartEmptiedSummaryLine([], 6300)).toBe('Cart emptied after the order: no order test recorded a time');
   });
 });
