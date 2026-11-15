@@ -1,4 +1,4 @@
-import { Locator, Page, test } from '@playwright/test';
+import { errors, Locator, Page, test } from '@playwright/test';
 import { ADDRESS_FORM_REFILL } from '../support/address-refill';
 import { CART_EMPTIED, CART_EMPTIED_BOUND_MS, cartEmptiedDescription } from '../support/cart-emptied';
 import { refillResetAddressForm, settings } from '../support/settings';
@@ -20,7 +20,6 @@ export class CheckoutPage {
   /** Filled in by the site from country, postal code and house number. */
   readonly streetField: Locator;
   /** The alert has no role; data-test postcode-lookup-error. */
-  readonly postalCodeTooLongMessage: Locator;
   readonly addressProceedButton: Locator;
   readonly paymentMethodSelect: Locator;
   readonly confirmButton: Locator;
@@ -43,7 +42,6 @@ export class CheckoutPage {
     this.postalCodeField = page.getByLabel('Postal code');
     this.houseNumberField = page.getByLabel('House number');
     this.streetField = page.getByLabel('Street');
-    this.postalCodeTooLongMessage = page.getByText('The postcode field must not be greater than 10 characters.');
     // The Proceed buttons of the steps share their name, so data-test tells them apart.
     this.signInProceedButton = page.getByTestId('proceed-2');
     this.addressProceedButton = page.getByTestId('proceed-3');
@@ -184,7 +182,8 @@ export class CheckoutPage {
    * (observed note 16; checked by hand on the local copy and the public site). The wait starts before the first
    * Confirm click, so a fast answer is never missed whether the site needs one click or two; it matches the method
    * and this cart's exact address only, never the status (an error answer is still an answer). Returns the answer's
-   * status and times, or null if no answer came; the test decides what is right. If the order itself fails, the
+   * status and times, or null if no answer came within the bound; the test decides what is right. Only the wait's
+   * timeout means "no answer": any other error of the wait is thrown as itself. If the order itself fails, the
    * pending wait adds no error of its own, so the report shows only that failure.
    */
   async placeOrder(): Promise<CartEmptied | null> {
@@ -200,7 +199,8 @@ export class CheckoutPage {
           await response.finished();
           return { response, spanMs: answeredAt - firstClickAt };
         })
-        .catch(() => null);
+        // Kept as a value until awaited below, so a failed order (which never awaits it) gets no second error.
+        .catch((error: unknown) => ({ error }));
 
       await this.confirmButton.click();
       await this.orderConfirmation.or(this.paymentWasSuccessful).first().waitFor();
@@ -208,7 +208,8 @@ export class CheckoutPage {
       await this.orderConfirmation.waitFor();
 
       const answered = await answer;
-      if (!answered) {
+      if ('error' in answered) {
+        if (!(answered.error instanceof errors.TimeoutError)) throw answered.error;
         await test.step('The site sent no answer to DELETE /carts/<cart id>', async () => {});
         return null;
       }

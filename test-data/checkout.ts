@@ -12,9 +12,6 @@ export type Card = { number: string; expiry: string; cvv: string; holder: string
 /** The site fills in street, city and state from these three. */
 export const billingAddress: Address = { country: 'Netherlands (the)', postalCode: '1011AB', houseNumber: '42' };
 
-/** 11 characters; the site refuses more than 10. */
-export const tooLongPostalCode = '12345678901';
-
 /** An expiry date as the site expects it (MM/YYYY), a number of years from today's month. */
 function expiryYearsFromNow(years: number): string {
   const today = new Date();

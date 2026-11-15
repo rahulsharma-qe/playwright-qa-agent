@@ -26,8 +26,6 @@ test.describe('Order confirmation', () => {
     await expect(productPage.productName).toContainText(inStockProduct.name);
     await productPage.addToCart();
     await expect.poll(() => header.cartCount()).toBe(1);
-    // An order placed while this message is still shown can leave the cart badge at 1 (observed note 16).
-    await productPage.waitUntilAddedMessageGone();
     await header.openCart();
     await cartPage.proceedToCheckout();
     await checkoutPage.proceedFromSignIn();
