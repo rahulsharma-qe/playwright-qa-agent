@@ -146,7 +146,8 @@ ci/stop-toolshop.sh
 ```
 
 To update Toolshop in CI: change `TOOLSHOP_COMMIT` in `ci/toolshop-env.sh` and run `ci/pin-toolshop-images.sh`
-(the two are one pair), run the tests locally against the public site, then let CI run on the new copy.
+(the two are one pair), start the local copy (`ci/check-toolshop-pair.sh` runs and stops on a mismatch), run the
+tests on it, then let CI run on the new copy.
 
 ## How strong are the tests?
 
