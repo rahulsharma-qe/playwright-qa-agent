@@ -12,8 +12,8 @@ export const CART_EMPTIED = 'cart-emptied';
  * run so far. Source: 2482 ms (DELETE's own time 1303 ms in that run), 4.2 alone, 40 runs at 2 workers, local
  * development copy, freshly started, 15-11-2026. Other runs: measuring run 567–1818 ms; CI 257–326 ms; the DELETE's
  * own time by hand 68–116 ms local, 167 ms on the public site.
- * This bound changes only through a reviewed change. A span above half of it is reported to Review first (run, copy,
- * time), never absorbed by raising the bound; the run page line says so.
+ * This bound changes only through a reviewed change. A span above half of it is reported as a finding (run, copy,
+ * time) before any change to the bound, never absorbed by raising it; the run page line says so.
  */
 export const CART_EMPTIED_BOUND_MS = 7_446;
 
@@ -37,7 +37,7 @@ export function cartEmptiedSummaryLine(times: CartEmptiedTimes[], boundMs: numbe
     boundMs > 0
       ? slowestSpan <= boundMs / 2
         ? `bound ${boundMs} ms, slowest span under half the bound`
-        : `bound ${boundMs} ms, slowest span NOT under half the bound: report it to Review (run, copy, time); do not raise the bound`
+        : `bound ${boundMs} ms, slowest span NOT under half the bound: report it as a finding (run, copy, time) before any change to the bound`
       : 'no bound set (measuring run)';
   return `Cart emptied after the order: ${times.length} order${times.length === 1 ? '' : 's'}; slowest span (first Confirm to DELETE answer) ${slowestSpan} ms; slowest DELETE ${slowestDelete} ms; ${bound}`;
 }
