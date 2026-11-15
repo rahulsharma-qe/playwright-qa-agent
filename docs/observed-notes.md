@@ -75,9 +75,13 @@ a defect.
     The only request in that time was the Angular development server loading the address component, so the likely
     cause is the local copy, which runs the development server (ng serve), rebuilding the form; the public site uses
     a production build. On the local copy only, the checkout tests fill the form again (at most twice, each time
-    shown in the report and counted in the run summary); 2.2 only before its "enabled" check, and 2.3 never. Team to confirm. Seen by: automated
+    shown in the report and counted in the run summary); 2.2 only before its "enabled" check, and 2.3 never (2.3 is left out until the production build). Team to confirm. Seen by: automated
     test runs at 2 and 4 workers on the local development copy, 13-11-2026; not reproduced by hand; the public site was not
-    tried for this. The trace is kept outside the repository. Status: open.
+    tried for this. Also, 15-11-2026, local development copy freshly started, checkout `--repeat-each=3` at 2 workers
+    (1 of 44 runs): 2.3 failed; the trace shows Country unchosen, Postal code and House number empty, the three fills
+    11–13 ms apart just before, and the development server's "[vite] connecting" in the console: the same shape
+    (every typed field empty), not a new one. 2.3 is left out until the production build of the UI. The traces are
+    kept outside the repository. Status: open.
 16. **The cart badge stays at 1 if the page is left before the site has emptied the cart.** After the invoice is
     answered (second Confirm), the page sends DELETE /carts/<cart id> and clears the cart id and the badge's count
     from the browser only when that DELETE is answered, success or error (the site's code: `cart.service.ts`,

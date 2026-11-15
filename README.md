@@ -200,6 +200,8 @@ test('login works', { tag: '@sanity' }, async ({ loginPage, header }) => {
 - The local copy (CI's own too) runs Toolshop's development server, which sometimes rebuilds the billing address
   form after a test has filled it; the checkout tests fill it again, at most twice, and each refill is shown in the
   report and counted on the run page. At 4 workers on a laptop, refills were more than 1 in 10 runs.
+- The postal-code length check (2.3) is left out until the production build of the UI: the development server
+  reset its form once in 44 runs.
 - The CI copy is not fully offline: Toolshop checks new passwords against the Have I Been Pwned service, so a slow
   or unreachable service shows as "Could not register a test customer … environment problem".
 

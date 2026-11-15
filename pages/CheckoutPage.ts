@@ -20,7 +20,6 @@ export class CheckoutPage {
   /** Filled in by the site from country, postal code and house number. */
   readonly streetField: Locator;
   /** The alert has no role; data-test postcode-lookup-error. */
-  readonly postalCodeTooLongMessage: Locator;
   readonly addressProceedButton: Locator;
   readonly paymentMethodSelect: Locator;
   readonly confirmButton: Locator;
@@ -43,7 +42,6 @@ export class CheckoutPage {
     this.postalCodeField = page.getByLabel('Postal code');
     this.houseNumberField = page.getByLabel('House number');
     this.streetField = page.getByLabel('Street');
-    this.postalCodeTooLongMessage = page.getByText('The postcode field must not be greater than 10 characters.');
     // The Proceed buttons of the steps share their name, so data-test tells them apart.
     this.signInProceedButton = page.getByTestId('proceed-2');
     this.addressProceedButton = page.getByTestId('proceed-3');

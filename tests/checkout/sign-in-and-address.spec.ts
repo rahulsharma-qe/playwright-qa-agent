@@ -3,7 +3,7 @@
 
 import { expect, test } from '../../fixtures';
 import { inStockProduct } from '../../test-data/products';
-import { billingAddress, tooLongPostalCode } from '../../test-data/checkout';
+import { billingAddress } from '../../test-data/checkout';
 
 test.describe('Sign in and billing address steps', () => {
   test('A logged-in user passes the Sign in step with one click', { tag: '@regression' }, async ({
@@ -65,36 +65,6 @@ test.describe('Sign in and billing address steps', () => {
     await expect(checkoutPage.countrySelect).not.toHaveValue('');
     await expect(checkoutPage.postalCodeField).toHaveValue(billingAddress.postalCode);
     await expect(checkoutPage.streetField).not.toHaveValue('');
-    await expect(checkoutPage.addressProceedButton).toBeDisabled();
-  });
-
-  test('A postal code longer than 10 characters is refused', { tag: '@regression' }, async ({
-    productListPage,
-    productPage,
-    cartPage,
-    checkoutPage,
-    header,
-  }) => {
-    await productListPage.open();
-    await productListPage.search(inStockProduct.name);
-    await productListPage.openProduct(inStockProduct.name);
-    await expect(productPage.productName).toContainText(inStockProduct.name);
-    await productPage.addToCart();
-    await expect.poll(() => header.cartCount()).toBe(1);
-    await header.openCart();
-    await cartPage.proceedToCheckout();
-    await checkoutPage.proceedFromSignIn();
-
-    // 1. Enter a postal code longer than 10 characters and a house number
-    await checkoutPage.chooseCountry(billingAddress.country);
-    await checkoutPage.fillPostalCode(tooLongPostalCode);
-    await checkoutPage.fillHouseNumber(billingAddress.houseNumber);
-    await expect(checkoutPage.postalCodeTooLongMessage).toBeVisible();
-    // The typed values must still be there, so a form reset fails here instead of passing for the wrong reason.
-    // Street is not checked: the site does not look a street up for a refused postal code.
-    await expect(checkoutPage.countrySelect).not.toHaveValue('');
-    await expect(checkoutPage.postalCodeField).toHaveValue(tooLongPostalCode);
-    await expect(checkoutPage.houseNumberField).toHaveValue(billingAddress.houseNumber);
     await expect(checkoutPage.addressProceedButton).toBeDisabled();
   });
 });

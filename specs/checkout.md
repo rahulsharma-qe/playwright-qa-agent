@@ -126,6 +126,10 @@ Checkout tests leave orders on the site they run against (the public site resets
 
 #### 2.3. A postal code longer than 10 characters is refused
 
+**Left out** (corrected after review, 15-11-2026): until the production build of the UI. The development server
+reset the billing address form once in 44 runs (observed note 15), and 2.3 never refills, because a refill would
+type the value under test again. To be restored on the production build.
+
 **File:** `tests/checkout/sign-in-and-address.spec.ts`
 
 **Steps:**
@@ -232,8 +236,8 @@ would have to wait for it or clear it); a second order after reload or Back (che
 Left out because what the planner expected is not what the normal site does, or it is an open question:
 - The address values after going back to the Billing Address step: observed note 9.
 - Switching payment methods after an error: observed note 10.
-- Unusual postal codes beyond the length check: the fields keep their values and Proceed stays disabled; only the
-  length message (2.3) is asserted.
+- Unusual postal codes beyond the length check: the fields keep their values and Proceed stays disabled; the
+  length message is 2.3's (left out until the production build).
 
 ## Observed notes from this plan
 
