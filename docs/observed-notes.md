@@ -91,7 +91,11 @@ a defect.
     reloading /checkout in 9 of 14 runs (the other 5 lost the account menu, note 12), and on a full load of home in 25
     of 40. The payment story (AC9) says the cart is cleared, not when. Open question for the team: should a customer
     who leaves the confirmation page at once keep a badge and a cart id for a cart already ordered? 4.1 and 4.2 wait
-    for the DELETE answer before leaving the page, so they do not meet this case; it is not tested. Seen by: automated
+    for the DELETE answer before leaving the page, so they do not meet this case; it is not tested. The wait for the
+    add-to-cart message to go, added to 4.1 and 4.2 on an earlier guess, was removed: the product page shows that
+    message only after the cart id and count are saved in the browser (the site's code at the pinned commit; the
+    Product Detail story's AC8 says only that the product is added and the message shown), so it plays no
+    part in the badge after the order. Seen by: automated
     test runs and the QA engineer by hand, 13-11-2026 and 14-11-2026. The traces are kept outside the repository.
     Never asserted. Status: open.
 17. **Two orders placed at the same moment by one customer got the same invoice number.** In an automated run (4.1
