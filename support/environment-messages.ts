@@ -21,10 +21,11 @@ export function cannotRegister(reason: string): string {
   return `Could not register a test customer on Toolshop (${reason}); ${ENVIRONMENT_PHRASE}.`;
 }
 
-/** A logged-in test met "Sign in" after the run's login had expired by its own expiry. */
-export function loginExpired(minutesSinceLogin: number, lifetimeMinutes: number, source: string): string {
+/** A logged-in test met "Sign in" after its login (the run's, or the test's own customer's) had expired. */
+export function loginExpired(minutesSinceLogin: number, lifetimeMinutes: number, source: string, whose = 'the run'): string {
+  const owner = whose === 'the run' ? "The run's" : "This test's own customer's";
   return (
-    `The run's login expired before this test ended (${minutesSinceLogin} min after login; it lasts ${lifetimeMinutes} min, ` +
+    `${owner} login expired before this test ended (${minutesSinceLogin} min after login; it lasts ${lifetimeMinutes} min, ` +
     `from ${source}); ${ENVIRONMENT_PHRASE}. Shorten the run or log in again per part.`
   );
 }

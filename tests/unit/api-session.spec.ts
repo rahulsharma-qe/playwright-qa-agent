@@ -1,5 +1,14 @@
 import { expect, test } from '../../fixtures';
-import { describeSession, MEASURED_LOGIN_LIFETIME_SECONDS, sessionHasExpired, tokenStoreFor } from '../../support/api-session';
+import type { Page } from '@playwright/test';
+import {
+  describeSession,
+  MEASURED_LOGIN_LIFETIME_SECONDS,
+  rememberSessionGivenTo,
+  sessionGivenTo,
+  sessionHasExpired,
+  tokenStoreFor,
+} from '../../support/api-session';
+import { loginExpired } from '../../support/environment-messages';
 
 // No browser and no Toolshop needed.
 test.describe('where the site keeps the login token', () => {
@@ -32,5 +41,23 @@ test.describe('when the run\'s login expires', () => {
     const session = describeSession({ token: 't', expiresInSeconds: 60 }, loggedInAt);
     expect(sessionHasExpired(session, loggedInAt + 59_999)).toBe(false);
     expect(sessionHasExpired(session, loggedInAt + 60_000)).toBe(true);
+  });
+});
+
+test.describe('which login a page was given', () => {
+  test("an order test's own customer replaces the run's session for the expiry check", () => {
+    const page = {} as Page;
+    const runSession = describeSession({ token: 'run', expiresInSeconds: 300 }, 0);
+    const ownSession = describeSession({ token: 'own', expiresInSeconds: 300 }, 240_000, "this test's own customer");
+    rememberSessionGivenTo(page, runSession);
+    rememberSessionGivenTo(page, ownSession);
+    expect(sessionGivenTo(page)).toBe(ownSession);
+    expect(sessionHasExpired(sessionGivenTo(page)!, 360_000)).toBe(false);
+    expect(sessionHasExpired(runSession, 360_000)).toBe(true);
+  });
+
+  test("the expired-login message names whose login it was", () => {
+    expect(loginExpired(6, 5, 'the login reply')).toMatch(/^The run's login expired/);
+    expect(loginExpired(6, 5, 'the login reply', "this test's own customer")).toMatch(/^This test's own customer's login expired/);
   });
 });

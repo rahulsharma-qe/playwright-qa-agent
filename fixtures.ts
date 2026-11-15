@@ -1,5 +1,5 @@
 import { test as base } from '@playwright/test';
-import { giveTokenToPage, readSavedSession, sessionHasExpired } from './support/api-session';
+import { giveTokenToPage, readSavedSession, rememberSessionGivenTo, sessionGivenTo, sessionHasExpired } from './support/api-session';
 import { BOT_CHECK_MESSAGE, isBotCheck, mightBeBotCheck } from './support/bot-check';
 import { loginExpired } from './support/environment-messages';
 import { AccountPage } from './pages/AccountPage';
@@ -36,7 +36,10 @@ export const test = base.extend<PageObjects>({
     // Logged-in tests: give the session's token to the site again, because a saved session does not keep
     // sessionStorage (where some Toolshop versions keep it).
     const session = testInfo.project.name === 'logged-in' ? readSavedSession() : undefined;
-    if (session) await giveTokenToPage(page, session.token);
+    if (session) {
+      await giveTokenToPage(page, session.token);
+      rememberSessionGivenTo(page, session);
+    }
     let blocked = false;
     page.on('response', async (response) => {
       const headers = response.headers();
@@ -50,14 +53,18 @@ export const test = base.extend<PageObjects>({
     });
     await use(page);
     if (blocked) throw new Error(BOT_CHECK_MESSAGE);
-    // A failed logged-in test that shows "Sign in" is an environment problem only if the login had expired by its
-    // own expiry (saved by auth-setup). Any other "Sign in" stays a test failure: it may be a real logout bug.
-    if (session && testInfo.status !== testInfo.expectedStatus) {
+    // A failed logged-in test that shows "Sign in" is an environment problem only if the login the page was last
+    // given had expired by its own expiry: the run's (saved by auth-setup) or, for an order test, its own
+    // customer's (useOwnCustomer). Any other "Sign in" stays a test failure: it may be a real logout bug.
+    const given = sessionGivenTo(page);
+    if (given && testInfo.status !== testInfo.expectedStatus) {
       const now = Date.now();
       const signInShows = await page.getByRole('link', { name: 'Sign in' }).isVisible().catch(() => false);
-      if (signInShows && sessionHasExpired(session, now)) {
+      if (signInShows && sessionHasExpired(given, now)) {
         const minutes = (ms: number) => Math.round(ms / 60_000);
-        throw new Error(loginExpired(minutes(now - session.loggedInAt), minutes(session.expiresAt - session.loggedInAt), session.expirySource));
+        throw new Error(
+          loginExpired(minutes(now - given.loggedInAt), minutes(given.expiresAt - given.loggedInAt), given.expirySource, given.whose),
+        );
       }
     }
   },

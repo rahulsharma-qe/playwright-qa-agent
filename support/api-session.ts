@@ -48,15 +48,16 @@ export async function logInThroughApi(request: APIRequestContext, account: TestA
  */
 export const MEASURED_LOGIN_LIFETIME_SECONDS = 5 * 60;
 
-/** The run's session as auth-setup saved it: the token, when it was made, and when it expires. */
+/** A session: the token, when it was made, when it expires, and whose login it is (the run's or a test's own). */
 export type SavedSession = {
   token: string;
   loggedInAt: number;
   expiresAt: number;
   expirySource: 'the login reply' | 'the measured lifetime';
+  whose?: 'the run' | 'this test\'s own customer';
 };
 
-export function describeSession(login: ApiLogin, loggedInAt: number): SavedSession {
+export function describeSession(login: ApiLogin, loggedInAt: number, whose: SavedSession['whose'] = 'the run'): SavedSession {
   const fromReply = login.expiresInSeconds !== undefined;
   const seconds = login.expiresInSeconds ?? MEASURED_LOGIN_LIFETIME_SECONDS;
   return {
@@ -64,7 +65,22 @@ export function describeSession(login: ApiLogin, loggedInAt: number): SavedSessi
     loggedInAt,
     expiresAt: loggedInAt + seconds * 1000,
     expirySource: fromReply ? 'the login reply' : 'the measured lifetime',
+    whose,
   };
+}
+
+/**
+ * The session each page was last given, so the "login expired" check after a failed test judges the session the page
+ * really used: the run's, or an order test's own customer's (made later, so it expires later).
+ */
+const sessionsGivenToPages = new WeakMap<Page, SavedSession>();
+
+export function rememberSessionGivenTo(page: Page, session: SavedSession): void {
+  sessionsGivenToPages.set(page, session);
+}
+
+export function sessionGivenTo(page: Page): SavedSession | undefined {
+  return sessionsGivenToPages.get(page);
 }
 
 export function sessionHasExpired(session: SavedSession, now: number): boolean {
@@ -79,9 +95,11 @@ export function sessionHasExpired(session: SavedSession, now: number): boolean {
  */
 export async function useOwnCustomer(page: Page, request: APIRequestContext, purpose: string): Promise<void> {
   const account = await registerTestCustomer(request, purpose);
-  const { token } = await logInThroughApi(request, account);
-  await checkSessionThroughApi(request, token);
-  await giveTokenToPage(page, token); // added after the run's session, so this token is the one the site reads
+  const loggedInAt = Date.now();
+  const login = await logInThroughApi(request, account);
+  await checkSessionThroughApi(request, login.token);
+  await giveTokenToPage(page, login.token); // added after the run's session, so this token is the one the site reads
+  rememberSessionGivenTo(page, describeSession(login, loggedInAt, "this test's own customer"));
 }
 
 /** The one message for a session the API or the site did not accept, with the most likely cause. */
