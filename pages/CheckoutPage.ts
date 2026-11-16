@@ -173,9 +173,10 @@ export class CheckoutPage {
   }
 
   /**
-   * Clicks Confirm, then clicks it again only if the site shows "Payment was successful" and stays on the Payment
-   * step (observed note 7), so this works whether the site needs one click or two. First waits for either message,
-   * so a slow answer is not read as "one click was enough".
+   * On Toolshop 2.5 the Payment step has one finish button, labelled Confirm and clicked twice: the first click checks
+   * the payment ("Payment was successful"), the second creates the invoice (observed note 7). The second click is made
+   * only when that message shows and the page stays on the Payment step, so one click would also do if the site ever
+   * places the order at once. First waits for either message, so a slow answer is not read as "one click was enough".
    *
    * Then waits for the site to empty the cart: after the invoice is answered the page sends DELETE /carts/<cart id>
    * and clears the badge only when that DELETE is answered, so a page load before the answer keeps the badge at 1

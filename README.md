@@ -10,8 +10,9 @@ Tests run against **Toolshop**, the Sprint 5 version of the practice web shop by
 [Testsmith](https://github.com/testsmith-io/practice-software-testing). The main path is a pinned local copy of
 Toolshop, the same one CI starts inside its runner (see [Run it](#run-it) and [CI](#ci)).
 
-> **The tests are pinned to Toolshop 2.5 (commit 9e7736c), which the local and CI copy run.** The public site runs
-> a newer version, where Payment shows "Check payment" before "Confirm", so the Payment tests fail there. Run the
+> **The tests are pinned to Toolshop 2.5 (commit 9e7736c), which the local and CI copy run.** There, Payment has one
+> finish button labelled "Confirm", clicked twice. The public site runs a newer version, where Payment shows "Check
+> payment" before "Confirm", so the Payment tests fail there. Run the
 > pinned copy with `ci/start-toolshop.sh` (see [Run it](#run-it)). With the default settings the tests run against
 > the public site; a run there on 15-11-2026 failed 5 tests, all at the Payment step: "Invalid credit card fields
 > show their messages and keep Confirm disabled" (3.1), "An invalid Bank Name shows its message and disables

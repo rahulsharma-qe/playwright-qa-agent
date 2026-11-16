@@ -35,8 +35,10 @@ a defect.
    Payment step; the second shows "Thanks for your order! Your invoice number is INV-…". Tests click Confirm again
    only if "Payment was successful" shows on the Payment step, and assert only the final confirmation, so they pass
    with one click or two. Team to confirm whether one click should place
-   the order. On the local and CI copy (Toolshop 2.5, commit 9e7736c) both clicks are on one button named
-   "Confirm"; the public site's newer code names it "Check payment" until the first click (note 19). Seen by: QA
+   the order. On the local and CI copy (Toolshop 2.5, commit 9e7736c) there is one finish button, labelled
+   "Confirm" and clicked twice: the first click checks the payment, the second creates the invoice (Toolshop's
+   `payment.component.ts` at that commit). The public site's newer code labels it "Check payment" until the first
+   click (note 19). Seen by: QA
    engineer, 13-11-2026, on the normal (not with-bugs) local copy. Status: open.
 8. **The cart shows a total of 0 or below while the quantity field holds 0 or -1.** As soon as the field is left,
    the quantity goes back to 1 and the total is right again. Team to confirm. Seen by: QA engineer, 13-11-2026, on
