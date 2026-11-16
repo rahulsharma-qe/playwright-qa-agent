@@ -8,6 +8,7 @@ set -euo pipefail
 source "$(dirname "$0")/toolshop-env.sh"
 SEED_TIMEOUT_S="${SEED_TIMEOUT_S:-300}"
 SEED_LOG_DIR="${SEED_LOG_DIR:-$HOME/.cache/toolshop-seed-logs}"
+SEED_LOGS_KEPT="${SEED_LOGS_KEPT:-20}"
 
 fail() { echo "ERROR: $*" >&2; exit 1; }
 started=$(date +%s)
@@ -44,10 +45,23 @@ echo "   containers up after $(elapsed)s"
 # depends_on only orders the start; it does not wait for the database or the API code to be ready.
 # The seed is retried until it works: that is the readiness check for both.
 echo "== Seeding the database (retried every 5 s, up to ${SEED_TIMEOUT_S}s)"
-# One log per start, never overwritten, so a later question about a run (when did the seed finish, how many tries)
-# can be answered from the log. Logging only: the retry and its timeout do not change.
-mkdir -p "$SEED_LOG_DIR"
+# One log per start, so a later question about a run (when did the seed finish, how many tries) can be answered
+# from it; only the latest SEED_LOGS_KEPT are kept. Logging only: the retry and its timeout do not change, and a
+# problem with the log (folder not writable, an old log that cannot be removed) prints one line and never stops
+# the start.
 seed_log="${SEED_LOG_DIR}/seed-$(date -u +%Y%m%dT%H%M%SZ)-${SPRINT}.log"
+if ! { mkdir -p "$SEED_LOG_DIR" && : >"$seed_log"; } 2>/dev/null; then
+  echo "   seed log not kept: cannot write to ${SEED_LOG_DIR}; going on"
+  seed_log=/dev/null
+fi
+prune_seed_logs() {
+  # ls finds nothing in an empty folder and fails; that is not an error here.
+  { ls -1t "$SEED_LOG_DIR"/seed-*.log 2>/dev/null || true; } | tail -n +"$(( SEED_LOGS_KEPT + 1 ))" |
+    while IFS= read -r old; do rm -f "$old" || exit 1; done
+}
+if [ "$seed_log" != /dev/null ]; then
+  prune_seed_logs 2>/dev/null || echo "   older seed logs not all removed from ${SEED_LOG_DIR}; going on"
+fi
 utc_now() { date -u +"%d-%m-%Y %H:%M:%S UTC"; }
 deadline=$(( $(date +%s) + SEED_TIMEOUT_S ))
 attempts=0
@@ -60,12 +74,21 @@ while :; do
   fi
   echo "== attempt ${attempts} failed $(utc_now)" >>"$seed_log"
   if [ "$(date +%s)" -ge "$deadline" ]; then
-    tail -20 "$seed_log" >&2
-    fail "Local Toolshop database was not ready in $(( SEED_TIMEOUT_S / 60 )) minutes; see ${seed_log} and the docker compose logs."
+    if [ "$seed_log" != /dev/null ] && [ -r "$seed_log" ]; then
+      echo "   last lines of ${seed_log}:" >&2
+      { tail -20 "$seed_log" | sed 's/^/   | /'; } >&2 2>/dev/null || echo "   (the seed log could not be printed)" >&2
+    else
+      echo "   (no seed log kept for this start)" >&2
+    fi
+    see="see ${seed_log} and the docker compose logs"
+    [ "$seed_log" = /dev/null ] && see="see the docker compose logs"
+    fail "Local Toolshop database was not ready in ${SEED_TIMEOUT_S} s (${attempts} attempt(s)); ${see}."
   fi
   sleep 5
 done
-echo "   seeded after $(elapsed)s: ${attempts} attempt(s), finished $(utc_now); log ${seed_log}"
+log_note="log ${seed_log}"
+[ "$seed_log" = /dev/null ] && log_note="log not kept"
+echo "   seeded after $(elapsed)s: ${attempts} attempt(s), finished $(utc_now); ${log_note}"
 
 "${CI_DIR}/wait-for-toolshop.sh"
 echo "== Toolshop ${SPRINT} ready after $(elapsed)s: site http://localhost:4200, API http://localhost:8091"
