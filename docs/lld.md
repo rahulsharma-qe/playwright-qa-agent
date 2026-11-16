@@ -158,11 +158,13 @@ uploaded as an artifact; nothing goes to GitHub Pages. The pins file for that co
   1. Fetches Toolshop's repository at the pinned commit into a folder outside this repository; only its compose
      file is used, nothing is copied in. The folder is deleted only if it is empty or holds the marker file the
      script wrote when it cloned (`.toolshop-source`).
-  2. Starts `mariadb`, `laravel-api`, `web` and `angular-ui` from Toolshop's `docker-compose.prod.yml` plus our
+  2. For Sprint 5, runs `check-toolshop-pair.sh` (below): the run stops if the pinned images were not built from
+     the pinned commit. For the with-bugs copy it prints "pair not checked" and goes on.
+  3. Starts `mariadb`, `laravel-api`, `web` and `angular-ui` from Toolshop's `docker-compose.prod.yml` plus our
      pins file. `cron` is not started: it re-seeds the database every hour.
-  3. Seeds with `php artisan migrate:fresh --seed --force`, retried every 5 seconds up to a timeout: compose's
+  4. Seeds with `php artisan migrate:fresh --seed --force`, retried every 5 seconds up to a timeout: compose's
      `depends_on` only orders the start, so the retry is the readiness check for the database and the API code.
-  4. `wait-for-toolshop.sh` waits for `<API>/brands` and the site, with separate timeouts (the site compiles when
+  5. `wait-for-toolshop.sh` waits for `<API>/brands` and the site, with separate timeouts (the site compiles when
      it starts). Each phase prints its time.
 - `stop-toolshop.sh`: `down -v` with the same compose files, removes the API code volume by name (so a pin update
   never runs old code), and prints how many volumes are left ("unknown" if Docker cannot be reached). Safe when
@@ -173,8 +175,14 @@ uploaded as an artifact; nothing goes to GitHub Pages. The pins file for that co
   writes the pins file, adding a `platform:` line only where amd64 is missing (linux/arm64 when published,
   otherwise the first platform with its variant). It writes a temporary file and replaces the pins file only when
   every image is pinned; if Docker Hub cannot be reached it stops and leaves the old file.
-- **Updating the pins:** change the commit in `toolshop-env.sh` and run the pin script (they are one pair), run
-  the tests locally against the public site, then let CI run on the new copy.
+- `check-toolshop-pair.sh` (Docker): proves the pins file and the commit are one pair. It compares one file inside
+  each image with the same file in the clone at the pinned commit: the UI's `payment.component.html` and the API's
+  `config/jwt.php`. It prints only "match" or "mismatch", never a file's content, and fails on a mismatch. Sprint 5
+  only: the with-bugs images are not yet checked against the pinned commit.
+- **Pinned version:** Toolshop tag 2.5 (commit `9e7736c`, 22-08-2026), which the published 2.5 images were built
+  from. The public site runs newer code.
+- **Updating the pins:** change the commit in `toolshop-env.sh` and run the pin script (they are one pair), start
+  the local copy (the pair check runs), run the tests on it, then let CI run on the new copy.
 - **First measured CI run (09-11-2026):** containers up 28 s, seeded 37 s, API ready at once, site 5 s; ready after
   42 s; 14 tests in 9.8 s; volumes left after stop: 0. The timeouts (seed 300 s, API 120 s, site 420 s, job
   30 minutes) are first values, tightened after more runs.

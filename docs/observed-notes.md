@@ -35,7 +35,11 @@ a defect.
    Payment step; the second shows "Thanks for your order! Your invoice number is INV-…". Tests click Confirm again
    only if "Payment was successful" shows on the Payment step, and assert only the final confirmation, so they pass
    with one click or two. Team to confirm whether one click should place
-   the order. Seen by: QA engineer, 13-11-2026, on the normal site. Status: open.
+   the order. On the local and CI copy (Toolshop 2.5, commit 9e7736c) there is one finish button, labelled
+   "Confirm" and clicked twice: the first click checks the payment, the second creates the invoice (Toolshop's
+   `payment.component.ts` at that commit). The public site's newer code labels it "Check payment" until the first
+   click (note 19). Seen by: QA
+   engineer, 13-11-2026, on the normal (not with-bugs) local copy. Status: open.
 8. **The cart shows a total of 0 or below while the quantity field holds 0 or -1.** As soon as the field is left,
    the quantity goes back to 1 and the total is right again. Team to confirm. Seen by: QA engineer, 13-11-2026, on
    the normal site. Status: open.
@@ -87,8 +91,8 @@ a defect.
     from the browser only when that DELETE is answered, success or error (the site's code: `cart.service.ts`,
     `payment.component.ts`). A page loaded before that answer keeps the badge at 1 for a cart already ordered. Checked
     by hand by the QA engineer, 14-11-2026, in Chrome DevTools with the DELETE's answer delayed by 10 s, then a full
-    load of home: badge 1, on the local development copy and on the public site (a production build of a newer
-    Toolshop version than the pinned one, whose first payment button is named "Check payment" where the pinned copy
+    load of home: badge 1, on the local development copy and on the public site (a production build running newer
+    code than the local copy's images, whose first payment button is named "Check payment" where the local copy
     shows "Confirm", note 19), so this is the site's own timing, not a development-server effect. DELETE answer times seen by hand: 68 and 116 ms locally, 167
     ms on the public site. This explains the earlier automated numbers (4.1 alone, 2 workers, local copy, 13-11-2026):
     badge 1 on the confirmation page in about 1 of 12 runs (1 of 40 with the wait for the add-to-cart message), after
@@ -111,10 +115,26 @@ a defect.
     properties of undefined (reading 'cart_items')" at `cart.component.html:4` (compare note 12, the same error with
     "null" after the cart was emptied). How often, and whether anything on the page breaks, was not checked. Team to
     confirm. Seen by: QA engineer by hand, 14-11-2026, on the local development copy. Never asserted. Status: open.
-19. **On the public site's newer version, Confirm stays disabled after switching the payment method.** The public
-    site runs a newer Toolshop version than the pinned one: after choosing a payment method its button is "Check
-    payment", which shows "Payment was successful" and then a "Confirm" button (on the pinned copy both are named
-    "Confirm", note 7). With Cash on Delivery, Check payment, then switching the method to Credit Card, Confirm shows
-    disabled. With an invalid card number, Check payment is disabled. Team to confirm what is intended. Not met by the
-    tests, which run on the pinned copy. Seen by: QA engineer by hand, 15-11-2026, on the public site. Never
-    asserted. Status: open.
+19. **On the public site, Confirm stays disabled after switching the payment method.** The public site runs newer
+    code than the local and CI copy (Toolshop 2.5, commit 9e7736c): after choosing
+    a payment method its button is "Check payment", which shows
+    "Payment was successful" and then a "Confirm" button; on the local copy one button labelled "Confirm" is clicked
+    twice (note 7). With
+    Cash on Delivery, Check payment, then switching the method to Credit Card, Confirm shows disabled. With an
+    invalid card number, Check payment is disabled. Team to confirm what is intended. Not met by the tests, which
+    run on the local copy. Seen by: QA engineer by hand, 15-11-2026, on the public site. Never asserted. Status: open.
+20. **The local copy's header shows "QA Run", which is not in Toolshop's source.** The header on the local copy has a
+    "QA Run" entry. It is not in the Sprint 5 UI source at the pinned commit (9e7736c) or at the newer commit the
+    public site runs, nor in the running UI container's source; likely added by a script when the page loads. It was
+    not opened, and the tests never click it. Seen by: QA engineer by hand, 15-11-2026, on the local development
+    copy. Never asserted. Status: open.
+21. **The product list came back empty twice on the local copy, cause not found.** In the first two full runs on the
+    pin to Toolshop 2.5 (`--repeat-each=3` at 2 workers, fresh copy each): (1) "Category plus brand narrows to the
+    intersection" failed all three repeats: after ticking ForgeFlex Tools the API answered `/products` with an empty
+    list; (2) "Each sub-category shows the expected product names" failed its first repeat: the page sent no
+    `/products` request within 5 s. Nine later runs (one with the image pair check switched off, four more on the
+    pin, four on the main branch) all passed, and the seeded counts, read from the database after each start, were
+    the same every time: 40 products for ForgeFlex Tools, 6 of them in Hammer. Open question, possible and not shown:
+    Toolshop's API keeps product lists for 5 minutes per filter, so one empty first answer would be served again to
+    the repeats that follow; that would fit case 1, not case 2. No test or wait was changed for this. Seen by: QA
+    engineer's automated runs, 16-11-2026, on the local development copy. Never asserted. Status: open.

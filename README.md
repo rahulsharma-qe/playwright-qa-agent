@@ -1,17 +1,28 @@
 # playwright-qa-agent
 
-A Playwright + TypeScript test framework for QA teams. Next: an AI assistant drafts tests, a person approves them.
+A Playwright + TypeScript test framework for QA teams, with AI-drafted tests that a person reviews and approves
+before they are merged. Built: 30 UI tests (login, search, cart, category filters, checkout), CI on every pull
+request, a published test report, and a planted-bug run that measures what the tests catch.
 
 **Latest test report (main):** https://rahulsharma-qe.github.io/playwright-qa-agent/
 
 Tests run against **Toolshop**, the Sprint 5 version of the practice web shop by
-[Testsmith](https://github.com/testsmith-io/practice-software-testing). Local runs use the public site
-(practicesoftwaretesting.com); CI runs Toolshop's published images privately inside the runner (see [CI](#ci)).
+[Testsmith](https://github.com/testsmith-io/practice-software-testing). The main path is a pinned local copy of
+Toolshop, the same one CI starts inside its runner (see [Run it](#run-it) and [CI](#ci)).
 
-> **The public site is ahead of the pinned Toolshop version (seen 15-11-2026).** Its Payment step now shows a "Check
-> payment" button before "Confirm", so a run with the default settings fails 5 checkout tests (3.1, 3.3, 3.4, 4.1,
-> 4.2). Until the pinned version is updated, run the pinned copy: `ci/start-toolshop.sh`, then
-> `BASE_URL=http://localhost:4200 API_URL=http://localhost:8091 npm test` (see [CI](#ci)).
+> **The tests are pinned to Toolshop 2.5 (commit 9e7736c), which the local and CI copy run.** There, Payment has one
+> finish button labelled "Confirm", clicked twice. The public site runs a newer version, where Payment shows "Check
+> payment" before "Confirm", so the Payment tests fail there. Run the
+> pinned copy with `ci/start-toolshop.sh` (see [Run it](#run-it)). With the default settings the tests run against
+> the public site; a run there on 15-11-2026 failed 5 tests, all at the Payment step: "Invalid credit card fields
+> show their messages and keep Confirm disabled" (3.1), "An invalid Bank Name shows its message and disables
+> Confirm" (3.3), "An invalid Gift Card Number shows its message and disables Confirm" (3.4), "Happy path with a
+> credit card" (4.1) and "Happy path with Cash on Delivery" (4.2).
+
+**Proof of "AI drafts, a person decides":** pull request
+[#24](https://github.com/rahulsharma-qe/playwright-qa-agent/pull/24): its first commit holds the AI test
+generator's raw drafts byte for byte, its second commit the QA engineer's decisions, and every edit has a row with
+its reason in the [drafting log](docs/ai-drafting-log.md).
 
 ## Built / Next / Later
 
@@ -43,11 +54,18 @@ Tests run against **Toolshop**, the Sprint 5 version of the practice web shop by
 - GitHub Actions on every pull request and push to main: a pass/fail table on the run page, and the Allure report
   attached to the run (`allure-report`), even when tests fail
 - The report from main published on GitHub Pages (link at the top), also when tests fail
-- Tags: `@sanity` (login works, search, one category filter) and `@regression` (the rest); `npm run test:sanity` for a quick check after a deploy or a fix
+- Tags: `@sanity` (login works, search, one category filter, one order) and `@regression` (the rest); `npm run test:sanity` for a quick check after a deploy or a fix
+- AI-assisted tests, one user flow at a time: Playwright's test agents explore the site, write a test plan and draft
+  tests with our page objects; a person approves the plan and the tests in pull requests. Built for the category
+  filters and checkout (25 of the 30 UI tests). Rules for the agents: [AGENTS.md](AGENTS.md); how to use them:
+  [docs/ai-assisted-tests.md](docs/ai-assisted-tests.md); every drafted test and its outcome:
+  [docs/ai-drafting-log.md](docs/ai-drafting-log.md)
 
 **Next**
-- AI agents explore the site, write a test plan and draft tests with our page objects; a person approves each step in a pull request.
-  Rules for the agents: [AGENTS.md](AGENTS.md); how to use them: [docs/ai-assisted-tests.md](docs/ai-assisted-tests.md)
+- Move the local and CI copy to the public site's Toolshop version, with a production build of its UI (no
+  development server), then the Payment and address tests checked again
+- The contact form flow, with a test plan written by the QA engineer in plain English and drafted by the AI test generator
+- The planted-bug run again after step 2, to measure what the AI-drafted tests catch
 
 **Later**
 - A full agent: reads a requirement, plans tests, drafts them, heals broken locators; every change comes as a pull request a person approves
@@ -86,12 +104,17 @@ secret scan, bot-check detection, CI and the Toolshop copy, settings and version
 nvm use                      # Node version from .nvmrc (22.18 or later: Node runs one TypeScript script directly)
 npm ci
 npx playwright install chromium
-cp .env.example .env         # optional: only to test another Toolshop copy
-npm test
-npm run test:sanity         # only @sanity tests (setup still runs)
-npm run test:seed           # only the AI agents' starting test (npm test leaves it out)
-npm run report              # build the Allure report and open it
+ci/start-toolshop.sh         # the pinned local copy of Toolshop (needs Docker; see CI below)
+export BASE_URL=http://localhost:4200 API_URL=http://localhost:8091   # every command below runs on that copy
+npm test                     # 64 tests: 32 unit, 2 set-up, 30 UI
+npm run test:sanity          # only @sanity tests (setup still runs)
+npm run test:seed            # only the AI agents' starting test (npm test leaves it out)
+npm run report               # build the Allure report and open it
+ci/stop-toolshop.sh          # when you are done
 ```
+
+Without `BASE_URL` and `API_URL` the commands run against the public site, which runs a newer Toolshop version
+than the pinned one (see the note at the top).
 
 A trace attached to a failed test opens with `npx playwright show-trace <file>` or at trace.playwright.dev.
 
@@ -146,7 +169,8 @@ ci/stop-toolshop.sh
 ```
 
 To update Toolshop in CI: change `TOOLSHOP_COMMIT` in `ci/toolshop-env.sh` and run `ci/pin-toolshop-images.sh`
-(the two are one pair), run the tests locally against the public site, then let CI run on the new copy.
+(the two are one pair), start the local copy (`ci/check-toolshop-pair.sh` runs and stops on a mismatch), run the
+tests on it, then let CI run on the new copy.
 
 ## How strong are the tests?
 
@@ -186,15 +210,18 @@ test('login works', { tag: '@sanity' }, async ({ loginPage, header }) => {
 
 ## Honest lines
 
-- Five tests prove the framework, not the coverage of a shop. Small on purpose.
+- Five hand-written tests prove the framework; the AI-drafted tests (25) add a few user flows. Neither is the
+  coverage of a shop. Small on purpose.
 - Toolshop is shared by everyone and can be slow or down; the site check says when the environment, not a test, is the problem.
 - Each run leaves throwaway accounts on Toolshop: two, plus one per order-placing test (orders on one account at
   the same moment collide, observed note 17), plus one more each time a retry starts a new worker; there is no API to delete them, and
   the site's resets clear them.
 - Lockout after failed logins is not tested yet (Later: on an account made for it, on our own copy).
-- CI tests its own copy of Toolshop Sprint 5, not the public site; the public site is tested by local runs. Images
-  are pinned, so Toolshop changes reach CI only when the pins are updated. Starting Toolshop adds about a minute (Toolshop ready after 42 s in the first measured run) to
+- CI tests its own copy of Toolshop Sprint 5, not the public site. Images are pinned, so Toolshop changes reach CI
+  only when the pins are updated. The pins are Toolshop 2.5; the public site runs newer code and fails the Payment
+  tests (see the note at the top). Starting Toolshop adds about a minute (Toolshop ready after 42 s in the first measured run) to
   every CI run.
+- The with-bugs images are not yet checked against the pinned commit.
 - Toolshop's web server image is published for arm64 only, so CI (amd64) runs it under emulation (QEMU); the
   other images run natively.
 - The local copy (CI's own too) runs Toolshop's development server, which sometimes rebuilds the billing address
@@ -202,6 +229,12 @@ test('login works', { tag: '@sanity' }, async ({ loginPage, header }) => {
   report and counted on the run page. At 4 workers on a laptop, refills were more than 1 in 10 runs.
 - The postal-code length check (2.3) is left out until the production build of the UI: the development server
   reset its form once in 44 runs.
+- The checkout order tests wait for the site's own answer that it emptied the cart; a customer who leaves the
+  confirmation page at once keeps a cart badge for an order already placed (observed note 16), which is not tested.
+- Flakiness numbers are from a development-server copy of Toolshop.
+- Toolshop's header shows "Testing Guide" on every page, the local copy too. The AI agents' page snapshots from
+  the category-filters and checkout sessions show that button only; none shows the guide or the "with bugs" site
+  open. The snapshots are what the sessions kept, not a full record.
 - The CI copy is not fully offline: Toolshop checks new passwords against the Have I Been Pwned service, so a slow
   or unreachable service shows as "Could not register a test customer … environment problem".
 
