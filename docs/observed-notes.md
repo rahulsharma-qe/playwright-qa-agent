@@ -118,7 +118,18 @@ a defect.
 19. **On the public site, Confirm stays disabled after switching the payment method.** The public site runs newer
     code than the local and CI copy (Toolshop 2.5, commit 9e7736c): after choosing
     a payment method its button is "Check payment", which shows
-    "Payment was successful" and then a "Confirm" button; on the local copy both are named "Confirm" (note 7). With
+    "Payment was successful" and then a "Confirm" button; on the local copy one button labelled "Confirm" is clicked
+    twice (note 7). With
     Cash on Delivery, Check payment, then switching the method to Credit Card, Confirm shows disabled. With an
     invalid card number, Check payment is disabled. Team to confirm what is intended. Not met by the tests, which
     run on the local copy. Seen by: QA engineer by hand, 15-11-2026, on the public site. Never asserted. Status: open.
+21. **The product list came back empty twice on the local copy, cause not found.** In the first two full runs on the
+    pin to Toolshop 2.5 (`--repeat-each=3` at 2 workers, fresh copy each): (1) "Category plus brand narrows to the
+    intersection" failed all three repeats: after ticking ForgeFlex Tools the API answered `/products` with an empty
+    list; (2) "Each sub-category shows the expected product names" failed its first repeat: the page sent no
+    `/products` request within 5 s. Nine later runs (one with the image pair check switched off, four more on the
+    pin, four on the main branch) all passed, and the seeded counts, read from the database after each start, were
+    the same every time: 40 products for ForgeFlex Tools, 6 of them in Hammer. Open question, possible and not shown:
+    Toolshop's API keeps product lists for 5 minutes per filter, so one empty first answer would be served again to
+    the repeats that follow; that would fit case 1, not case 2. No test or wait was changed for this. Seen by: QA
+    engineer's automated runs, 16-11-2026, on the local development copy. Never asserted. Status: open.
