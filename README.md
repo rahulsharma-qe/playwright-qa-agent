@@ -222,6 +222,8 @@ test('login works', { tag: '@sanity' }, async ({ loginPage, header }) => {
   tests (see the note at the top). Starting Toolshop adds about a minute (Toolshop ready after 42 s in the first measured run) to
   every CI run.
 - The with-bugs images are not yet checked against the pinned commit.
+- One kind of failure cannot pass on a retry: Toolshop's API keeps a product list for 5 minutes, so an empty answer
+  stays empty for a retry inside that time (observed note 21).
 - Toolshop's web server image is published for arm64 only, so CI (amd64) runs it under emulation (QEMU); the
   other images run natively.
 - The local copy (CI's own too) runs Toolshop's development server, which sometimes rebuilds the billing address
