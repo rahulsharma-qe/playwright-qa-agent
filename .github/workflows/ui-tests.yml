@@ -29,6 +29,11 @@ jobs:
 
       - run: npm ci
 
+      - name: Check the number of UI tests
+        run: |
+          npx playwright test --list --grep-invert @seed --reporter=json > test-list.json
+          node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON support/check-test-count.ts test-list.json
+
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
 

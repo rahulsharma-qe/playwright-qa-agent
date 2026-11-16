@@ -6,6 +6,7 @@ playwright-report/
 allure-results/
 allure-report/
 test-results.json
+test-list.json
 
 # Files written by `npx playwright init-agents` (generated; regenerate after a Playwright update).
 # Only these generated files are ignored: the rest of .claude/, .github/ and specs/ stays tracked.
