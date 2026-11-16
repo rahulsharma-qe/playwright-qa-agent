@@ -123,6 +123,11 @@ a defect.
     Cash on Delivery, Check payment, then switching the method to Credit Card, Confirm shows disabled. With an
     invalid card number, Check payment is disabled. Team to confirm what is intended. Not met by the tests, which
     run on the local copy. Seen by: QA engineer by hand, 15-11-2026, on the public site. Never asserted. Status: open.
+20. **The local copy's header shows "QA Run", which is not in Toolshop's source.** The header on the local copy has a
+    "QA Run" entry. It is not in the Sprint 5 UI source at the pinned commit (9e7736c) or at the newer commit the
+    public site runs, nor in the running UI container's source; likely added by a script when the page loads. It was
+    not opened, and the tests never click it. Seen by: QA engineer by hand, 15-11-2026, on the local development
+    copy. Never asserted. Status: open.
 21. **The product list came back empty twice on the local copy, cause not found.** In the first two full runs on the
     pin to Toolshop 2.5 (`--repeat-each=3` at 2 workers, fresh copy each): (1) "Category plus brand narrows to the
     intersection" failed all three repeats: after ticking ForgeFlex Tools the API answered `/products` with an empty
