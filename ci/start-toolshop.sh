@@ -7,6 +7,7 @@
 set -euo pipefail
 source "$(dirname "$0")/toolshop-env.sh"
 SEED_TIMEOUT_S="${SEED_TIMEOUT_S:-300}"
+SEED_LOG_DIR="${SEED_LOG_DIR:-$HOME/.cache/toolshop-seed-logs}"
 
 fail() { echo "ERROR: $*" >&2; exit 1; }
 started=$(date +%s)
@@ -43,15 +44,28 @@ echo "   containers up after $(elapsed)s"
 # depends_on only orders the start; it does not wait for the database or the API code to be ready.
 # The seed is retried until it works: that is the readiness check for both.
 echo "== Seeding the database (retried every 5 s, up to ${SEED_TIMEOUT_S}s)"
+# One log per start, never overwritten, so a later question about a run (when did the seed finish, how many tries)
+# can be answered from the log. Logging only: the retry and its timeout do not change.
+mkdir -p "$SEED_LOG_DIR"
+seed_log="${SEED_LOG_DIR}/seed-$(date -u +%Y%m%dT%H%M%SZ)-${SPRINT}.log"
+utc_now() { date -u +"%d-%m-%Y %H:%M:%S UTC"; }
 deadline=$(( $(date +%s) + SEED_TIMEOUT_S ))
-until compose exec -T laravel-api php artisan migrate:fresh --seed --force >/tmp/toolshop-seed.log 2>&1; do
+attempts=0
+while :; do
+  attempts=$(( attempts + 1 ))
+  echo "== attempt ${attempts} started $(utc_now)" >>"$seed_log"
+  if compose exec -T laravel-api php artisan migrate:fresh --seed --force >>"$seed_log" 2>&1; then
+    echo "== attempt ${attempts} finished $(utc_now)" >>"$seed_log"
+    break
+  fi
+  echo "== attempt ${attempts} failed $(utc_now)" >>"$seed_log"
   if [ "$(date +%s)" -ge "$deadline" ]; then
-    tail -20 /tmp/toolshop-seed.log >&2
-    fail "Local Toolshop database was not ready in $(( SEED_TIMEOUT_S / 60 )) minutes; see the docker compose logs."
+    tail -20 "$seed_log" >&2
+    fail "Local Toolshop database was not ready in $(( SEED_TIMEOUT_S / 60 )) minutes; see ${seed_log} and the docker compose logs."
   fi
   sleep 5
 done
-echo "   seeded after $(elapsed)s"
+echo "   seeded after $(elapsed)s: ${attempts} attempt(s), finished $(utc_now); log ${seed_log}"
 
 "${CI_DIR}/wait-for-toolshop.sh"
 echo "== Toolshop ${SPRINT} ready after $(elapsed)s: site http://localhost:4200, API http://localhost:8091"
