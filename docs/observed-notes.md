@@ -128,13 +128,20 @@ a defect.
     public site runs, nor in the running UI container's source; likely added by a script when the page loads. It was
     not opened, and the tests never click it. Seen by: QA engineer by hand, 15-11-2026, on the local development
     copy. Never asserted. Status: open.
-21. **The product list came back empty twice on the local copy, cause not found.** In the first two full runs on the
-    pin to Toolshop 2.5 (`--repeat-each=3` at 2 workers, fresh copy each): (1) "Category plus brand narrows to the
-    intersection" failed all three repeats: after ticking ForgeFlex Tools the API answered `/products` with an empty
-    list; (2) "Each sub-category shows the expected product names" failed its first repeat: the page sent no
-    `/products` request within 5 s. Nine later runs (one with the image pair check switched off, four more on the
-    pin, four on the main branch) all passed, and the seeded counts, read from the database after each start, were
-    the same every time: 40 products for ForgeFlex Tools, 6 of them in Hammer. Open question, possible and not shown:
-    Toolshop's API keeps product lists for 5 minutes per filter, so one empty first answer would be served again to
-    the repeats that follow; that would fit case 1, not case 2. No test or wait was changed for this. Seen by: QA
-    engineer's automated runs, 16-11-2026, on the local development copy. Never asserted. Status: open.
+21. **The product list came back empty twice on the local copy; why the first answer was empty is not known.** In
+    the first two full runs on the pin to Toolshop 2.5 (`--repeat-each=3` at 2 workers, fresh copy each): (1)
+    "Category plus brand narrows to the intersection" failed all three repeats: after ticking ForgeFlex Tools the API
+    answered `/products` with an empty list; (2) "Each sub-category shows the expected product names" failed its
+    first repeat: the page sent no `/products` request within 5 s. Nine later runs (one with the image pair check
+    switched off, four more on the pin, four on the main branch) all passed, and the seeded counts, read from the
+    database after each start, were the same every time: 40 products for ForgeFlex Tools, 6 of them in Hammer.
+    **Shown (16-11-2026, local copy, fresh start):** the API keeps an empty answer for the same filter for 5 minutes.
+    ForgeFlex Tools had 40 products in the list; with them hidden in the database the API answered the ForgeFlex
+    filter with 0; with them put back, the same filter at once still answered 0; after 5 minutes 10 seconds it
+    answered 40. In Toolshop's code at the pinned commit, `ProductService::getAllProducts` keeps every answer, an
+    empty one too, for 300 seconds under a key built from the filter values, and the page's `QUERY /products` uses
+    the same code. So case 1's three repeats are one event: once the first answer was empty, a retry inside 5
+    minutes could not pass. **Not known:** why that first answer was empty; no code path that would give an empty
+    list for a seeded brand was found. Case 2 (no request at all) is not explained by the cache and stays open. No
+    test or wait was changed for this. Seen by: QA engineer's automated runs and a check on the local copy,
+    16-11-2026. Never asserted. Status: open.
