@@ -108,6 +108,7 @@ ci/start-toolshop.sh         # the pinned local copy of Toolshop (needs Docker; 
 export BASE_URL=http://localhost:4200 API_URL=http://localhost:8091   # every command below runs on that copy
 npm test                     # 64 tests: 32 unit, 2 set-up, 30 UI
 npm run test:sanity          # only @sanity tests (setup still runs)
+npm run test:ready           # the "ready" check: every test 3 times at 2 workers, as before a merge
 npm run test:seed            # only the AI agents' starting test (npm test leaves it out)
 npm run report               # build the Allure report and open it
 ci/stop-toolshop.sh          # when you are done
