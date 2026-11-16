@@ -220,6 +220,7 @@ test('login works', { tag: '@sanity' }, async ({ loginPage, header }) => {
   only when the pins are updated. The pins are Toolshop 2.5; the public site runs newer code and fails the Payment
   tests (see the note at the top). Starting Toolshop adds about a minute (Toolshop ready after 42 s in the first measured run) to
   every CI run.
+- The with-bugs images are not yet checked against the pinned commit.
 - Toolshop's web server image is published for arm64 only, so CI (amd64) runs it under emulation (QEMU); the
   other images run natively.
 - The local copy (CI's own too) runs Toolshop's development server, which sometimes rebuilds the billing address

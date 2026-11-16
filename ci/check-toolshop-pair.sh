@@ -3,13 +3,17 @@
 # are one pair, and a pin is only proven when a file inside each image is the same as that file at the commit.
 #   UI image:  src/app/checkout/payment/payment.component.html  (the Payment step the checkout tests use)
 #   API image: config/jwt.php                                    (the login lifetime the tests rely on)
-# Only "match" or "mismatch" is printed, never a file's content, so the check is safe for every copy.
+# Only "match" or "mismatch" is printed, never a file's content.
 # Needs Docker and the Toolshop clone that start-toolshop.sh makes. Run by start-toolshop.sh; also on its own:
-#   SPRINT=sprint5 ci/check-toolshop-pair.sh
+#   ci/check-toolshop-pair.sh
 set -euo pipefail
 source "$(dirname "$0")/toolshop-env.sh"
 
 fail() { echo "ERROR: $*" >&2; exit 1; }
+
+# The files are compared at the normal copy's paths, so the check is for Sprint 5 only. The with-bugs images are not
+# checked yet: finding their paths would mean reading the with-bugs source.
+[ "$SPRINT" = "sprint5" ] || fail "The pair check runs for SPRINT=sprint5 only; ${SPRINT} is not checked yet."
 
 [ -f "$IMAGES_FILE" ] || fail "No image pins for SPRINT=${SPRINT}: ${IMAGES_FILE} is missing."
 [ "$(git -C "$TOOLSHOP_DIR" rev-parse HEAD 2>/dev/null)" = "$TOOLSHOP_COMMIT" ] ||

@@ -28,8 +28,12 @@ if [ "$(git -C "$TOOLSHOP_DIR" rev-parse HEAD 2>/dev/null)" != "$TOOLSHOP_COMMIT
   echo "Cloned by playwright-qa-agent ci/start-toolshop.sh; safe to delete." >"$TOOLSHOP_DIR/.toolshop-source"
 fi
 
-echo "== Checking that the pinned images were built from ${TOOLSHOP_COMMIT:0:7}"
-"${CI_DIR}/check-toolshop-pair.sh"
+if [ "$SPRINT" = "sprint5" ]; then
+  echo "== Checking that the pinned images were built from ${TOOLSHOP_COMMIT:0:7}"
+  "${CI_DIR}/check-toolshop-pair.sh"
+else
+  echo "== ${SPRINT}: pair not checked (the check compares files at the normal copy's paths only)"
+fi
 
 # cron is left out on purpose: it re-seeds the database every hour, which would reset data in the middle of a run.
 echo "== Starting mariadb, laravel-api, web and angular-ui from pinned images"

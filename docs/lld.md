@@ -158,8 +158,8 @@ uploaded as an artifact; nothing goes to GitHub Pages. The pins file for that co
   1. Fetches Toolshop's repository at the pinned commit into a folder outside this repository; only its compose
      file is used, nothing is copied in. The folder is deleted only if it is empty or holds the marker file the
      script wrote when it cloned (`.toolshop-source`).
-  2. Runs `check-toolshop-pair.sh` (below): the run stops if the pinned images were not built from the pinned
-     commit.
+  2. For Sprint 5, runs `check-toolshop-pair.sh` (below): the run stops if the pinned images were not built from
+     the pinned commit. For the with-bugs copy it prints "pair not checked" and goes on.
   3. Starts `mariadb`, `laravel-api`, `web` and `angular-ui` from Toolshop's `docker-compose.prod.yml` plus our
      pins file. `cron` is not started: it re-seeds the database every hour.
   4. Seeds with `php artisan migrate:fresh --seed --force`, retried every 5 seconds up to a timeout: compose's
@@ -177,7 +177,8 @@ uploaded as an artifact; nothing goes to GitHub Pages. The pins file for that co
   every image is pinned; if Docker Hub cannot be reached it stops and leaves the old file.
 - `check-toolshop-pair.sh` (Docker): proves the pins file and the commit are one pair. It compares one file inside
   each image with the same file in the clone at the pinned commit: the UI's `payment.component.html` and the API's
-  `config/jwt.php`. It prints only "match" or "mismatch", never a file's content, and fails on a mismatch.
+  `config/jwt.php`. It prints only "match" or "mismatch", never a file's content, and fails on a mismatch. Sprint 5
+  only: the with-bugs images are not yet checked against the pinned commit.
 - **Pinned version:** Toolshop tag 2.5 (commit `9e7736c`, 22-08-2026), which the published 2.5 images were built
   from. The public site runs newer code.
 - **Updating the pins:** change the commit in `toolshop-env.sh` and run the pin script (they are one pair), start
