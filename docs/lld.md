@@ -215,8 +215,11 @@ uploaded as an artifact; nothing goes to GitHub Pages. The pins file for that co
 
 ## 8. Settings and versions
 
-- **Settings:** `BASE_URL`, `API_URL` and `SPRINT`, all with defaults (the public Sprint 5 site and API); read from
-  the environment or a git-ignored `.env`.
+- **Settings:** `BASE_URL`, `API_URL` and `SPRINT`, all with defaults (the pinned local copy,
+  `http://localhost:4200` and `http://localhost:8091`, and `sprint5`); read from the environment or a git-ignored
+  `.env`. When the local copy does not answer, the site check says "The local Toolshop copy is not running. Start it
+  with ci/start-toolshop.sh."; any other address that does not answer gets "Toolshop site is not responding at
+  <URL>". Both carry the shared environment phrase.
 - **Config:** `testIdAttribute: 'data-test'` (Toolshop's attribute); `locale: 'en-US'` (the site follows the
   browser language, so texts and role names stay in English); retries 1 in CI and 0 locally; 2 workers in CI.
 - **Versions:** Node in `.nvmrc` only (no `engines` field); `@playwright/test`, `allure-playwright`, the Allure 3
@@ -227,14 +230,14 @@ uploaded as an artifact; nothing goes to GitHub Pages. The pins file for that co
 - **`EXPECTED_UI_TESTS`** in `support/planted-bug-count.ts`: the number of UI tests (projects `login` and
   `logged-in`, the seed left out). CI checks it before the tests (section 7), and the planted-bug summary warns when
   fewer are found. It changes in the same pull request as the tests.
-- **Scripts:** `npm test` (every test but the seed), `npm run test:sanity`, `npm run test:seed`, `npm run
-  test:ready` (every test but the seed, 3 times at 2 workers: the check before a merge; 188 tests in all: 90 UI,
-  96 unit, 2 set-up), `npm run report:build`,
-  `npm run report`.
+- **Scripts:** `npm test` (every test but the seed: 67 tests, 30 UI, 35 unit, 2 set-up), `npm run test:sanity`,
+  `npm run test:seed`, `npm run test:unit`, `npm run test:public-site` (the same tests against the public site and
+  its API), `npm run test:ready` (every test but the seed, 3 times at 2 workers: the check before a merge; 197 tests
+  in all: 90 UI, 105 unit, 2 set-up), `npm run report:build`, `npm run report`.
 - **Verified from a fresh clone:** `npm ci`, `npx playwright install chromium`, `ci/start-toolshop.sh`, then
-  `npm test` with `BASE_URL=http://localhost:4200` and `API_URL=http://localhost:8091` (the README's
-  [Run it](../README.md#run-it)); every commit typechecks and its tests pass. Without those two settings the tests
-  run against the public site, where the Payment tests fail, because it runs newer code than the pin.
+  `npm test` with no settings (the README's [Run it](../README.md#run-it)); every commit typechecks and its tests
+  pass. `npm run test:public-site` runs the public site, where the Payment tests fail, because it runs newer code
+  than the pin.
 
 ## 9. AI-assisted tests
 
