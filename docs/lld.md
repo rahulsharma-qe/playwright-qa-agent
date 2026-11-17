@@ -13,9 +13,13 @@ playwright-qa-agent/
   tests/                  setup files, the hand-written specs, category-filters/ and checkout/ (AI-drafted, decided by
                           the QA engineer), seed.spec.ts (the AI agents' starting test), unit/ for our own helpers
   test-data/              search terms, product names, category and checkout data
-  support/                settings, page addresses, environment messages, test accounts and the API session, bot-check
-                          detector, secret scan, planted-bug count and summary, run-page summaries (address refills,
-                          cart emptied), the test-count check
+  support/apps/           one profile per application under test (toolshop.ts: its environments local, public-site and
+                          with-bugs, with each copy's addresses and differences) and the selection by APP_UNDER_TEST
+                          and TEST_ENV
+  support/                settings, page addresses, the API helper, environment messages, test accounts and the API
+                          session, bot-check detector, secret scan, the run-output paths and clean-up script,
+                          planted-bug count and summary, run-page summaries (address refills, cart emptied), the
+                          test-count check
   ci/                     start, wait for and stop the local and CI copy of Toolshop; image pins, the pin script and the
                           pair check
   specs/                  the test plans (Markdown), one per flow
@@ -25,7 +29,7 @@ playwright-qa-agent/
   .claude/settings.json   the deny list for Claude Code users (the same list as in AGENTS.md)
   playwright.config.ts    projects, reporters, locale, screenshots and traces
   .nvmrc                  the one place the Node version is written
-  .env.example            BASE_URL and API_URL (both have defaults); no account values
+  .env.example            APP_UNDER_TEST, TEST_ENV, BASE_URL and API_URL (all have defaults); no account values
   .github/workflows/ui-tests.yml
 ```
 
