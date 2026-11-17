@@ -275,6 +275,10 @@ How to use the agents: [ai-assisted-tests.md](ai-assisted-tests.md). In short:
   runs the same tests on it. Tests are never written or changed from the bug list or that copy.
 - Differences between the copies that set-up and navigation must follow (sign-up fields, page addresses, where
   the token is kept) are the `with-bugs` environment's in `support/apps/toolshop.ts`; locators, steps and assertions never change.
+- Two runs on that copy are compared without reading them: `support/compare-runs.ts` takes two Playwright JSON
+  results files and compares, per UI test, the name, the outcome and the title of the first failing step
+  (`--outcome-only` leaves the step out; `--files` keeps some spec files); it prints "identical" or only the names
+  that differ.
 - The results are in `docs/bug-hunt.md` only: one table per run, a person matching each failure to a planted bug,
   baselines kept apart (a later run is compared only with the latest baseline on the same version).
 - The list of planted bugs "on our path" is written and merged before the run it is used for.
