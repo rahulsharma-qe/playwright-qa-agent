@@ -189,10 +189,9 @@ values are covered by 3.1.
 
 **Seed:** `tests/seed.spec.ts`
 
-**User story:** Toolshop Sprint 5, "Checkout – Payment (Advanced)", AC9 – Successful order
-(`docs/user-stories/v5.md` in Toolshop's repository, at the pinned commit): "Given valid payment details are provided
-When I click confirm Then the payment is validated, the order is placed, a confirmation with the invoice number is
-shown, and the cart is cleared". The story does not say when the cart is cleared: the site sends DELETE
+**User story:** payment story, AC9 (`docs/user-stories/v5.md` in Toolshop's repository at `9e7736c`, "Checkout –
+Payment (Advanced)"): a confirmed order with valid payment details is placed, shows a confirmation with the invoice
+number, and clears the cart; it does not say when the cart is cleared: the site sends DELETE
 /carts/<cart id> after the invoice is answered and clears the cart icon only when that DELETE is answered (observed
 note 16, checked by hand on the local copy and the public site).
 
