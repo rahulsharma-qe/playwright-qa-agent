@@ -4,6 +4,7 @@
  * npm run test:public-site points both at the public site. No account values: each run makes its own.
  */
 import dotenv from 'dotenv';
+import { appEnvironment, appProfile } from './apps/index.ts';
 
 dotenv.config({ quiet: true });
 
@@ -16,11 +17,17 @@ export const SESSION_TOKEN_FILE = 'playwright/.auth/session-token.json';
 /** One file per account a run registers; git-ignored, read only by the secret scan, never attached to the report. */
 export const RUN_ACCOUNTS_DIR = 'playwright/.auth/run-accounts';
 
+const app = appProfile('toolshop');
+const environment = appEnvironment(app, process.env.SPRINT === 'sprint5-with-bugs' ? 'with-bugs' : 'local');
+
 export const settings = {
+  app,
+  /** The copy under test: its addresses, page-address prefix, token store and sign-up fields (support/apps/). */
+  environment,
   baseUrl: process.env.BASE_URL || 'http://localhost:4200',
   apiUrl: process.env.API_URL || 'http://localhost:8091',
   /** Which Toolshop version is under test (the same SPRINT the CI scripts use). */
-  sprint: process.env.SPRINT || 'sprint5',
+  sprint: environment.version,
 };
 
 /**

@@ -64,7 +64,7 @@ planted-bug run never runs it; CI runs it in its own step.
 - Tests check what the page shows with web-first assertions, or `expect.poll` for a value a page object returns
   (the cart badge updates after an API call); never a value read once and compared.
 - Page objects open pages only through `appUrl()` (`support/app-url.ts`): Sprint 5 uses plain paths, the "with
-  bugs" version hash routing (`/#/…`), chosen by `SPRINT` from each version's router config in Toolshop's source.
+  bugs" version hash routing (`/#/…`): the environment's `pagePrefix` in `support/apps/toolshop.ts`, from each copy's router config in Toolshop's source.
 - `fixtures.ts` gives every page object as a fixture (`header`, `loginPage`, `productListPage`, …); tests never
   write `new LoginPage(page)`. Setup files use the same fixtures.
 
@@ -76,10 +76,10 @@ planted-bug run never runs it; CI runs it in its own step.
   others; the next worker registers one more account, as a retry does. Each checkout test that places an order
   (4.x) registers its own customer in its set-up (`useOwnCustomer()` in `support/api-session.ts`), because two
   workers ordering on one account at the same moment got the same invoice number (observed note 17).
-- **Sign-up fields by version:** `SIGN_UP_FIELDS` in `support/test-accounts.ts`, chosen by `SPRINT`. Sprint 5 needs
+- **Sign-up fields by copy:** `signUpFields` of each environment in the application profile (`support/apps/toolshop.ts`). Sprint 5 needs
   only name, email and password; the "with bugs" version's contract also asks for address, city and country as
   separate fields, and it gets a date of birth to work around a defect not on the planted list (recorded in
-  bug-hunt.md). Made-up values, taken from Toolshop's source at the pinned commit, never from its planted bugs. An unknown `SPRINT` stops with a message; a refused sign-up stops the run
+  bug-hunt.md). Made-up values, taken from Toolshop's source at the pinned commit, never from its planted bugs. An unknown environment stops with a message; a refused sign-up stops the run
   with the environment message (no retry with another shape).
 - **Email** on the reserved `example.com` domain: `pqa-<run id>-<purpose>-<time><random>@example.com`, at most 60
   characters (the "with bugs" version's limit).
@@ -90,7 +90,7 @@ planted-bug run never runs it; CI runs it in its own step.
   password is also sent to GitHub's log mask (`::add-mask::`).
 - **Login is tested once, by the login tests:** they log in through the page. `auth-setup` makes the session for
   the other tests through the API: register, `POST /users/login`, give the token to the site where it keeps it
-  (`TOKEN_STORE` in `support/api-session.ts`: localStorage in Sprint 5, sessionStorage in the "with bugs" version),
+  (the environment's `tokenStore` in `support/apps/toolshop.ts`: localStorage in Sprint 5, sessionStorage in the "with bugs" version),
   check the session the same way on every copy (the API's `GET /users/me` answers 200; on the home page, once the
   Home link (`nav-home`) has rendered, the "Sign in" link is gone), else stop with "The session made through the API was not
   accepted by the site (SPRINT=…; check where this copy keeps the token)". It saves the session (cookies, localStorage) and the token on its own

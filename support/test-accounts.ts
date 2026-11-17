@@ -8,33 +8,8 @@ import { RUN_ACCOUNTS_DIR, settings } from './settings';
 
 export type TestAccount = { email: string; password: string };
 
-/**
- * What each Toolshop version needs at sign-up besides name, email and password, taken from Toolshop's source at the
- * pinned commit (never from its planted bugs). Sprint 5 needs nothing more. The "with bugs" version's contract asks
- * for address, city and country as separate fields. It also gets a date of birth, to work around a defect that is
- * not on the planted list (see docs/bug-hunt.md, "Found, not on the planted list"): its sign-up rules leave `dob`
- * optional, but its database requires it. Made-up values; the date of birth is inside its age rules.
- */
-export const SIGN_UP_FIELDS: Record<string, Record<string, string>> = {
-  sprint5: {},
-  'sprint5-with-bugs': {
-    address: '1 Test Street',
-    city: 'Testville',
-    state: 'Test',
-    country: 'NL',
-    postcode: '1000',
-    dob: '1990-01-01',
-  },
-};
-
-/** The shortest email limit among the versions above (the "with bugs" version allows 60 characters). */
+/** The shortest email limit among Toolshop's copies (the "with bugs" copy allows 60 characters). */
 export const MAX_EMAIL_LENGTH = 60;
-
-export function signUpFieldsFor(sprint: string): Record<string, string> {
-  const fields = SIGN_UP_FIELDS[sprint];
-  if (!fields) throw new Error(`No sign-up fields for SPRINT=${sprint}; add them to SIGN_UP_FIELDS in support/test-accounts.ts.`);
-  return fields;
-}
 
 /** A short, unique email on a reserved domain: pqa-<run id>-<purpose>-<time><random>@example.com. */
 export function testEmail(purpose: string, runId = process.env.GITHUB_RUN_ID || 'local'): string {
@@ -50,7 +25,7 @@ export function testEmail(purpose: string, runId = process.env.GITHUB_RUN_ID || 
  * A refused sign-up stops the run with an environment message.
  */
 export async function registerTestCustomer(request: APIRequestContext, purpose: string): Promise<TestAccount> {
-  const extraFields = signUpFieldsFor(settings.sprint);
+  const extraFields = settings.environment.signUpFields; // the copy's extra sign-up fields (support/apps/)
   const account = { email: testEmail(purpose), password: generatePassword() };
 
   hideInCiLogs(account.password);

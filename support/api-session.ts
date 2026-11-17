@@ -1,25 +1,10 @@
 import type { APIRequestContext, APIResponse, Page } from '@playwright/test';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import type { AppEnvironment } from './apps/app-profile.ts';
 import { BOT_CHECK_MESSAGE, isBotCheck, mightBeBotCheck } from './bot-check';
 import { cannotLogInThroughApi } from './environment-messages';
 import { SESSION_TOKEN_FILE, settings } from './settings';
 import { registerTestCustomer, type TestAccount } from './test-accounts';
-
-/**
- * Where each Toolshop version's site keeps the login token, from its token-storage service in Toolshop's source at
- * the pinned commit. Same key, different storage: Sprint 5 uses localStorage, the "with bugs" version sessionStorage.
- * A difference between the copies, not a planted bug.
- */
-export const TOKEN_STORE: Record<string, { storage: 'localStorage' | 'sessionStorage'; key: string }> = {
-  sprint5: { storage: 'localStorage', key: 'auth-token' },
-  'sprint5-with-bugs': { storage: 'sessionStorage', key: 'auth-token' },
-};
-
-export function tokenStoreFor(sprint: string) {
-  const store = TOKEN_STORE[sprint];
-  if (!store) throw new Error(`No token store for SPRINT=${sprint}; add it to TOKEN_STORE in support/api-session.ts.`);
-  return store;
-}
 
 /** What the API login gives back: the token, and its lifetime in seconds if the reply says. */
 export type ApiLogin = { token: string; expiresInSeconds?: number };
@@ -119,9 +104,9 @@ export async function checkSessionThroughApi(request: APIRequestContext, token: 
   if (status !== 200) throw new Error(`${sessionNotAccepted()} (GET /users/me answered HTTP ${status})`);
 }
 
-/** Puts the token where the site keeps it, before the site's own scripts run on every page of this tab. */
-export async function giveTokenToPage(page: Page, token: string, sprint = settings.sprint): Promise<void> {
-  const { storage, key } = tokenStoreFor(sprint);
+/** Puts the token where the site keeps it (the copy's token store, support/apps/), before the site's own scripts run on every page of this tab. */
+export async function giveTokenToPage(page: Page, token: string, environment: AppEnvironment = settings.environment): Promise<void> {
+  const { storage, key } = environment.tokenStore;
   await page.addInitScript(
     ({ storage, key, token }) => window[storage as 'localStorage' | 'sessionStorage'].setItem(key, token),
     { storage, key, token },
