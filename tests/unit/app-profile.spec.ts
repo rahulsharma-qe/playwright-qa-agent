@@ -1,5 +1,5 @@
 import { expect, test } from '../../fixtures';
-import { appEnvironment, selectRun } from '../../support/apps/index.ts';
+import { appEnvironment, describeRun, selectRun } from '../../support/apps/index.ts';
 import { toolshop } from '../../support/apps/toolshop.ts';
 import { appUrl } from '../../support/app-url';
 
@@ -40,5 +40,15 @@ test.describe('which application and environment a run tests', () => {
 
   test('an unknown application stops with a message naming it and the valid ones', () => {
     expect(() => selectRun({ APP_UNDER_TEST: 'webshop' })).toThrow('Unknown application APP_UNDER_TEST=webshop; valid: toolshop.');
+  });
+});
+
+test.describe("the run's first line", () => {
+  test('says when BASE_URL and API_URL win over TEST_ENV, and where they came from', () => {
+    const run = selectRun({ TEST_ENV: 'public-site', BASE_URL: 'http://localhost:4200', API_URL: 'http://localhost:8091' });
+    expect(describeRun(run, { BASE_URL: '.env', API_URL: '.env' })).toBe(
+      'Testing toolshop, TEST_ENV=public-site: site http://localhost:4200, API http://localhost:8091 ' +
+        '(BASE_URL from .env and API_URL from .env win over TEST_ENV)',
+    );
   });
 });

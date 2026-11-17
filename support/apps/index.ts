@@ -46,3 +46,16 @@ export function selectRun(env: Record<string, string | undefined>): RunSelection
     apiUrl: env.API_URL || environment.apiUrl,
   };
 }
+
+/** Where a BASE_URL or API_URL that wins over TEST_ENV came from. */
+export type AddressSource = 'the environment' | '.env';
+
+/**
+ * The run's first line: what it tests and where. Addresses only. When BASE_URL or API_URL win over TEST_ENV, it
+ * says so and where they came from, so an old .env cannot point a run elsewhere without a word.
+ */
+export function describeRun(run: RunSelection, overrides: Partial<Record<'BASE_URL' | 'API_URL', AddressSource>> = {}): string {
+  const line = `Testing ${run.app.name}, TEST_ENV=${run.environmentName}: site ${run.baseUrl}, API ${run.apiUrl}`;
+  const notes = Object.entries(overrides).map(([name, source]) => `${name} from ${source}`);
+  return notes.length ? `${line} (${notes.join(' and ')} ${notes.length > 1 ? 'win' : 'wins'} over TEST_ENV)` : line;
+}

@@ -2,7 +2,7 @@ import type { APIRequestContext } from '@playwright/test';
 import { test as setup } from '../fixtures';
 import { callApi } from '../support/api-call';
 import { noAnswerFrom, siteNotResponding } from '../support/environment-messages';
-import { settings } from '../support/settings';
+import { RUN_LINE, settings } from '../support/settings';
 
 const TIMEOUT_MS = 15_000;
 
@@ -21,6 +21,9 @@ async function checkResponds(
 }
 
 setup('Toolshop site and API are up', async ({ request }) => {
+  // What this run tests and where, in the console and on the report's set-up step.
+  console.log(RUN_LINE);
+  setup.info().annotations.push({ type: 'Run', description: RUN_LINE });
   const { sitePath, apiPath } = settings.app.healthChecks;
   await checkResponds(request, 'site', `${settings.baseUrl}${sitePath}`);
   await checkResponds(request, 'API', `${settings.apiUrl}${apiPath}`);
