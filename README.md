@@ -247,3 +247,8 @@ Toolshop is © Testsmith and is used with their permission for this non-commerci
 [practice-software-testing](https://github.com/testsmith-io/practice-software-testing). Nothing of Toolshop's code
 is copied into this repository; CI runs its published images privately and removes them after the run, including
 the "with bugs" version, which is run only to measure how many planted bugs the tests catch.
+
+## Licence
+
+MIT, for this repository's own code. Toolshop is Testsmith's and runs under its own licence; its repository is
+fetched into a cache folder outside this repository at run time, and nothing of it is committed here.
