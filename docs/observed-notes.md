@@ -142,6 +142,9 @@ a defect.
     empty one too, for 300 seconds under a key built from the filter values, and the page's `QUERY /products` uses
     the same code. So case 1's three repeats are one event: once the first answer was empty, a retry inside 5
     minutes could not pass. **Not known:** why that first answer was empty; no code path that would give an empty
-    list for a seeded brand was found. Case 2 (no request at all) is not explained by the cache and stays open. No
+    list for a seeded brand was found. In the first failing run, the unfiltered list was full just before each empty
+    answer; when that run's seed finished, and whether it needed more than one attempt, was not kept (the start
+    script now keeps a seed log per start). The trace kept no request or answer bodies, so the brand id the page sent
+    could not be compared with the products' brand id. Case 2 (no request at all) is not explained by the cache and stays open. No
     test or wait was changed for this. Seen by: QA engineer's automated runs and a check on the local copy,
     16-11-2026. Never asserted. Status: open.
