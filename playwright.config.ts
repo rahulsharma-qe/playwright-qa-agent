@@ -1,9 +1,10 @@
 import { defineConfig, devices } from '@playwright/test';
+import type { TestOptions } from './fixtures';
 import { SESSION_FILE, settings } from './support/settings';
 
 const inCI = !!process.env.CI;
 
-export default defineConfig({
+export default defineConfig<TestOptions>({
   testDir: './tests',
   fullyParallel: true,
   forbidOnly: inCI,
@@ -35,6 +36,7 @@ export default defineConfig({
       use: {
         ...devices['Desktop Chrome'],
         storageState: SESSION_FILE,
+        signedIn: true, // fixtures.ts gives these tests the saved session's token
         trace: 'retain-on-failure', // no password is typed here
       },
       dependencies: ['auth-setup'],
