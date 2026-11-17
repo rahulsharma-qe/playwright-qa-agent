@@ -254,6 +254,9 @@ How to use the agents: [ai-assisted-tests.md](ai-assisted-tests.md). In short:
   `tests/seed.spec.ts` in the project `logged-in` (named in every call), and never edit the seed. They must not read
   `docs/bug-hunt.md`, the with-bugs pins and workflow, or Toolshop's source in `~/.cache/toolshop-source/`;
   `.claude/settings.json` blocks the same paths. The seed test stops on any other copy.
+- **Header links:** `AGENTS.md` forbids clicking Testing Guide, Bug Hunting or QA Run in the site's header and
+  opening `/assets/testing-guide.html` or the with-bugs site. It is a rule and a check after each session (a search
+  of `.playwright-mcp/` and the generator report, written in the pull request), not a block.
 
 ## 10. Planted-bug runs
 
