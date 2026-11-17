@@ -114,8 +114,8 @@ npm run report               # build the Allure report and open it
 ci/stop-toolshop.sh          # when you are done
 ```
 
-If the local copy is not running, the run stops at the site check with "The local Toolshop copy is not running.
-Start it with ci/start-toolshop.sh."
+If the local copy is not running, the site check shows as 1 failed with this message, and the other tests do not
+run: "The local Toolshop copy is not running. Start it with ci/start-toolshop.sh."
 
 ### Run against the public site
 
@@ -124,7 +124,12 @@ Start it with ci/start-toolshop.sh."
 - the Payment tests fail there, because the public site runs newer Toolshop code than the pinned copy (see the note
   at the top);
 - the site's login lasts 5 minutes, so a run that takes longer can meet an expired session in its last tests;
-- after a deploy, `npm run test:sanity` checks the deployed site only with `BASE_URL` and `API_URL` set to it.
+- after a deploy, `npm run test:sanity` checks the deployed site only with `BASE_URL` and `API_URL` set to it;
+- the public site's data is shared with other visitors; a run can fail many tests when they have changed it, until
+  the site's hourly reset.
+
+`test:public-site` sets the two addresses in the command itself, which works on macOS, Linux and CI. On Windows, set
+`BASE_URL` and `API_URL` in `.env` instead.
 
 A trace attached to a failed test opens with `npx playwright show-trace <file>` or at trace.playwright.dev.
 
@@ -153,7 +158,7 @@ Start the same copy on your machine (needs Docker):
 
 ```bash
 ci/start-toolshop.sh
-BASE_URL=http://localhost:4200 API_URL=http://localhost:8091 npm test
+npm test
 ci/stop-toolshop.sh
 ```
 
@@ -175,7 +180,7 @@ Failed tests are the result there, so that workflow stays green when they fail. 
 
 ```bash
 SPRINT=sprint5-with-bugs ci/start-toolshop.sh
-SPRINT=sprint5-with-bugs BASE_URL=http://localhost:4200 API_URL=http://localhost:8091 npm test
+SPRINT=sprint5-with-bugs npm test
 ci/stop-toolshop.sh
 ```
 
