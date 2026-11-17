@@ -20,9 +20,8 @@ approval.
 
 ## One-time set-up
 
-1. Start the normal Sprint 5 copy: `ci/start-toolshop.sh` (it uses `SPRINT=sprint5` by default). In `.env`, set
-   `BASE_URL=http://localhost:4200` and `API_URL=http://localhost:8091` (the addresses it prints), and no `SPRINT`
-   other than `sprint5`. Before a long or measured run (for example `npm run test:ready`), restart the local copy
+1. Start the normal Sprint 5 copy: `ci/start-toolshop.sh` (it uses `SPRINT=sprint5` by default). The default
+   settings already point at it; set no `SPRINT` other than `sprint5`. Before a long or measured run (for example `npm run test:ready`), restart the local copy
    (`ci/stop-toolshop.sh`, then `ci/start-toolshop.sh`): a copy left running for hours keeps every order and cart
    and gets slower.
 2. Write the agent files for your assistant:

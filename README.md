@@ -12,9 +12,9 @@ Toolshop, the same one CI starts inside its runner (see [Run it](#run-it) and [C
 
 > **The tests are pinned to Toolshop 2.5 (commit 9e7736c), which the local and CI copy run.** There, Payment has one
 > finish button labelled "Confirm", clicked twice. The public site runs a newer version, where Payment shows "Check
-> payment" before "Confirm", so the Payment tests fail there. Run the
-> pinned copy with `ci/start-toolshop.sh` (see [Run it](#run-it)). With the default settings the tests run against
-> the public site; a run there on 15-11-2026 failed 5 tests, all at the Payment step: "Invalid credit card fields
+> payment" before "Confirm", so the Payment tests fail there. The default settings run the pinned copy, started
+> with `ci/start-toolshop.sh` (see [Run it](#run-it)); `npm run test:public-site` runs the public site, where a run
+> on 15-11-2026 failed 5 tests, all at the Payment step: "Invalid credit card fields
 > show their messages and keep Confirm disabled" (3.1), "An invalid Bank Name shows its message and disables
 > Confirm" (3.3), "An invalid Gift Card Number shows its message and disables Confirm" (3.4), "Happy path with a
 > credit card" (4.1) and "Happy path with Cash on Delivery" (4.2).
@@ -105,23 +105,38 @@ nvm use                      # Node version from .nvmrc (22.18 or later: Node ru
 npm ci
 npx playwright install chromium
 ci/start-toolshop.sh         # the pinned local copy of Toolshop (needs Docker; see CI below)
-export BASE_URL=http://localhost:4200 API_URL=http://localhost:8091   # every command below runs on that copy
-npm test                     # 64 tests: 32 unit, 2 set-up, 30 UI
+npm test                     # 67 tests: 35 unit, 2 set-up, 30 UI; no settings needed, the defaults are this copy
 npm run test:sanity          # only @sanity tests (setup still runs)
-npm run test:ready           # the "ready" check: every test 3 times at 2 workers, as before a merge
+npm run test:ready           # the "ready" check: every test but the seed 3 times at 2 workers, as before a merge
+npm run test:unit            # only the unit tests (no Toolshop needed)
 npm run test:seed            # only the AI agents' starting test (npm test leaves it out)
 npm run report               # build the Allure report and open it
 ci/stop-toolshop.sh          # when you are done
 ```
 
-Without `BASE_URL` and `API_URL` the commands run against the public site, which runs a newer Toolshop version
-than the pinned one (see the note at the top).
+If the local copy is not running, the site check shows as 1 failed with this message, and the other tests do not
+run: "The local Toolshop copy is not running. Start it with ci/start-toolshop.sh."
+
+### Run against the public site
+
+`npm run test:public-site` runs the same tests against https://practicesoftwaretesting.com and its API. Expect:
+
+- the Payment tests fail there, because the public site runs newer Toolshop code than the pinned copy (see the note
+  at the top);
+- the site's login lasts 5 minutes, so a run that takes longer can meet an expired session in its last tests;
+- after a deploy, `npm run test:sanity` checks the deployed site only with `BASE_URL` and `API_URL` set to it;
+- the public site's data is shared with other visitors; a run can fail many tests when they have changed it, until
+  the site's hourly reset.
+
+`test:public-site` sets the two addresses in the command itself, which works on macOS, Linux and CI. On Windows, set
+`BASE_URL` and `API_URL` in `.env` instead.
 
 A trace attached to a failed test opens with `npx playwright show-trace <file>` or at trace.playwright.dev.
 
 ## Settings
 
-`BASE_URL`, `API_URL` and `SPRINT` (the Toolshop version) are the only settings, and all have defaults. There
+`BASE_URL`, `API_URL` and `SPRINT` (the Toolshop version) are the only settings, and all have defaults: the
+pinned local copy (`http://localhost:4200`, API `http://localhost:8091`) and Sprint 5. There
 are no account values anywhere: shared demo accounts get locked by other visitors, and accounts registered by
 hand are removed when Toolshop resets its data. So each run registers two customers through Toolshop's API (one for the logged-in tests, one
 for the login tests; one more per retry; in CI, one more for the agents' starting test). Their emails use the reserved `example.com` domain; the passwords are
@@ -143,7 +158,7 @@ Start the same copy on your machine (needs Docker):
 
 ```bash
 ci/start-toolshop.sh
-BASE_URL=http://localhost:4200 API_URL=http://localhost:8091 npm test
+npm test
 ci/stop-toolshop.sh
 ```
 
@@ -165,7 +180,7 @@ Failed tests are the result there, so that workflow stays green when they fail. 
 
 ```bash
 SPRINT=sprint5-with-bugs ci/start-toolshop.sh
-SPRINT=sprint5-with-bugs BASE_URL=http://localhost:4200 API_URL=http://localhost:8091 npm test
+SPRINT=sprint5-with-bugs npm test
 ci/stop-toolshop.sh
 ```
 

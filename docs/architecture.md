@@ -102,8 +102,8 @@ flowchart LR
   ([practice-software-testing](https://github.com/testsmith-io/practice-software-testing)), is the application
   under test. The tests are pinned to **Toolshop 2.5 (commit `9e7736c`)**, and the published images they run match
   that commit (a pair check proves it before each Sprint 5 start). The **pinned local copy** (`ci/start-toolshop.sh`) is the
-  main path; CI starts **its own copy** of the same version. The **public site** runs newer code, where the Payment
-  tests fail; the default settings point at it.
+  main path, and the default settings point at it; CI starts **its own copy** of the same version. The **public
+  site** runs newer code, where the Payment tests fail; `npm run test:public-site` runs against it.
 - **Toolshop's API** is also called directly: the site check reads its brands list, each run registers its own
   test customers through it, and the logged-in session is made through it.
 - **GitHub Actions** runs CI; **GitHub Pages** hosts the report from main.

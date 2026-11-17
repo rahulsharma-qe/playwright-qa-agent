@@ -13,6 +13,24 @@ export function siteNotResponding(what: 'site' | 'API', url: string): string {
   return `Toolshop ${what} is not responding at ${url}; ${ENVIRONMENT_PHRASE}.`;
 }
 
+/** True for an address on this machine, where the pinned local copy runs. */
+export function isLocalAddress(url: string): boolean {
+  return ['localhost', '127.0.0.1'].includes(new URL(url).hostname);
+}
+
+/** The local copy did not answer: almost always it was not started. */
+export function localCopyNotRunning(): string {
+  return (
+    'The local Toolshop copy is not running. Start it with ci/start-toolshop.sh. ' +
+    `${ENVIRONMENT_PHRASE.charAt(0).toUpperCase()}${ENVIRONMENT_PHRASE.slice(1)}.`
+  );
+}
+
+/** The message for an address that gave no answer at all: the local copy's own, or "not responding at <URL>". */
+export function noAnswerFrom(what: 'site' | 'API', url: string): string {
+  return isLocalAddress(url) ? localCopyNotRunning() : siteNotResponding(what, url);
+}
+
 export function cannotLogInThroughApi(reason: string): string {
   return `Could not log the test customer in through Toolshop's API (${reason}); ${ENVIRONMENT_PHRASE}.`;
 }

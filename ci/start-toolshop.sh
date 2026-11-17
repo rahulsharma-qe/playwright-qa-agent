@@ -2,7 +2,7 @@
 # Starts a private copy of Toolshop (Testsmith's practice shop, https://github.com/testsmith-io/practice-software-testing)
 # from its published images, seeds it, and waits until the API and the site answer.
 # CI runs the tests against this copy; anyone with Docker can start the same copy:
-#   ci/start-toolshop.sh        then   BASE_URL=http://localhost:4200 API_URL=http://localhost:8091 npm test
+#   ci/start-toolshop.sh        then   npm test (the default settings are this copy)
 #   ci/stop-toolshop.sh
 set -euo pipefail
 source "$(dirname "$0")/toolshop-env.sh"
