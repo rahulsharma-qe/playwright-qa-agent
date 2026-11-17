@@ -11,9 +11,10 @@
 
 - [ ] The tests pass locally and in CI.
 - [ ] Nothing here is taken from the planted-bug list.
-- [ ] After each agent session: searched `.playwright-mcp/` and the generator report for the page
-      `testing-guide.html` and the site `with-bugs.practicesoftwaretesting.com` (not the button labels); the result
-      is written in this pull request.
+- [ ] After each agent session: searched for the page `testing-guide.html` and the site
+      `with-bugs.practicesoftwaretesting.com` (not the button labels) in `.playwright-mcp/`, plus the generator report
+      after a generator session; result and grep's exit code written here (1 = nothing found, 2 = the check did not
+      run).
 
 **Tests drafted by an AI agent**
 - [ ] First commit: the generator's files moved unchanged to `drafts/<flow>/`, with its report and checksums; searched for account values and "token" first. Second commit: moved into `tests/`, with the QA engineer's decisions (AI-proposed edits logged).
