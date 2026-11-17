@@ -101,7 +101,7 @@ flowchart LR
 - **Toolshop**, the Sprint 5 version of Testsmith's practice web shop
   ([practice-software-testing](https://github.com/testsmith-io/practice-software-testing)), is the application
   under test. The tests are pinned to **Toolshop 2.5 (commit `9e7736c`)**, and the published images they run match
-  that commit (a pair check proves it before each start). The **pinned local copy** (`ci/start-toolshop.sh`) is the
+  that commit (a pair check proves it before each Sprint 5 start). The **pinned local copy** (`ci/start-toolshop.sh`) is the
   main path; CI starts **its own copy** of the same version. The **public site** runs newer code, where the Payment
   tests fail; the default settings point at it.
 - **Toolshop's API** is also called directly: the site check reads its brands list, each run registers its own
@@ -171,8 +171,8 @@ flowchart LR
 
 - **Flaky is visible:** CI retries once; a test that passes only on retry is flaky, not passed, and Allure shows
   the retry.
-- **Ready before merge:** a new or changed test is ready only when `npm run test:ready` (every test 3 times at 2
-  workers, on a freshly started local copy) passes every time and three CI runs are green. One failure is a flaky
+- **Ready before merge:** a new or changed test is ready only when `npm run test:ready` (every test but the seed, 3
+  times at 2 workers, on a freshly started local copy) passes every time and three CI runs are green. One failure is a flaky
   test: fixed or left out with its reason, never merged.
 - **Observed notes are never asserted:** behaviour the team has not decided on is an open question in
   [observed-notes.md](observed-notes.md), with who saw it and when.

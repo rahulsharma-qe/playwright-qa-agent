@@ -95,8 +95,9 @@ planted-bug run never runs it; CI runs it in its own step.
   Home link (`nav-home`) has rendered, the "Sign in" link is gone), else stop with "The session made through the API was not
   accepted by the site (SPRINT=…; check where this copy keeps the token)". It saves the session (cookies, localStorage) and the token on its own
   (`playwright/.auth/session-token.json`, git-ignored), because a saved session does not keep sessionStorage.
-  Toolshop's login lasts 5 minutes (seen by the QA engineer on the normal site, 13-11-2026), so a run that takes
-  longer than that can meet an expired session in its last tests: keep runs short, or log in again per run part.
+  Toolshop's login lasts 5 minutes (`JWT_TTL`, default 5 minutes, in Toolshop's `sprint5/API/config/jwt.php` at
+  the pinned commit; also seen by the QA engineer on the normal site, 13-11-2026), so a run that takes longer than
+  that can meet an expired session in its last tests: keep runs short, or log in again per run part.
   The token file also holds the login time and the expiry (from the login reply's `expires_in` when it gives one,
   otherwise the measured 5 minutes). When a logged-in test fails and the page shows "Sign in", `fixtures.ts` adds an
   environment message only if the session that page was given had expired by then (an order test's own customer
