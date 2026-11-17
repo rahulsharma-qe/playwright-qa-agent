@@ -1,7 +1,7 @@
-import type { APIRequestContext, APIResponse, Page } from '@playwright/test';
+import type { APIRequestContext, Page } from '@playwright/test';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import type { AppEnvironment } from './apps/app-profile.ts';
-import { BOT_CHECK_MESSAGE, isBotCheck, mightBeBotCheck } from './bot-check';
+import { callApi } from './api-call';
 import { cannotLogInThroughApi } from './environment-messages';
 import { SESSION_TOKEN_FILE, settings } from './settings';
 import { registerTestCustomer, type TestAccount } from './test-accounts';
@@ -11,15 +11,8 @@ export type ApiLogin = { token: string; expiresInSeconds?: number };
 
 /** Logs the account in through the API. A refusal is an environment problem. */
 export async function logInThroughApi(request: APIRequestContext, account: TestAccount): Promise<ApiLogin> {
-  let response: APIResponse;
-  try {
-    response = await request.post(`${settings.apiUrl}/users/login`, { data: account, timeout: 15_000 });
-  } catch (error) {
-    throw new Error(cannotLogInThroughApi((error as Error).message.split('\n')[0]));
-  }
+  const response = await callApi(request, 'post', `${settings.apiUrl}/users/login`, { data: account, timeout: 15_000 }, cannotLogInThroughApi);
   const status = response.status();
-  const body = mightBeBotCheck(status) ? await response.text().catch(() => '') : '';
-  if (isBotCheck({ status, headers: response.headers(), body })) throw new Error(BOT_CHECK_MESSAGE);
   if (status !== 200) throw new Error(cannotLogInThroughApi(`HTTP ${status}`));
   const reply = (await response.json().catch(() => ({}))) as { access_token?: string; expires_in?: unknown };
   if (!reply.access_token) throw new Error(cannotLogInThroughApi('no token in the reply'));
@@ -94,13 +87,14 @@ export function sessionNotAccepted(environmentName = settings.environmentName): 
 
 /** The API must accept the token: GET /users/me answers 200. Same check on every copy. */
 export async function checkSessionThroughApi(request: APIRequestContext, token: string): Promise<void> {
-  const response = await request.get(`${settings.apiUrl}/users/me`, {
-    headers: { Authorization: `Bearer ${token}` },
-    timeout: 15_000,
-  });
+  const response = await callApi(
+    request,
+    'get',
+    `${settings.apiUrl}/users/me`,
+    { headers: { Authorization: `Bearer ${token}` }, timeout: 15_000 },
+    (reason) => cannotLogInThroughApi(`GET /users/me: ${reason}`),
+  );
   const status = response.status();
-  const body = mightBeBotCheck(status) ? await response.text().catch(() => '') : '';
-  if (isBotCheck({ status, headers: response.headers(), body })) throw new Error(BOT_CHECK_MESSAGE);
   if (status !== 200) throw new Error(`${sessionNotAccepted()} (GET /users/me answered HTTP ${status})`);
 }
 

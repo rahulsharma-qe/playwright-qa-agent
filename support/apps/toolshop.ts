@@ -51,6 +51,6 @@ export const toolshop: AppProfile = {
       },
     },
   },
-  healthChecks: { sitePath: '/', apiPath: '/brands' },
+  healthChecks: { sitePath: '', apiPath: '/brands' }, // the home page; the brands list needs no login
   testUser: { mode: 'register' },
 };

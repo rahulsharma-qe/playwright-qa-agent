@@ -1,8 +1,8 @@
-import type { APIRequestContext, APIResponse } from '@playwright/test';
+import type { APIRequestContext } from '@playwright/test';
 import { randomBytes, randomInt } from 'node:crypto';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { BOT_CHECK_MESSAGE, isBotCheck, mightBeBotCheck } from './bot-check';
+import { callApi } from './api-call';
 import { cannotRegister } from './environment-messages';
 import { RUN_ACCOUNTS_DIR, settings } from './settings';
 
@@ -31,18 +31,14 @@ export async function registerTestCustomer(request: APIRequestContext, purpose: 
   hideInCiLogs(account.password);
   saveForSecretScan(`${purpose}-${Date.now()}-${randomBytes(3).toString('hex')}`, account);
 
-  let response: APIResponse;
-  try {
-    response = await request.post(`${settings.apiUrl}/users/register`, {
-      data: { first_name: 'QA', last_name: 'Run', ...extraFields, ...account },
-      timeout: 15_000,
-    });
-  } catch (error) {
-    throw new Error(cannotRegister((error as Error).message.split('\n')[0]));
-  }
+  const response = await callApi(
+    request,
+    'post',
+    `${settings.apiUrl}/users/register`,
+    { data: { first_name: 'QA', last_name: 'Run', ...extraFields, ...account }, timeout: 15_000 },
+    cannotRegister,
+  );
   const status = response.status();
-  const body = mightBeBotCheck(status) ? await response.text().catch(() => '') : '';
-  if (isBotCheck({ status, headers: response.headers(), body })) throw new Error(BOT_CHECK_MESSAGE);
   if (status === 422) {
     // Most often the Toolshop copy and TEST_ENV do not match (for example the with-bugs copy started, TEST_ENV unset).
     throw new Error(cannotRegister(`HTTP 422; check that TEST_ENV (${settings.environmentName}) matches the Toolshop copy you started`));

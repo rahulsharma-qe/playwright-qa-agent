@@ -1,6 +1,6 @@
-import type { APIRequestContext, APIResponse } from '@playwright/test';
+import type { APIRequestContext } from '@playwright/test';
 import { test as setup } from '../fixtures';
-import { BOT_CHECK_MESSAGE, isBotCheck, mightBeBotCheck } from '../support/bot-check';
+import { callApi } from '../support/api-call';
 import { noAnswerFrom, siteNotResponding } from '../support/environment-messages';
 import { settings } from '../support/settings';
 
@@ -15,19 +15,13 @@ async function checkResponds(
   what: 'site' | 'API',
   url: string,
 ): Promise<void> {
-  let response: APIResponse;
-  try {
-    response = await request.get(url, { timeout: TIMEOUT_MS });
-  } catch (error) {
-    throw new Error(`${noAnswerFrom(what, url)} (${(error as Error).message.split('\n')[0]})`);
-  }
+  const response = await callApi(request, 'get', url, { timeout: TIMEOUT_MS }, (reason) => `${noAnswerFrom(what, url)} (${reason})`);
   const status = response.status();
-  const body = mightBeBotCheck(status) ? await response.text().catch(() => '') : '';
-  if (isBotCheck({ status, headers: response.headers(), body })) throw new Error(BOT_CHECK_MESSAGE);
   if (status >= 400) throw new Error(`${siteNotResponding(what, url)} (HTTP ${status})`);
 }
 
 setup('Toolshop site and API are up', async ({ request }) => {
-  await checkResponds(request, 'site', settings.baseUrl);
-  await checkResponds(request, 'API', `${settings.apiUrl}/brands`);
+  const { sitePath, apiPath } = settings.app.healthChecks;
+  await checkResponds(request, 'site', `${settings.baseUrl}${sitePath}`);
+  await checkResponds(request, 'API', `${settings.apiUrl}${apiPath}`);
 });

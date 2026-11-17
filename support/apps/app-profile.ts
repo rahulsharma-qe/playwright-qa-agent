@@ -23,7 +23,7 @@ export type AppEnvironment = {
 export type AppProfile = {
   name: string;
   environments: Record<string, AppEnvironment>;
-  /** What the environment check calls before any test: a page of the site, and an API path that needs no login. */
+  /** What the environment check calls before any test, added after each address: a page of the site ('' is the home page), and an API path that needs no login. */
   healthChecks: { sitePath: string; apiPath: string };
   /** How the tests get a user: 'register' makes an account at run time through the API. */
   testUser: { mode: 'register' };
