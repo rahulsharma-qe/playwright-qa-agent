@@ -33,7 +33,7 @@ approval.
 
 The agents start from `tests/seed.spec.ts`: our fixtures and a signed-in home page. Each time, they first run the
 environment check and the test-user set-up, as the tests do. The seed stops with "Agents must run on the normal
-Sprint 5 copy; stop it and start with SPRINT=sprint5" if it is on any other copy.
+Sprint 5 copy; stop it and start ci/start-toolshop.sh (TEST_ENV=local)" if it is on any other copy.
 
 ## Plan, draft, fix
 

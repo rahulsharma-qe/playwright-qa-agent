@@ -6,7 +6,7 @@ import { settings } from '../support/settings';
  * fixtures and page objects, on the normal Sprint 5 copy only.
  * Tagged @seed: `npm test` leaves it out; CI runs it in its own step so a fixture change cannot break it unnoticed.
  */
-const WRONG_COPY = 'Agents must run on the normal Sprint 5 copy; stop it and start with SPRINT=sprint5';
+const WRONG_COPY = 'Agents must run on the normal Sprint 5 copy; stop it and start ci/start-toolshop.sh (TEST_ENV=local)';
 
 test('seed: signed-in home page on the normal Sprint 5 copy', { tag: '@seed' }, async ({ page, productListPage, header }) => {
   expect(settings.sprint, WRONG_COPY).toBe('sprint5');
