@@ -1,6 +1,7 @@
 /**
  * Toolshop's site, API and version (Sprint 5 by default); all can be changed with environment variables.
- * No account values: each run makes its own.
+ * The defaults are the pinned local copy started with ci/start-toolshop.sh (the copy CI tests);
+ * npm run test:public-site points both at the public site. No account values: each run makes its own.
  */
 import dotenv from 'dotenv';
 
@@ -16,8 +17,8 @@ export const SESSION_TOKEN_FILE = 'playwright/.auth/session-token.json';
 export const RUN_ACCOUNTS_DIR = 'playwright/.auth/run-accounts';
 
 export const settings = {
-  baseUrl: process.env.BASE_URL || 'https://practicesoftwaretesting.com',
-  apiUrl: process.env.API_URL || 'https://api.practicesoftwaretesting.com',
+  baseUrl: process.env.BASE_URL || 'http://localhost:4200',
+  apiUrl: process.env.API_URL || 'http://localhost:8091',
   /** Which Toolshop version is under test (the same SPRINT the CI scripts use). */
   sprint: process.env.SPRINT || 'sprint5',
 };
