@@ -20,8 +20,8 @@ approval.
 
 ## One-time set-up
 
-1. Start the normal Sprint 5 copy: `ci/start-toolshop.sh` (it uses `SPRINT=sprint5` by default). The default
-   settings already point at it; set no `SPRINT` other than `sprint5`. Before a long or measured run (for example `npm run test:ready`), restart the local copy
+1. Start the normal Sprint 5 copy: `ci/start-toolshop.sh` (it uses `TEST_ENV=local` by default). The default
+   settings already point at it; set no `TEST_ENV` other than `local`. Before a long or measured run (for example `npm run test:ready`), restart the local copy
    (`ci/stop-toolshop.sh`, then `ci/start-toolshop.sh`): a copy left running for hours keeps every order and cart
    and gets slower.
 2. Write the agent files for your assistant:
@@ -33,7 +33,7 @@ approval.
 
 The agents start from `tests/seed.spec.ts`: our fixtures and a signed-in home page. Each time, they first run the
 environment check and the test-user set-up, as the tests do. The seed stops with "Agents must run on the normal
-Sprint 5 copy; stop it and start with SPRINT=sprint5" if it is on any other copy.
+Sprint 5 copy; stop it and start ci/start-toolshop.sh (TEST_ENV=local)" if it is on any other copy.
 
 ## Plan, draft, fix
 

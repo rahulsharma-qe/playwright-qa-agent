@@ -29,13 +29,17 @@ type PageObjects = {
   invoicesPage: InvoicesPage;
 };
 
-export const test = base.extend<PageObjects>({
+/** Options a project sets in playwright.config.ts. signedIn: its tests start with the session auth-setup saved. */
+export type TestOptions = { signedIn: boolean };
+
+export const test = base.extend<PageObjects & TestOptions>({
+  signedIn: [false, { option: true }],
   // Every page the tests get is watched for a bot-check page. It can appear after login, so the site check alone
   // would miss it; without this, the test would fail later with a confusing timeout.
-  page: async ({ page }, use, testInfo) => {
-    // Logged-in tests: give the session's token to the site again, because a saved session does not keep
-    // sessionStorage (where some Toolshop versions keep it).
-    const session = testInfo.project.name === 'logged-in' ? readSavedSession() : undefined;
+  page: async ({ page, signedIn }, use, testInfo) => {
+    // Signed-in projects: give the session's token to the site again, because a saved session does not keep
+    // sessionStorage (where some copies keep it).
+    const session = signedIn ? readSavedSession() : undefined;
     if (session) {
       await giveTokenToPage(page, session.token);
       rememberSessionGivenTo(page, session);

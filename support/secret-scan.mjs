@@ -14,8 +14,8 @@
 // report). Output names files only, never a value.
 import { existsSync, readdirSync, readFileSync, writeFileSync, statSync } from 'node:fs';
 import { extname, join } from 'node:path';
+import { RUN_ACCOUNTS_DIR } from './run-output-paths.ts';
 
-const RUN_ACCOUNTS_DIR = 'playwright/.auth/run-accounts';
 const TEXT_FILES = new Set(['.json', '.md', '.txt', '.log', '.html', '.xml', '.csv']);
 const mode = process.argv[2];
 
