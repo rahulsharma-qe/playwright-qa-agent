@@ -44,8 +44,8 @@ export async function registerTestCustomer(request: APIRequestContext, purpose: 
   const body = mightBeBotCheck(status) ? await response.text().catch(() => '') : '';
   if (isBotCheck({ status, headers: response.headers(), body })) throw new Error(BOT_CHECK_MESSAGE);
   if (status === 422) {
-    // Most often the Toolshop copy and SPRINT do not match (for example the with-bugs copy started, SPRINT unset).
-    throw new Error(cannotRegister(`HTTP 422; check that SPRINT (${settings.sprint}) matches the Toolshop copy you started`));
+    // Most often the Toolshop copy and TEST_ENV do not match (for example the with-bugs copy started, TEST_ENV unset).
+    throw new Error(cannotRegister(`HTTP 422; check that TEST_ENV (${settings.environmentName}) matches the Toolshop copy you started`));
   }
   if (status !== 201) throw new Error(cannotRegister(`HTTP ${status}`));
   return account;

@@ -19,3 +19,30 @@ export function appEnvironment(profile: AppProfile, name: string): AppEnvironmen
   }
   return environment;
 }
+
+/** What a run tests: the application, its environment, and the two addresses. */
+export type RunSelection = {
+  app: AppProfile;
+  environmentName: string;
+  environment: AppEnvironment;
+  baseUrl: string;
+  apiUrl: string;
+};
+
+/**
+ * APP_UNDER_TEST (default toolshop) and TEST_ENV (default local) pick the profile and its environment. BASE_URL and
+ * API_URL, when set, win over the environment's addresses (for a deployed site); everything else still comes from
+ * the environment.
+ */
+export function selectRun(env: Record<string, string | undefined>): RunSelection {
+  const app = appProfile(env.APP_UNDER_TEST || 'toolshop');
+  const environmentName = env.TEST_ENV || 'local';
+  const environment = appEnvironment(app, environmentName);
+  return {
+    app,
+    environmentName,
+    environment,
+    baseUrl: env.BASE_URL || environment.siteUrl,
+    apiUrl: env.API_URL || environment.apiUrl,
+  };
+}

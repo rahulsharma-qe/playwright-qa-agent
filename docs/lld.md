@@ -93,7 +93,7 @@ planted-bug run never runs it; CI runs it in its own step.
   (the environment's `tokenStore` in `support/apps/toolshop.ts`: localStorage in Sprint 5, sessionStorage in the "with bugs" version),
   check the session the same way on every copy (the API's `GET /users/me` answers 200; on the home page, once the
   Home link (`nav-home`) has rendered, the "Sign in" link is gone), else stop with "The session made through the API was not
-  accepted by the site (SPRINT=…; check where this copy keeps the token)". It saves the session (cookies, localStorage) and the token on its own
+  accepted by the site (TEST_ENV=…; check where this copy keeps the token)". It saves the session (cookies, localStorage) and the token on its own
   (`playwright/.auth/session-token.json`, git-ignored), because a saved session does not keep sessionStorage.
   Toolshop's login lasts 5 minutes (`JWT_TTL`, default 5 minutes, in Toolshop's `sprint5/API/config/jwt.php` at
   the pinned commit; also seen by the QA engineer on the normal site, 13-11-2026), so a run that takes longer than
@@ -164,7 +164,7 @@ Pages) → always `ci/stop-toolshop.sh`. A second job on main deploys the report
 `id-token: write`, `concurrency: pages`), only when the scan passed.
 
 **Planted-bug run** (`.github/workflows/with-bugs.yml`, started by hand only): the same steps with
-`SPRINT=sprint5-with-bugs`; the test step has `continue-on-error: true`; Playwright also writes a JSON file
+`TEST_ENV=with-bugs`; the test step has `continue-on-error: true`; Playwright also writes a JSON file
 (`RESULTS_JSON`), and `support/planted-bug-summary.ts` (run by Node directly; the counting is in
 `support/planted-bug-count.ts`, with unit tests) prints "Planted-bug run: X failed, Y not reached, Z passed
 (of N UI tests)", N being the UI tests found, the setup and unit line, and the commit SHA, on the run page too. The report is scanned and
@@ -173,7 +173,8 @@ uploaded as an artifact; nothing goes to GitHub Pages. The pins file for that co
 
 **`ci/` scripts**
 
-- `toolshop-env.sh` (shared by start and stop): `SPRINT` (default `sprint5`), the pinned Toolshop commit, the clone
+- `toolshop-env.sh` (shared by start and stop): `SPRINT`, read from `TEST_ENV` through the application profile
+  (`support/print-app-version.ts`; `local` gives `sprint5`), the pinned Toolshop commit, the clone
   folder, the pins file `toolshop-images.<sprint>.yml`, compose project `toolshop`.
 - `start-toolshop.sh`:
   1. Fetches Toolshop's repository at the pinned commit into a folder outside this repository; only its compose
@@ -215,9 +216,11 @@ uploaded as an artifact; nothing goes to GitHub Pages. The pins file for that co
 
 ## 8. Settings and versions
 
-- **Settings:** `BASE_URL`, `API_URL` and `SPRINT`, all with defaults (the pinned local copy,
-  `http://localhost:4200` and `http://localhost:8091`, and `sprint5`); read from the environment or a git-ignored
-  `.env`. When the local copy does not answer, the site check says "The local Toolshop copy is not running. Start it
+- **Settings:** `APP_UNDER_TEST` (default `toolshop`) and `TEST_ENV` (default `local`, the pinned local copy,
+  `http://localhost:4200` and `http://localhost:8091`) pick the application profile and its environment
+  (`support/apps/`); `BASE_URL` and `API_URL`, when set, win over the environment's addresses; read from the
+  environment or a git-ignored `.env`. An unknown application or environment stops with one message naming the
+  wrong value and the valid ones. When the local copy does not answer, the site check says "The local Toolshop copy is not running. Start it
   with ci/start-toolshop.sh."; any other address that does not answer gets "Toolshop site is not responding at
   <URL>". Both carry the shared environment phrase.
 - **Config:** `testIdAttribute: 'data-test'` (Toolshop's attribute); `locale: 'en-US'` (the site follows the
@@ -225,7 +228,8 @@ uploaded as an artifact; nothing goes to GitHub Pages. The pins file for that co
 - **Versions:** Node in `.nvmrc` only (no `engines` field); `@playwright/test`, `allure-playwright`, the Allure 3
   CLI (`allure`) and `@estruyf/github-actions-reporter` pinned to exact versions in `package.json`; GitHub Actions
   pinned to major versions; Toolshop's images pinned by digest, and checked against `TOOLSHOP_COMMIT` (section 7).
-- **`SPRINT` and `TOOLSHOP_COMMIT`:** `SPRINT` (default `sprint5`) picks the Toolshop copy and its pins file;
+- **`SPRINT` and `TOOLSHOP_COMMIT`:** `SPRINT` comes from the environment's `version` (`local` and `public-site`:
+  `sprint5`; `with-bugs`: `sprint5-with-bugs`) and picks the Toolshop copy and its pins file; nobody types it;
   `TOOLSHOP_COMMIT` in `ci/toolshop-env.sh` is the pinned commit (tag 2.5, `9e7736c`).
 - **`EXPECTED_UI_TESTS`** in `support/planted-bug-count.ts`: the number of UI tests (projects `login` and
   `logged-in`, the seed left out). CI checks it before the tests (section 7), and the planted-bug summary warns when
@@ -263,10 +267,10 @@ How to use the agents: [ai-assisted-tests.md](ai-assisted-tests.md). In short:
 
 ## 10. Planted-bug runs
 
-- Toolshop's "with bugs" copy is started with `SPRINT=sprint5-with-bugs`; the hand-started workflow (section 7)
+- Toolshop's "with bugs" copy is started with `TEST_ENV=with-bugs`; the hand-started workflow (section 7)
   runs the same tests on it. Tests are never written or changed from the bug list or that copy.
 - Differences between the copies that set-up and navigation must follow (sign-up fields, page addresses, where
-  the token is kept) are chosen by `SPRINT`; locators, steps and assertions never change.
+  the token is kept) are the `with-bugs` environment's in `support/apps/toolshop.ts`; locators, steps and assertions never change.
 - The results are in `docs/bug-hunt.md` only: one table per run, a person matching each failure to a planted bug,
   baselines kept apart (a later run is compared only with the latest baseline on the same version).
 - The list of planted bugs "on our path" is written and merged before the run it is used for.

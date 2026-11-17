@@ -135,8 +135,9 @@ A trace attached to a failed test opens with `npx playwright show-trace <file>` 
 
 ## Settings
 
-`BASE_URL`, `API_URL` and `SPRINT` (the Toolshop version) are the only settings, and all have defaults: the
-pinned local copy (`http://localhost:4200`, API `http://localhost:8091`) and Sprint 5. There
+`TEST_ENV` (the environment: `local`, `public-site` or `with-bugs`) and `APP_UNDER_TEST` (the application, `toolshop`)
+pick the application profile in `support/apps/`; the defaults are Toolshop's pinned local copy (`http://localhost:4200`,
+API `http://localhost:8091`). `BASE_URL` and `API_URL`, when set, win over the environment's addresses. There
 are no account values anywhere: shared demo accounts get locked by other visitors, and accounts registered by
 hand are removed when Toolshop resets its data. So each run registers two customers through Toolshop's API (one for the logged-in tests, one
 for the login tests; one more per retry; in CI, one more for the agents' starting test). Their emails use the reserved `example.com` domain; the passwords are
@@ -179,8 +180,8 @@ version with bugs planted on purpose, to see which of them the tests catch ([doc
 Failed tests are the result there, so that workflow stays green when they fail. The same run on your machine:
 
 ```bash
-SPRINT=sprint5-with-bugs ci/start-toolshop.sh
-SPRINT=sprint5-with-bugs npm test
+TEST_ENV=with-bugs ci/start-toolshop.sh
+TEST_ENV=with-bugs npm test
 ci/stop-toolshop.sh
 ```
 

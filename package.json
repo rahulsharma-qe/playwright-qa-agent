@@ -9,7 +9,7 @@
     "test:sanity": "playwright test --grep @sanity",
     "test:seed": "playwright test --grep @seed",
     "pretest:public-site": "node -e \"for (const d of ['allure-results', 'playwright/.auth/run-accounts']) require('fs').rmSync(d, { recursive: true, force: true })\"",
-    "test:public-site": "BASE_URL=https://practicesoftwaretesting.com API_URL=https://api.practicesoftwaretesting.com playwright test --grep-invert @seed",
+    "test:public-site": "TEST_ENV=public-site playwright test --grep-invert @seed",
     "test:unit": "playwright test --project unit",
     "pretest:ready": "node -e \"for (const d of ['allure-results', 'playwright/.auth/run-accounts']) require('fs').rmSync(d, { recursive: true, force: true })\"",
     "test:ready": "playwright test --grep-invert @seed --repeat-each=3 --workers=2",

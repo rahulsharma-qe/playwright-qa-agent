@@ -88,8 +88,8 @@ export async function useOwnCustomer(page: Page, request: APIRequestContext, pur
 }
 
 /** The one message for a session the API or the site did not accept, with the most likely cause. */
-export function sessionNotAccepted(sprint = settings.sprint): string {
-  return `The session made through the API was not accepted by the site (SPRINT=${sprint}; check where this copy keeps the token)`;
+export function sessionNotAccepted(environmentName = settings.environmentName): string {
+  return `The session made through the API was not accepted by the site (TEST_ENV=${environmentName}; check where this copy keeps the token)`;
 }
 
 /** The API must accept the token: GET /users/me answers 200. Same check on every copy. */
