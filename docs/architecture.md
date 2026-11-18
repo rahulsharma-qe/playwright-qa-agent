@@ -112,7 +112,7 @@ flowchart LR
 
 | Component | What it does |
 |---|---|
-| `pages/` and `fixtures.ts` | Nine page objects (`Header`, `LoginPage`, `ProductListPage`, `ProductPage`, `CartPage`, `CheckoutPage`, `AccountPage`, `InvoicesPage`, `FilterSidebar`) given to tests through fixtures; the fixtures also watch every page for a bot check and give logged-in pages their session |
+| `pages/` and `fixtures.ts` | Ten page objects (`Header`, `LoginPage`, `ProductListPage`, `ProductPage`, `CartPage`, `CheckoutPage`, `AccountPage`, `InvoicesPage`, `FilterSidebar`, `Pagination`) given to tests through fixtures; the fixtures also watch every page for a bot check and give logged-in pages their session |
 | Setup projects | `site-check` (site and API up, not a bot check) and `auth-setup` (register a customer, make the session through the API, check it on the site, save it) |
 | Tests | Login, search and cart (hand-written); category filters and checkout (drafted by AI agents, decided by the QA engineer); tagged `@sanity` or `@regression`; a `unit` project for our own helpers |
 | `support/` | Settings, test-account registration, the API session, the bot-check detector, environment messages, the secret scan, the run-page summaries and the test-count check |

@@ -37,16 +37,16 @@ test.describe('Category filter: combined with other controls', () => {
     await expect(filterSidebar.category(hammerCategory)).toBeChecked();
   });
 
-  test('Category plus brand narrows to the intersection', { tag: '@regression' }, async ({ productListPage, filterSidebar }) => {
+  test('Category plus brand narrows to the intersection', { tag: '@regression' }, async ({ productListPage, filterSidebar, pagination }) => {
     // 1. Check one brand, then the category
     await filterSidebar.checkBrand(brandCase.forgeFlex);
     await expect(productListPage.cards).toHaveCount(listCounts.pageSize);
-    await expect(productListPage.pageButtons).toHaveCount(brandCase.forgeFlexAlonePages);
+    await expect(pagination.pageButtons).toHaveCount(brandCase.forgeFlexAlonePages);
     await filterSidebar.checkCategory(hammerCategory);
     await expect
       .poll(() => productListPage.namesSorted())
       .toEqual(sorted(hammers.filter((name) => name !== brandCase.hammerNotForgeFlex)));
-    await expect(productListPage.pageButtons).toHaveCount(0);
+    await expect(pagination.pageButtons).toHaveCount(0);
 
     // 2. Also check the other brand
     await filterSidebar.checkBrand(brandCase.mightyCraft);
@@ -70,7 +70,7 @@ test.describe('Category filter: combined with other controls', () => {
     await expect.poll(() => productListPage.namesSorted()).toEqual(sorted(hammers));
   });
 
-  test('Search looks across all categories', { tag: '@regression' }, async ({ productListPage, filterSidebar }) => {
+  test('Search looks across all categories', { tag: '@regression' }, async ({ productListPage, filterSidebar, pagination }) => {
     // 1. Check a category, then search for a term
     await filterSidebar.checkCategory(hammerCategory);
     await expect(productListPage.cards).toHaveCount(hammers.length);
@@ -85,6 +85,6 @@ test.describe('Category filter: combined with other controls', () => {
     // 3. Clear the search with the X button
     await productListPage.clearSearch();
     await expect(productListPage.cards).toHaveCount(listCounts.pageSize);
-    await expect(productListPage.pageButtons).toHaveCount(listCounts.unfilteredPages);
+    await expect(pagination.pageButtons).toHaveCount(listCounts.unfilteredPages);
   });
 });

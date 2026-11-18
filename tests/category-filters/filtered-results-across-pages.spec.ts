@@ -1,13 +1,13 @@
 // spec: specs/category-filters.md
 // seed: tests/seed.spec.ts
 import { expect, test } from '../../fixtures';
-import { READ_ALL_PAGES_POLL } from '../../pages/ProductListPage';
+import { READ_ALL_PAGES_POLL } from '../../pages/Pagination';
 import { categoryProducts, listCounts, parentCategories } from '../../test-data/category-filters';
 
 const namesOf = (children: string[]) => children.flatMap((child) => categoryProducts[child]).sort();
 
 test.describe('Category filter: pagination', () => {
-  test('Pagination follows the filtered result set', { tag: '@regression' }, async ({ productListPage, filterSidebar }) => {
+  test('Pagination follows the filtered result set', { tag: '@regression' }, async ({ productListPage, filterSidebar, pagination }) => {
     const handTools = namesOf(parentCategories['Hand Tools']);
     const lastPageSize = listCounts.handToolsProducts - 2 * listCounts.pageSize;
     await productListPage.open();
@@ -17,13 +17,13 @@ test.describe('Category filter: pagination', () => {
     // 1. Check the parent category
     await filterSidebar.checkCategory('Hand Tools');
     await expect(productListPage.cards).toHaveCount(listCounts.pageSize);
-    await expect(productListPage.pageButtons).toHaveCount(listCounts.handToolsPages);
+    await expect(pagination.pageButtons).toHaveCount(listCounts.handToolsPages);
 
     // 2. Click through the pages
     // The order on a page follows the default sort, so only sizes and the set of names are asserted.
     await expect
       .poll(async () => {
-        const pages = await productListPage.readAllPages();
+        const pages = await pagination.readAllPages();
         return {
           sizes: pages.map((cards) => cards.length),
           names: pages.flat().map((card) => card.name).sort(),
@@ -34,12 +34,12 @@ test.describe('Category filter: pagination', () => {
     // 3. Switch from one parent to another
     await filterSidebar.uncheckCategory('Hand Tools');
     // The unfiltered list first, then the next control.
-    await expect(productListPage.pageButtons).toHaveCount(listCounts.unfilteredPages);
+    await expect(pagination.pageButtons).toHaveCount(listCounts.unfilteredPages);
     await filterSidebar.checkCategory('Other');
-    await expect(productListPage.pageButtons).toHaveCount(listCounts.otherPages);
-    await expect(productListPage.pageItem(1)).toHaveClass(/active/);
+    await expect(pagination.pageButtons).toHaveCount(listCounts.otherPages);
+    await expect(pagination.pageItem(1)).toHaveClass(/active/);
     await expect
-      .poll(async () => (await productListPage.readAllPages()).flat().map((card) => card.name).sort(), READ_ALL_PAGES_POLL)
+      .poll(async () => (await pagination.readAllPages()).flat().map((card) => card.name).sort(), READ_ALL_PAGES_POLL)
       .toEqual(namesOf(parentCategories.Other));
   });
 });
