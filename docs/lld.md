@@ -18,19 +18,20 @@ playwright-qa-agent/
                           and TEST_ENV
   support/                settings, page addresses, the API helper, environment messages, test accounts and the API
                           session, bot-check detector, secret scan, the run-output paths and clean-up script,
-                          planted-bug count and summary, run-page summaries (address refills, cart emptied), the
-                          test-count check
+                          planted-bug count and summary, run-page summaries (address refills, cart emptied, the
+                          counts line), the test-count check with the tag and name rules, the run comparison
   ci/                     start, wait for and stop the local and CI copy of Toolshop; image pins, the pin script and the
                           pair check
   specs/                  the test plans (Markdown), one per flow
   drafts/                 an AI generator's raw draft during a tests pull request; empty again after it
-  docs/                   this design, AI-assisted tests, the drafting log, observed notes, the planted-bug results
+  docs/                   this design, onboarding a web application, AI-assisted tests, the drafting log, observed
+                          notes, the planted-bug results
   AGENTS.md               rules for any AI assistant working here
   .claude/settings.json   the deny list for Claude Code users (the same list as in AGENTS.md)
   playwright.config.ts    projects, reporters, locale, screenshots and traces
   .nvmrc                  the one place the Node version is written
   .env.example            APP_UNDER_TEST, TEST_ENV, BASE_URL and API_URL (all have defaults); no account values
-  .github/workflows/ui-tests.yml
+  .github/workflows/      ui-tests.yml (every pull request and push to main) and with-bugs.yml (started by hand)
 ```
 
 ## 2. Playwright projects
@@ -68,7 +69,7 @@ planted-bug run never runs it; CI runs it in its own step.
   eco-friendly) and `Pagination` (the page buttons under the product list, and a walk that reads every page; the
   walk's poll message is built from its timeout constant).
 - Page objects hold locators and actions and may return values; they never call `expect`. Each action is a
-  `test.step` ("Log in", `Search for "Pliers"`, "Add to cart"), so the report reads like a test case; step names
+  `test.step` ("Log in", "Search for a product", "Add to cart"), so the report reads like a test case; step names
   never hold a login value.
 - **Locator order:** role or label first, `data-test` when there is no clear role or label: the password input
   (its label points at a wrapper element), the account menu (it shows the customer's name), counts, error
@@ -84,9 +85,11 @@ planted-bug run never runs it; CI runs it in its own step.
 
 ## 4. Test accounts and session
 
-- **Two per run, plus one per order-placing test, through the API** (`registerTestCustomer(request, purpose)`
+- **On Toolshop, five per run through the API, plus the seed's in CI** (`registerTestCustomer(request, purpose)`
   posts to `<API_URL>/users/register`): `auth-setup` registers one for the logged-in tests; `login.spec.ts`
-  registers one in `beforeAll` and runs its tests one after another in one worker. A failed test does not skip the
+  registers one in `beforeAll` and runs its tests one after another in one worker; each of the two order tests
+  registers its own (below); the given-user example registers the one it passes in; in CI the seed's step
+  registers one more. A failed test does not skip the
   others; the next worker registers one more account, as a retry does. Each checkout test that places an order
   (4.x) registers its own customer in its set-up (`useOwnCustomer()` in `support/api-session.ts`), because two
   workers ordering on one account at the same moment got the same invoice number (observed note 17).
@@ -149,18 +152,27 @@ planted-bug run never runs it; CI runs it in its own step.
   type login details, and the scan cannot read inside these compressed files. A failed login test is explained by
   its message, its steps and Playwright's page snapshot (text).
 - **`npm run report:build`** runs, in order:
-  1. `secret-scan.mjs redact`: replaces the run's emails and passwords in the text files of `allure-results/`.
+  1. `secret-scan.mjs redact`: replaces the run's emails and passwords in the text files of `allure-results/` and
+     `playwright-json/` (Playwright's JSON results), each in its raw, JSON-escaped and HTML-escaped forms
+     (`writtenForms()` in `support/secret-scan-rules.ts`).
      Two places are expected to hold a password and are replaced: the CI log-mask line (Allure keeps a test's
      output) and a textbox line in a failed test's page snapshot (it shows what was typed). A password anywhere
      else stops CI: "A test-account password was found outside the log-mask and page-snapshot lines: <files>.
      Nothing uploaded." Locally it is replaced and a warning is shown.
   2. `allure generate` (Allure 3 on Node).
-  3. `secret-scan.mjs check`: reads every file of `allure-results/` and `allure-report/` as raw bytes; a password
-     found means exit 1 and no report. In CI, no account file at all also means exit 1.
+  3. `secret-scan.mjs check`: reads every file of `allure-results/`, `playwright-json/` and `allure-report/` as raw
+     bytes, looking for the same three forms; a password found means exit 1 and nothing uploaded. In CI, no account file at all also means exit 1.
   Output names files only, never a value.
 - **Run-page lines** (CI): "Billing address form refilled: N times (local development copy only; observed note
   15)" from `support/address-refill-summary.ts`, and "Cart emptied after the order: …", with the slowest span and
   DELETE time against the bound, from `support/cart-emptied-summary.ts`. Both read Playwright's JSON results.
+- **`playwright-json` artifact:** CI uploads `playwright-json/` on its own (`playwright-json`, 14 days; the with-bugs
+  workflow `playwright-json-with-bugs`, 90 days), only after `redact` and `check` pass.
+- **Counts line** (CI): "31 UI tests, 57 framework checks (and 2 set-up steps)" from `support/test-counts-summary.ts`,
+  with a unit test. The reporter's "Total tests" line is its own and adds them all together; ours is the one to read.
+- **Run comparison** (`support/compare-runs.ts`, content-blind): two runs, each Playwright's JSON results or an
+  Allure report, compared per test by status and the name of the first failing step; it prints "identical" or the
+  names and the field that differs, never a value; a rename map for report steps (section 10).
 - **Planted-bug run summary:** "Planted-bug run: X failed, Y not reached, Z passed (of N UI tests)", the setup and
   unit line and the commit SHA (section 10).
 
@@ -181,8 +193,9 @@ planted-bug run never runs it; CI runs it in its own step.
 
 ## 7. CI and the Toolshop copy
 
-**Workflow** (`.github/workflows/ui-tests.yml`, every pull request and push to main, `contents: read`, no
-secrets): Node from `.nvmrc` → `npm ci` → **check the number of UI tests** (`npx playwright test --list
+**Workflow** (`.github/workflows/ui-tests.yml`, every pull request and push to main, `contents: read`; the only
+secrets it reads are `APP_USER_EMAIL` and `APP_USER_PASSWORD`, for an application with a given test user, and
+Toolshop needs none): Node from `.nvmrc` → `npm ci` → **check the number of UI tests** (`npx playwright test --list
 --grep-invert @seed --reporter=json`, then `support/check-test-count.ts` compares the UI tests found with
 `EXPECTED_UI_TESTS`; a difference stops CI and says what to update) → Chromium → QEMU for arm64 → `ci/start-toolshop.sh` (step `start`) →
 `npm test` with `BASE_URL=http://localhost:4200`, `API_URL=http://localhost:8091` → the run-page lines (section 5)
@@ -206,8 +219,8 @@ uploaded as an artifact; nothing goes to GitHub Pages. The pins file for that co
   (`support/print-app-version.ts`; `local` gives `sprint5`), the pinned Toolshop commit, the clone
   folder, the pins file `toolshop-images.<sprint>.yml`, compose project `toolshop`.
 - `start-toolshop.sh`:
-  1. Fetches Toolshop's repository at the pinned commit into a folder outside this repository; only its compose
-     file is used, nothing is copied in. The folder is deleted only if it is empty or holds the marker file the
+  1. Fetches Toolshop's repository at the pinned commit into a cache folder outside this repository; its compose
+     file is used, and the pair check reads two files from it; nothing is copied in. The folder is deleted only if it is empty or holds the marker file the
      script wrote when it cloned (`.toolshop-source`).
   2. For Sprint 5, runs `check-toolshop-pair.sh` (below): the run stops if the pinned images were not built from
      the pinned commit. For the with-bugs copy it prints "pair not checked" and goes on.
@@ -261,7 +274,8 @@ uploaded as an artifact; nothing goes to GitHub Pages. The pins file for that co
   `sprint5`; `with-bugs`: `sprint5-with-bugs`) and picks the Toolshop copy and its pins file; nobody types it;
   `TOOLSHOP_COMMIT` in `ci/toolshop-env.sh` is the pinned commit (tag 2.5, `9e7736c`).
 - **`EXPECTED_UI_TESTS`** in `support/planted-bug-count.ts`: the number of UI tests (projects `login` and
-  `logged-in`, the seed left out). CI checks it before the tests (section 7), and the planted-bug summary warns when
+  `logged-in`, the seed left out). CI's count step checks it before the tests (section 7), together with the tag
+  rules and the name rule (section 2), and the planted-bug summary warns when
   fewer are found. It changes in the same pull request as the tests.
 - **Scripts:** `npm test` (every test but the seed: 90 tests, 31 UI, 57 unit, 2 set-up), `npm run test:sanity`,
   `npm run test:p0`, `npm run test:regression` (the three suites), `npm run test:seed`, `npm run test:unit`,
