@@ -80,6 +80,16 @@ planted-bug run never runs it; CI runs it in its own step.
   others; the next worker registers one more account, as a retry does. Each checkout test that places an order
   (4.x) registers its own customer in its set-up (`useOwnCustomer()` in `support/api-session.ts`), because two
   workers ordering on one account at the same moment got the same invoice number (observed note 17).
+- **Given test user** (`testUser: { mode: 'given', canRegister }` in a profile; `support/test-user.ts`): the run's
+  user comes from `APP_USER_EMAIL` and `APP_USER_PASSWORD` (`givenUserFrom()`; missing ones stop with an
+  environment message; the password goes to `::add-mask::` in CI). With `canRegister`, the wrong-password test
+  (`login.spec.ts`) and order tests (`useOwnCustomer()`) register their own accounts; without it, the wrong-password
+  test is left out with its reason, order tests use the given user and the run uses one worker
+  (`playwright.config.ts`, said in the console). In CI the two come from GitHub secrets; a pull request from a fork
+  (`FORK_PR`) gets none, so `auth-setup`, `logged-in` and `login` are left out, said in the console. The secret scan
+  adds the given password (`secretsToScan()` in `support/secret-scan-rules.ts`). Example:
+  `tests/given-user-login.spec.ts` passes an account registered now in as the given user and logs in. Toolshop's
+  profile stays on `register`.
 - **Sign-up fields by copy:** `signUpFields` of each environment in the application profile (`support/apps/toolshop.ts`). Sprint 5 needs
   only name, email and password; the "with bugs" version's contract also asks for address, city and country as
   separate fields, and it gets a date of birth to work around a defect not on the planted list (recorded in
@@ -238,10 +248,10 @@ uploaded as an artifact; nothing goes to GitHub Pages. The pins file for that co
 - **`EXPECTED_UI_TESTS`** in `support/planted-bug-count.ts`: the number of UI tests (projects `login` and
   `logged-in`, the seed left out). CI checks it before the tests (section 7), and the planted-bug summary warns when
   fewer are found. It changes in the same pull request as the tests.
-- **Scripts:** `npm test` (every test but the seed: 71 tests, 30 UI, 39 unit, 2 set-up), `npm run test:sanity`,
+- **Scripts:** `npm test` (every test but the seed: 79 tests, 31 UI, 46 unit, 2 set-up), `npm run test:sanity`,
   `npm run test:seed`, `npm run test:unit`, `npm run test:public-site` (the same tests against the public site and
-  its API), `npm run test:ready` (every test but the seed, 3 times at 2 workers: the check before a merge; 209 tests
-  in all: 90 UI, 117 unit, 2 set-up), `npm run report:build`, `npm run report`.
+  its API), `npm run test:ready` (every test but the seed, 3 times at 2 workers: the check before a merge; 233 tests
+  in all: 93 UI, 138 unit, 2 set-up), `npm run report:build`, `npm run report`.
 - **Verified from a fresh clone:** `npm ci`, `npx playwright install chromium`, `ci/start-toolshop.sh`, then
   `npm test` with no settings (the README's [Run it](../README.md#run-it)); every commit typechecks and its tests
   pass. `npm run test:public-site` runs the public site, where the Payment tests fail, because it runs newer code
