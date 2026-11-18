@@ -52,7 +52,9 @@ instead of being skipped. `--grep @sanity` picks tests; their dependency project
 `test:p0`, `test:regression` are `--grep` on the tag, with the seed left out. CI's count step
 (`support/check-test-count.ts`) also checks the rules from the `--list` JSON (`support/tag-rules.ts`): every UI test
 has `@regression`, `@sanity` implies `@p0`, `@p0` implies `@regression`; it names any test that breaks them and
-exits 1. Agents tag new tests `@regression` only (`AGENTS.md`); the plans' "Tag:" lines say the same.
+exits 1. It also checks that no test's full name (file path, describe titles, test title), in any project, holds
+`@sanity`, `@p0` or `@regression`, because `--grep` reads names too; it reports them with the count. The run page
+shows UI tests and framework checks apart (`support/test-counts-summary.ts`). Agents tag new tests `@regression` only (`AGENTS.md`); the plans' "Tag:" lines say the same.
 `logged-in` is the first project on purpose: the AI test agents' tools use the first project when none is named.
 `tests/seed.spec.ts` (tag `@seed`) is in `logged-in`: the AI test agents start from it
 ([ai-assisted-tests.md](ai-assisted-tests.md)). `npm test` leaves it out (`--grep-invert @seed`), so the
@@ -260,10 +262,10 @@ uploaded as an artifact; nothing goes to GitHub Pages. The pins file for that co
 - **`EXPECTED_UI_TESTS`** in `support/planted-bug-count.ts`: the number of UI tests (projects `login` and
   `logged-in`, the seed left out). CI checks it before the tests (section 7), and the planted-bug summary warns when
   fewer are found. It changes in the same pull request as the tests.
-- **Scripts:** `npm test` (every test but the seed: 84 tests, 31 UI, 51 unit, 2 set-up), `npm run test:sanity`,
+- **Scripts:** `npm test` (every test but the seed: 89 tests, 31 UI, 56 unit, 2 set-up), `npm run test:sanity`,
   `npm run test:p0`, `npm run test:regression` (the three suites), `npm run test:seed`, `npm run test:unit`,
   `npm run test:public-site` (the same tests against the public site and its API), `npm run test:ready` (every test
-  but the seed, 3 times at 2 workers: the check before a merge; 248 tests in all: 93 UI, 153 unit, 2 set-up),
+  but the seed, 3 times at 2 workers: the check before a merge; 263 tests in all: 93 UI, 168 unit, 2 set-up),
   `npm run report:build`, `npm run report`.
 - **Verified from a fresh clone:** `npm ci`, `npx playwright install chromium`, `ci/start-toolshop.sh`, then
   `npm test` with no settings (the README's [Run it](../README.md#run-it)); every commit typechecks and its tests
