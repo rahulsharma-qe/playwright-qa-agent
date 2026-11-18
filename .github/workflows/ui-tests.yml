@@ -55,17 +55,17 @@ jobs:
       - name: Run the tests
         run: npm test
         env:
-          RESULTS_JSON: test-results.json
+          RESULTS_JSON: playwright-json/test-results.json
 
       # How often the billing address form was filled again on this local copy (observed note 15).
       - name: Count billing address refills
         if: ${{ !cancelled() && steps.start.outcome == 'success' }}
-        run: node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON support/address-refill-summary.ts test-results.json
+        run: node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON support/address-refill-summary.ts playwright-json/test-results.json
 
       # How long the order tests waited for the site to empty the cart, against the wait's bound (observed note 16).
       - name: Time the cart being emptied after the order
         if: ${{ !cancelled() && steps.start.outcome == 'success' }}
-        run: node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON support/cart-emptied-summary.ts test-results.json
+        run: node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON support/cart-emptied-summary.ts playwright-json/test-results.json
 
       # The AI test agents' starting test (tests/seed.spec.ts), kept out of `npm test` and run here on its own,
       # so a change to the fixtures cannot break it unnoticed. Never run by the with-bugs workflow.
@@ -94,6 +94,16 @@ jobs:
         with:
           name: allure-report
           path: allure-report/
+          retention-days: 14
+
+      # Playwright's own JSON results, for comparing two runs (support/compare-runs.ts). Redacted and checked with the
+      # report above, so uploaded only when that step passed.
+      - name: Upload the Playwright JSON results
+        if: ${{ !cancelled() && steps.report.outcome == 'success' }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-json
+          path: playwright-json/
           retention-days: 14
 
       - name: Prepare the report for GitHub Pages

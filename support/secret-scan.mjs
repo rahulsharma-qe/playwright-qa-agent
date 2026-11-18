@@ -1,13 +1,15 @@
 // Keeps this run's test-account passwords out of the public report (GitHub Pages and the run artifact).
 //   node support/secret-scan.mjs redact   before the report is built: replaces account emails and passwords in
-//                                          the text files of allure-results/ with <test account email|password>.
+//                                          the text files of allure-results/ and playwright-json/ (Playwright's
+//                                          JSON results, uploaded on their own) with <test account email|password>.
 //                                          Two places are expected to hold a password: the CI log-mask line
 //                                          (::add-mask::), which Allure keeps with a test's output, and a
 //                                          textbox line in Playwright's page snapshot of a failed test (it shows
 //                                          what was typed into the password field). Both are replaced. A
 //                                          password anywhere else is a leak: in CI the job stops, nothing uploaded.
-//   node support/secret-scan.mjs check    after the report is built: reads every file in allure-results/ and
-//                                          allure-report/ as raw bytes; exit 1 if a password is found.
+//   node support/secret-scan.mjs check    after the report is built: reads every file in allure-results/,
+//                                          playwright-json/ and allure-report/ as raw bytes; exit 1 if a password
+//                                          is found. CI uploads the report and the JSON only when this passes.
 // Limit: compressed files (trace archives, screenshots) cannot be read this way. They come only from the
 // logged-in tests, where no password is typed or printed (see playwright.config.ts).
 // The values come from playwright/.auth/run-accounts/ (one file per account, git-ignored, never attached to the
@@ -15,7 +17,7 @@
 // support/secret-scan-rules.ts, with unit tests. Output names files only, never a value.
 import { existsSync, readdirSync, readFileSync, writeFileSync, statSync } from 'node:fs';
 import { extname, join } from 'node:path';
-import { RUN_ACCOUNTS_DIR } from './run-output-paths.ts';
+import { ALLURE_RESULTS_DIR, PLAYWRIGHT_JSON_DIR, RUN_ACCOUNTS_DIR } from './run-output-paths.ts';
 import { holdsAPassword, redactText, secretsToScan } from './secret-scan-rules.ts';
 
 const TEXT_FILES = new Set(['.json', '.md', '.txt', '.log', '.html', '.xml', '.csv']);
@@ -50,7 +52,7 @@ if (mode === 'redact') {
   let snapshotLines = 0;
   const leaks = new Set();
   let changedFiles = 0;
-  for (const file of filesUnder('allure-results').filter((f) => TEXT_FILES.has(extname(f)))) {
+  for (const file of [...filesUnder(ALLURE_RESULTS_DIR), ...filesUnder(PLAYWRIGHT_JSON_DIR)].filter((f) => TEXT_FILES.has(extname(f)))) {
     const original = readFileSync(file, 'utf8');
     const result = redactText(original, accounts);
     const text = result.text;
@@ -73,7 +75,7 @@ if (mode === 'redact') {
   }
 } else if (mode === 'check') {
   const found = [];
-  for (const file of [...filesUnder('allure-results'), ...filesUnder('allure-report')]) {
+  for (const file of [...filesUnder(ALLURE_RESULTS_DIR), ...filesUnder(PLAYWRIGHT_JSON_DIR), ...filesUnder('allure-report')]) {
     const content = readFileSync(file).toString('latin1');
     if (holdsAPassword(content, accounts)) {
       found.push(file);
@@ -82,7 +84,7 @@ if (mode === 'redact') {
   if (found.length > 0) {
     stop(`A secret value was found in the report; nothing uploaded. Files:\n  ${found.join('\n  ')}`);
   }
-  console.log(`Secret scan: ${accounts.length} passwords checked; none in allure-results/ or allure-report/.`);
+  console.log(`Secret scan: ${accounts.length} passwords checked; none in allure-results/, playwright-json/ or allure-report/.`);
 } else {
   stop('Usage: node support/secret-scan.mjs redact|check');
 }
