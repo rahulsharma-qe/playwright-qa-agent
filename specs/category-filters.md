@@ -27,7 +27,7 @@ Page facts observed (use for expectations):
 
 **Seed:** `tests/seed.spec.ts`
 
-#### 1.1. Selecting one sub-category shows only its products (post-deploy check)
+#### 1.1. Selecting one sub-category shows only its products
 
 **File:** `tests/category-filters/filter-by-category.spec.ts`
 
