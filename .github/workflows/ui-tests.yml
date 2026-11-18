@@ -57,6 +57,11 @@ jobs:
         env:
           RESULTS_JSON: playwright-json/test-results.json
 
+      # UI tests and framework checks apart on the run page, never one mixed total.
+      - name: Count UI tests and framework checks
+        if: ${{ !cancelled() && steps.start.outcome == 'success' }}
+        run: node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON support/test-counts-summary.ts playwright-json/test-results.json
+
       # How often the billing address form was filled again on this local copy (observed note 15).
       - name: Count billing address refills
         if: ${{ !cancelled() && steps.start.outcome == 'success' }}
