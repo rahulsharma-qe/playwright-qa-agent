@@ -1,5 +1,5 @@
 import { expect, test } from '../../fixtures';
-import { tagRuleBreaks, taggedTests } from '../../support/tag-rules.ts';
+import { namesHoldingASuiteTag, tagRuleBreaks, taggedTests } from '../../support/tag-rules.ts';
 
 // Made-up tests; no browser and no application needed.
 const ui = ['login', 'logged-in'];
@@ -23,5 +23,21 @@ test.describe('suite tag rules', () => {
     expect(tagRuleBreaks(one([], 'unit'), ui)).toEqual([]);
     const list = { suites: [{ title: 'a.spec.ts', specs: [{ title: 't', file: 'a.spec.ts', tags: ['regression'], tests: [{ projectName: 'login' }] }] }] };
     expect(taggedTests(list)[0].tags).toEqual(['@regression']);
+  });
+});
+
+test.describe('no test name holds a suite tag', () => {
+  const list = (describe: string, title: string, file = 'a.spec.ts') => ({
+    suites: [{ title: file, specs: [], suites: [{ title: describe, specs: [{ title, file, tags: ['regression'], tests: [{ projectName: 'unit' }] }] }] }],
+  });
+
+  test('a tag in a describe title is found, in any project', () => {
+    expect(namesHoldingASuiteTag(taggedTests(list('Checks for @p0', 'one')))).toEqual(['a.spec.ts › Checks for @p0 › one']);
+  });
+
+  test('a tag in the test title or the file path is found; plain words are not', () => {
+    expect(namesHoldingASuiteTag(taggedTests(list('d', 'keeps @sanity')))).toHaveLength(1);
+    expect(namesHoldingASuiteTag(taggedTests(list('d', 'one', 'suites/@regression.spec.ts')))).toHaveLength(1);
+    expect(namesHoldingASuiteTag(taggedTests(list('sanity and p0', 'regression')))).toEqual([]);
   });
 });
