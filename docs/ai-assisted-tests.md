@@ -116,8 +116,9 @@ The rules every assistant follows (locators, page objects, tags, what not to rea
 This suite is measured on Toolshop's "with bugs" copy. To keep that measure fair, the agents never see it:
 
 - `AGENTS.md` lists files not to read; a committed `.claude/settings.json` blocks the same list in Claude Code.
-- `AGENTS.md` also says never to click Testing Guide, Bug Hunting or QA Run in the site's header, and never to open
-  `/assets/testing-guide.html` or the with-bugs site. This is a rule and a check after each session, not a block:
+- After each plan session and each generator session, a search checks that the agents kept away from Testing Guide,
+  Bug Hunting and QA Run in the site's header, `/assets/testing-guide.html` and the with-bugs site, which `AGENTS.md`
+  tells them never to click or open. This is a rule and a check after each session, not a block:
   the deny list in `.claude/settings.json` covers file paths and cannot stop a click in the browser. After each
   session, the pull request records a search of `.playwright-mcp/` and the generator report for the page and the
   site (not the button labels, which every page snapshot holds). After a plan session (no generator report):
@@ -132,8 +133,8 @@ This suite is measured on Toolshop's "with bugs" copy. To keep that measure fair
   grep -rlE "testing-guide\.html|with-bugs\.practicesoftwaretesting\.com" .playwright-mcp/ drafts/<flow>/generator-report.md
   ```
 
-  The pull request records the result with grep's exit code: 1 = nothing found; 2 = a path is missing, so the check
-  did not run. No output means neither appears in the kept logs; it does not prove neither was opened (the logs are
+  The pull request records the result with grep's exit code: 0 = a match, so that session is reviewed and recorded
+  before anything from it merges; 1 = nothing found; 2 = a path is missing, so the check did not run. No output means neither appears in the kept logs; it does not prove neither was opened (the logs are
   partial).
 - The same rule holds for the QA engineer: while writing or approving tests, do not open Testing Guide, Bug Hunting
   or QA Run, `/assets/testing-guide.html` or the with-bugs site.
