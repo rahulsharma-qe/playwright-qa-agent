@@ -177,8 +177,8 @@ flowchart LR
 - **Observed notes are never asserted:** behaviour the team has not decided on is an open question in
   [observed-notes.md](observed-notes.md), with who saw it and when.
 - **No hard waits:** tests wait for what the page shows or for the site's own answer, never for a timer.
-- **Repeatable:** Node version in `.nvmrc`; npm packages and Toolshop images pinned, GitHub Actions on major
-  versions; the images checked against the pinned commit; no AI in CI.
+- **Repeatable:** Node version in `.nvmrc`; npm packages and Toolshop images pinned, GitHub Actions pinned
+  to commit SHAs; the images checked against the pinned commit; no AI in CI.
 - **Environment problems named as such:** site or API down, a bot check, a failed registration, an expired login,
   a Toolshop copy that did not start; each with its own message that says it is not a test failure.
 - **Readable:** steps in the report read like a test case; tests and page objects follow the rules in the README.
@@ -213,7 +213,7 @@ flowchart LR
 - **Later:** account lockout test on our own copy · accessibility checks · several environments · visual
   regression · UI error states by mocking API replies · plain-English steps to a test script · Allure history and
   trends · a weekly run on both the public site and the CI copy · GitLab CI (explained by mapping from GitHub
-  Actions) · GitHub Actions pinned to commit SHAs · a lint rule for the refused list.
+  Actions) · a lint rule for the refused list.
 
 ## 10. Limits
 

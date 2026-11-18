@@ -255,8 +255,8 @@ uploaded as an artifact; nothing goes to GitHub Pages. The pins file for that co
 - **Config:** `testIdAttribute: 'data-test'` (Toolshop's attribute); `locale: 'en-US'` (the site follows the
   browser language, so texts and role names stay in English); retries 1 in CI and 0 locally; 2 workers in CI.
 - **Versions:** Node in `.nvmrc` only (no `engines` field); `@playwright/test`, `allure-playwright`, the Allure 3
-  CLI (`allure`) and `@estruyf/github-actions-reporter` pinned to exact versions in `package.json`; GitHub Actions
-  pinned to major versions; Toolshop's images pinned by digest, and checked against `TOOLSHOP_COMMIT` (section 7).
+  CLI (`allure`) and `@estruyf/github-actions-reporter` pinned to exact versions in `package.json`; every GitHub Action
+  pinned to a commit SHA, with its version in a comment; Toolshop's images pinned by digest, and checked against `TOOLSHOP_COMMIT` (section 7).
 - **`SPRINT` and `TOOLSHOP_COMMIT`:** `SPRINT` comes from the environment's `version` (`local` and `public-site`:
   `sprint5`; `with-bugs`: `sprint5-with-bugs`) and picks the Toolshop copy and its pins file; nobody types it;
   `TOOLSHOP_COMMIT` in `ci/toolshop-env.sh` is the pinned commit (tag 2.5, `9e7736c`).
