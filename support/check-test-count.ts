@@ -7,7 +7,7 @@ import { readFileSync } from 'node:fs';
 import { selectRun } from './apps/index.ts';
 import { FORK_MESSAGE, noGivenUserOnFork } from './fork-runs.ts';
 import { collectTests, EXPECTED_UI_TESTS, UI_PROJECTS } from './planted-bug-count.ts';
-import { tagRuleBreaks, taggedTests } from './tag-rules.ts';
+import { namesHoldingASuiteTag, tagRuleBreaks, taggedTests } from './tag-rules.ts';
 
 const listFile = process.argv[2];
 if (!listFile) {
@@ -20,7 +20,9 @@ if (noGivenUserOnFork(selectRun(process.env).app, process.env)) {
 }
 const list = JSON.parse(readFileSync(listFile, 'utf8'));
 const found = collectTests(list).filter((t) => UI_PROJECTS.includes(t.project));
-const breaks = tagRuleBreaks(taggedTests(list), UI_PROJECTS);
+const tests = taggedTests(list);
+const breaks = tagRuleBreaks(tests, UI_PROJECTS);
+const taggedNames = namesHoldingASuiteTag(tests);
 let failed = false;
 if (found.length !== EXPECTED_UI_TESTS) {
   console.error(
@@ -36,5 +38,11 @@ if (breaks.length > 0) {
   failed = true;
 } else {
   console.log('Tag rules kept: every UI test @regression; @sanity tests also @p0; @p0 tests also @regression.');
+}
+if (taggedNames.length > 0) {
+  console.error(`${taggedNames.length} test names hold a suite tag (--grep would put them in that suite):\n  ${taggedNames.join('\n  ')}`);
+  failed = true;
+} else {
+  console.log(`No test name holds a suite tag (${tests.length} tests checked).`);
 }
 if (failed) process.exit(1);

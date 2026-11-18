@@ -1,5 +1,5 @@
 import { expect, test } from '../../fixtures';
-import { holdsAPassword, redactText, secretsToScan } from '../../support/secret-scan-rules.ts';
+import { holdsAPassword, redactText, secretsToScan, writtenForms } from '../../support/secret-scan-rules.ts';
 
 // Made-up values only; no files read or written.
 const account = { email: 'pqa-local-login-x1@example.com', password: 'Fake-Pass-1234!' };
@@ -32,5 +32,18 @@ test.describe('secret scan', () => {
     expect(secrets.map((secret) => secret.password)).toEqual([account.password, 'Given-Fake-99']);
     expect(holdsAPassword('text with Given-Fake-99 in it', secrets)).toBe(true);
     expect(secretsToScan([account], {})).toHaveLength(1);
+  });
+
+  test('a password holding " and \\ is replaced in its JSON and HTML forms, and check finds a leftover', () => {
+    const quoted = { password: 'Fake"Pa\\ss-1' };
+    const [, jsonForm, htmlForm] = writtenForms(quoted.password);
+    const json = JSON.stringify({ stdout: [`::add-mask::${quoted.password}`], error: `wrong value ${quoted.password}` });
+    const result = redactText(`${json}\n<p>${htmlForm}</p>`, [quoted]);
+    expect(result.text).not.toContain(jsonForm);
+    expect(result.text).not.toContain(htmlForm);
+    expect([result.maskLines, result.leaked]).toEqual([1, true]);
+    expect(holdsAPassword(result.text, [quoted])).toBe(false);
+    expect(holdsAPassword(`{"step":"${jsonForm}"}`, [quoted])).toBe(true);
+    expect(holdsAPassword(`<td>${htmlForm}</td>`, [quoted])).toBe(true);
   });
 });

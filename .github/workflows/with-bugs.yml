@@ -18,7 +18,7 @@ jobs:
       TEST_ENV: with-bugs
       BASE_URL: http://localhost:4200
       API_URL: http://localhost:8091
-      RESULTS_JSON: test-results.json
+      RESULTS_JSON: playwright-json/test-results.json
     steps:
       - uses: actions/checkout@v7
 
@@ -62,6 +62,16 @@ jobs:
           name: allure-report-with-bugs
           path: allure-report/
           retention-days: 30
+
+      # Playwright's own JSON results, for comparing two runs (support/compare-runs.ts), never read for the failures.
+      # Redacted and checked with the report, so uploaded only when that step passed.
+      - name: Upload the Playwright JSON results
+        if: ${{ !cancelled() && steps.report.outcome == 'success' }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-json-with-bugs
+          path: playwright-json/
+          retention-days: 90
 
       - name: Show the last Toolshop logs
         if: ${{ failure() }}

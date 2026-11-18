@@ -52,7 +52,9 @@ instead of being skipped. `--grep @sanity` picks tests; their dependency project
 `test:p0`, `test:regression` are `--grep` on the tag, with the seed left out. CI's count step
 (`support/check-test-count.ts`) also checks the rules from the `--list` JSON (`support/tag-rules.ts`): every UI test
 has `@regression`, `@sanity` implies `@p0`, `@p0` implies `@regression`; it names any test that breaks them and
-exits 1. Agents tag new tests `@regression` only (`AGENTS.md`); the plans' "Tag:" lines say the same.
+exits 1. It also checks that no test's full name (file path, describe titles, test title), in any project, holds
+`@sanity`, `@p0` or `@regression`, because `--grep` reads names too; it reports them with the count. The run page
+shows UI tests and framework checks apart (`support/test-counts-summary.ts`). Agents tag new tests `@regression` only (`AGENTS.md`); the plans' "Tag:" lines say the same.
 `logged-in` is the first project on purpose: the AI test agents' tools use the first project when none is named.
 `tests/seed.spec.ts` (tag `@seed`) is in `logged-in`: the AI test agents start from it
 ([ai-assisted-tests.md](ai-assisted-tests.md)). `npm test` leaves it out (`--grep-invert @seed`), so the
@@ -260,10 +262,10 @@ uploaded as an artifact; nothing goes to GitHub Pages. The pins file for that co
 - **`EXPECTED_UI_TESTS`** in `support/planted-bug-count.ts`: the number of UI tests (projects `login` and
   `logged-in`, the seed left out). CI checks it before the tests (section 7), and the planted-bug summary warns when
   fewer are found. It changes in the same pull request as the tests.
-- **Scripts:** `npm test` (every test but the seed: 84 tests, 31 UI, 51 unit, 2 set-up), `npm run test:sanity`,
+- **Scripts:** `npm test` (every test but the seed: 90 tests, 31 UI, 57 unit, 2 set-up), `npm run test:sanity`,
   `npm run test:p0`, `npm run test:regression` (the three suites), `npm run test:seed`, `npm run test:unit`,
   `npm run test:public-site` (the same tests against the public site and its API), `npm run test:ready` (every test
-  but the seed, 3 times at 2 workers: the check before a merge; 248 tests in all: 93 UI, 153 unit, 2 set-up),
+  but the seed, 3 times at 2 workers: the check before a merge; 266 tests in all: 93 UI, 171 unit, 2 set-up),
   `npm run report:build`, `npm run report`.
 - **Verified from a fresh clone:** `npm ci`, `npx playwright install chromium`, `ci/start-toolshop.sh`, then
   `npm test` with no settings (the README's [Run it](../README.md#run-it)); every commit typechecks and its tests
@@ -298,10 +300,14 @@ How to use the agents: [ai-assisted-tests.md](ai-assisted-tests.md). In short:
   runs the same tests on it. Tests are never written or changed from the bug list or that copy.
 - Differences between the copies that set-up and navigation must follow (sign-up fields, page addresses, where
   the token is kept) are the `with-bugs` environment's in `support/apps/toolshop.ts`; locators, steps and assertions never change.
-- Two runs on that copy are compared without reading them: `support/compare-runs.ts` takes two Playwright JSON
-  results files and compares, per UI test, the name, the outcome and the title of the first failing step
-  (`--outcome-only` leaves the step out; `--files` keeps some spec files); it prints "identical" or only the names
-  that differ.
+- Two runs on that copy are compared without reading them: `support/compare-runs.ts` takes two runs, each either
+  Playwright's JSON results (the `playwright-json` artifact, uploaded by CI and the with-bugs workflow after redact
+  and check) or an Allure report, and compares per test the status and the name of the first failing step
+  (`--outcome-only` leaves the step out, and it is left out with a line saying so when a run kept no steps;
+  `--names` and `--files` keep some tests). It prints "identical", or the names of the tests that differ and the field
+  (status, first failing step, only in one run), never a value. `STEP_RENAMES` maps an older step name to today's,
+  so a rename in our own code is not a difference; a pull request that renames a report step says "step renamed:
+  old → new" and adds an entry.
 - The results are in `docs/bug-hunt.md` only: one table per run, a person matching each failure to a planted bug,
   baselines kept apart (a later run is compared only with the latest baseline on the same version).
 - The list of planted bugs "on our path" is written and merged before the run it is used for.

@@ -6,3 +6,6 @@ export const RUN_ACCOUNTS_DIR = 'playwright/.auth/run-accounts';
 
 /** Where the Allure reporter writes a run's results. */
 export const ALLURE_RESULTS_DIR = 'allure-results';
+
+/** Where CI asks Playwright's JSON reporter to write (RESULTS_JSON); scanned like the Allure results, then uploaded. */
+export const PLAYWRIGHT_JSON_DIR = 'playwright-json';
