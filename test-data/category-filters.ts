@@ -105,7 +105,7 @@ export const listCounts = {
 };
 
 export const noResultsText = 'There are no products found.';
-export const sanityCategory: SubCategory = 'Pliers';
+export const oneSubCategory: SubCategory = 'Pliers';
 export const hammerCategory: SubCategory = 'Hammer';
 /** The second sub-category in test 1.3: Hammer (7) plus Sander (2) fills one page of 9. */
 export const unionPartnerCategory: SubCategory = 'Sander';

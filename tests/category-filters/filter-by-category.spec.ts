@@ -12,7 +12,7 @@ import {
   noResultsText,
   parentCategories,
   parentCategoryNames,
-  sanityCategory,
+  oneSubCategory,
   subCategoriesChecked,
   unionPartnerCategory,
   unticked,
@@ -37,15 +37,15 @@ test.describe('Category filter: basics', () => {
     }
 
     // 2. Check one sub-category in the Categories group
-    await filterSidebar.checkCategory(sanityCategory);
-    await expect.poll(() => productListPage.namesSorted()).toEqual(sorted(categoryProducts[sanityCategory]));
-    const expectedCount = categoryProducts[sanityCategory].length;
+    await filterSidebar.checkCategory(oneSubCategory);
+    await expect.poll(() => productListPage.namesSorted()).toEqual(sorted(categoryProducts[oneSubCategory]));
+    const expectedCount = categoryProducts[oneSubCategory].length;
     await expect(productListPage.cards).toHaveCount(expectedCount);
     await expect(pagination.pageButtons).toHaveCount(0);
     await expect(productListPage.productNames).toHaveCount(expectedCount);
     await expect(productListPage.co2Scales).toHaveCount(expectedCount);
     await expect(productListPage.prices).toHaveCount(expectedCount);
-    await expect(filterSidebar.category(sanityCategory)).toBeChecked();
+    await expect(filterSidebar.category(oneSubCategory)).toBeChecked();
     await expect(filterSidebar.checkedBoxes).toHaveCount(1);
   });
 
