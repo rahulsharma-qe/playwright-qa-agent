@@ -39,7 +39,8 @@ and approves every change in a pull request. How to use the agents: [docs/ai-ass
 - Web-first assertions (`await expect(locator).toHaveText(…)`), or `expect.poll` for a value a page object
   returns. Never read a value once and compare it.
 - No hard waits (`page.waitForTimeout`). No `test.skip`, `test.fixme` or `test.only` in a pull request.
-- Tags: `@sanity` for a short check after a deploy, `@regression` for the rest.
+- Tags: tag every new test `@regression` only. A person decides which tests are also `@p0` and `@sanity` and adds
+  those tags; an agent never does. CI checks the rules (`support/tag-rules.ts`).
 - Step names and test titles never hold login details or other typed values.
 - Test data goes in `test-data/`.
 - Run the test (`npx playwright test <file>`) and see it pass before saying it is done.
