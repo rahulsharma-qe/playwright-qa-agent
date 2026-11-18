@@ -106,7 +106,7 @@ nvm use                      # Node version from .nvmrc (22.18 or later: Node ru
 npm ci
 npx playwright install chromium
 ci/start-toolshop.sh         # the pinned local copy of Toolshop (needs Docker; see CI below)
-npm test                     # 80 tests: 47 unit, 2 set-up, 31 UI; no settings needed, the defaults are this copy
+npm test                     # 84 tests: 51 unit, 2 set-up, 31 UI; no settings needed, the defaults are this copy
 npm run test:sanity          # the sanity suite: login and search (set-up still runs)
 npm run test:p0              # the P0 suite: login, search and placing an order
 npm run test:regression      # the full suite: every UI test

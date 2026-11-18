@@ -260,10 +260,11 @@ uploaded as an artifact; nothing goes to GitHub Pages. The pins file for that co
 - **`EXPECTED_UI_TESTS`** in `support/planted-bug-count.ts`: the number of UI tests (projects `login` and
   `logged-in`, the seed left out). CI checks it before the tests (section 7), and the planted-bug summary warns when
   fewer are found. It changes in the same pull request as the tests.
-- **Scripts:** `npm test` (every test but the seed: 80 tests, 31 UI, 47 unit, 2 set-up), `npm run test:sanity`,
-  `npm run test:p0`, `npm run test:regression` (the three suites), `npm run test:seed`, `npm run test:unit`, `npm run test:public-site` (the same tests against the public site and
-  its API), `npm run test:ready` (every test but the seed, 3 times at 2 workers: the check before a merge; 236 tests
-  in all: 93 UI, 141 unit, 2 set-up), `npm run report:build`, `npm run report`.
+- **Scripts:** `npm test` (every test but the seed: 84 tests, 31 UI, 51 unit, 2 set-up), `npm run test:sanity`,
+  `npm run test:p0`, `npm run test:regression` (the three suites), `npm run test:seed`, `npm run test:unit`,
+  `npm run test:public-site` (the same tests against the public site and its API), `npm run test:ready` (every test
+  but the seed, 3 times at 2 workers: the check before a merge; 248 tests in all: 93 UI, 153 unit, 2 set-up),
+  `npm run report:build`, `npm run report`.
 - **Verified from a fresh clone:** `npm ci`, `npx playwright install chromium`, `ci/start-toolshop.sh`, then
   `npm test` with no settings (the README's [Run it](../README.md#run-it)); every commit typechecks and its tests
   pass. `npm run test:public-site` runs the public site, where the Payment tests fail, because it runs newer code
