@@ -54,7 +54,8 @@ its reason in the [drafting log](docs/ai-drafting-log.md).
 - GitHub Actions on every pull request and push to main: a pass/fail table on the run page, and the Allure report
   attached to the run (`allure-report`), even when tests fail
 - The report from main published on GitHub Pages (link at the top), also when tests fail
-- Tags: `@sanity` (login works, search, one category filter, one order) and `@regression` (the rest); `npm run test:sanity` for a quick check after a deploy or a fix
+- Three suites, each part of the next, by tag (see [Suites](#suites)): `@sanity`, `@p0` and `@regression`, with
+  `npm run test:sanity`, `test:p0` and `test:regression`
 - AI-assisted tests, one user flow at a time: Playwright's test agents explore the site, write a test plan and draft
   tests with our page objects; a person approves the plan and the tests in pull requests. Built for the category
   filters and checkout (25 of the 31 UI tests). Rules for the agents: [AGENTS.md](AGENTS.md); how to use them:
@@ -105,8 +106,10 @@ nvm use                      # Node version from .nvmrc (22.18 or later: Node ru
 npm ci
 npx playwright install chromium
 ci/start-toolshop.sh         # the pinned local copy of Toolshop (needs Docker; see CI below)
-npm test                     # 80 tests: 47 unit, 2 set-up, 31 UI; no settings needed, the defaults are this copy
-npm run test:sanity          # only @sanity tests (setup still runs)
+npm test                     # 84 tests: 51 unit, 2 set-up, 31 UI; no settings needed, the defaults are this copy
+npm run test:sanity          # the sanity suite: login and search (set-up still runs)
+npm run test:p0              # the P0 suite: login, search and placing an order
+npm run test:regression      # the full suite: every UI test
 npm run test:ready           # the "ready" check: every test but the seed 3 times at 2 workers, as before a merge
 npm run test:unit            # only the unit tests (no Toolshop needed)
 npm run test:seed            # only the AI agents' starting test (npm test leaves it out)
@@ -216,12 +219,27 @@ agents are kept away from that file and from the "with bugs" copy; these are gua
 
 ## How we write tests
 
+### Suites
+
+Every UI test is in the full suite (`@regression`); a person adds `@p0` and `@sanity` on top, so each smaller suite
+is part of the larger one. CI checks that: every UI test has `@regression`, a `@sanity` test also has `@p0`, and a
+`@p0` test also has `@regression` (`support/tag-rules.ts`); AI-drafted tests come with `@regression` only.
+
+| Suite | Script | Tests |
+|---|---|---|
+| Sanity (`@sanity`) | `npm run test:sanity` | login works; search finds the product |
+| P0 (`@p0`) | `npm run test:p0` | the sanity tests, and both order tests (credit card; Cash on Delivery) |
+| Regression (`@regression`) | `npm run test:regression` | all 31 UI tests |
+
+The sanity suite used to hold one category-filter test and the credit-card order test as well; they are now in the
+full suite, and the order test in P0 too.
+
 Page objects come from `fixtures.ts`; a test asks for the ones it needs:
 
 ```ts
 import { expect, test } from '../fixtures';
 
-test('login works', { tag: '@sanity' }, async ({ loginPage, header }) => {
+test('login works', { tag: ['@regression', '@p0', '@sanity'] }, async ({ loginPage, header }) => {
   await loginPage.open();                          // the real test opens it in beforeEach
   await loginPage.login(user, password);          // page object performs an action
   await expect(header.accountMenu).toBeVisible();  // only the test decides what is right

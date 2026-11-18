@@ -200,7 +200,7 @@ note 16, checked by hand on the local copy and the public site).
 **File:** `tests/checkout/place-order.spec.ts`
 
 **Steps:**
-  1. Tag: @sanity. Add a product, open the cart, Proceed; Proceed on the Sign in step; fill the address; Proceed;
+  1. Tag: @regression @p0. Add a product, open the cart, Proceed; Proceed on the Sign in step; fill the address; Proceed;
      choose Credit Card and fill valid, plainly fake data; click Confirm; if "Payment was successful" shows on the
      Payment step, click Confirm again (observed note 7)
     - expect: "Thanks for your order! Your invoice number is INV-" followed by digits is shown
@@ -218,7 +218,7 @@ note 16, checked by hand on the local copy and the public site).
 **File:** `tests/checkout/place-order.spec.ts`
 
 **Steps:**
-  1. Same as 4.1 (including the conditional second Confirm), but choose Cash on Delivery
+  1. Tag: @regression @p0. Same as 4.1 (including the conditional second Confirm), but choose Cash on Delivery
     - expect: The same confirmation, with an invoice number
   2. Same as 4.1: wait for the site's answer to DELETE /carts/<cart id>, then open the home page
     - expect: The DELETE is answered with a success (2xx)

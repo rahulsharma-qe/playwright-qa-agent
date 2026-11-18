@@ -27,12 +27,12 @@ Page facts observed (use for expectations):
 
 **Seed:** `tests/seed.spec.ts`
 
-#### 1.1. Selecting one sub-category shows only its products (post-deploy check)
+#### 1.1. Selecting one sub-category shows only its products
 
 **File:** `tests/category-filters/filter-by-category.spec.ts`
 
 **Steps:**
-  1. Tag: @sanity. Start state: fresh home page, nothing filtered. Note the unfiltered list shows 9 cards and pagination with 5 pages.
+  1. Tag: @regression. Start state: fresh home page, nothing filtered. Note the unfiltered list shows 9 cards and pagination with 5 pages.
     - expect: Category group lists Hand Tools, Power Tools and Other with their children
   2. Check the checkbox labelled "Pliers" in the Categories group
     - expect: Exactly 5 cards: Combination Pliers, Pliers, Bolt Cutters, Long Nose Pliers, Slip Joint Pliers

@@ -22,7 +22,7 @@ test.beforeEach(async ({ loginPage }) => {
   await loginPage.open();
 });
 
-test('login works', { tag: '@sanity' }, async ({ loginPage, header }) => {
+test('login works', { tag: ['@regression', '@p0', '@sanity'] }, async ({ loginPage, header }) => {
   await loginPage.login(account.email, account.password);
 
   await expect(header.accountMenu).toBeVisible();
