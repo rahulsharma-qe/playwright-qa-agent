@@ -10,6 +10,7 @@
 //   node support/secret-scan.mjs check    after the report is built: reads every file in allure-results/,
 //                                          playwright-json/ and allure-report/ as raw bytes; exit 1 if a password
 //                                          is found. CI uploads the report and the JSON only when this passes.
+// Each value is looked for as written, JSON-escaped and HTML-escaped (see writtenForms in the rules file).
 // Limit: compressed files (trace archives, screenshots) cannot be read this way. They come only from the
 // logged-in tests, where no password is typed or printed (see playwright.config.ts).
 // The values come from playwright/.auth/run-accounts/ (one file per account, git-ignored, never attached to the

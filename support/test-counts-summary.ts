@@ -1,5 +1,5 @@
 // The run page's count line, with UI tests and framework checks apart, never one mixed total:
-//   node support/test-counts-summary.ts <results.json>   →  "31 UI tests, 56 framework checks (and 2 set-up steps)"
+//   node support/test-counts-summary.ts <results.json>   →  "31 UI tests, 57 framework checks (and 2 set-up steps)"
 // UI tests are the login and logged-in projects; framework checks are the unit tests of our own helpers.
 import { appendFileSync, readFileSync } from 'node:fs';
 import { collectTests, UI_PROJECTS } from './planted-bug-count.ts';

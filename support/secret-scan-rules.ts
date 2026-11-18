@@ -9,6 +9,21 @@ export function secretsToScan(accounts: Secret[], env: Record<string, string | u
   return [...accounts, ...given];
 }
 
+/**
+ * The forms a value can take in a result file: as written, JSON-escaped (\" and \\, as in Playwright's JSON
+ * results) and HTML-escaped (&quot; &#39; &amp; &lt; &gt;, as in a report page). Each distinct form once.
+ */
+export function writtenForms(value: string): string[] {
+  const jsonEscaped = JSON.stringify(value).slice(1, -1);
+  const htmlEscaped = value
+    .replaceAll('&', '&amp;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;');
+  return [...new Set([value, jsonEscaped, htmlEscaped])];
+}
+
 export type Redacted = { text: string; maskLines: number; snapshotLines: number; leaked: boolean };
 
 /**
@@ -22,9 +37,11 @@ export function redactText(original: string, secrets: Secret[]): Redacted {
   let snapshotLines = 0;
   let leaked = false;
   for (const { email, password } of secrets) {
-    const maskLine = `::add-mask::${password}`;
-    maskLines += text.split(maskLine).length - 1;
-    text = text.split(maskLine).join('::add-mask::<test account password>');
+    for (const form of writtenForms(password)) {
+      const maskLine = `::add-mask::${form}`;
+      maskLines += text.split(maskLine).length - 1;
+      text = text.split(maskLine).join('::add-mask::<test account password>');
+    }
     text = text
       .split('\n')
       .map((line) => {
@@ -35,14 +52,18 @@ export function redactText(original: string, secrets: Secret[]): Redacted {
         return line;
       })
       .join('\n');
-    if (text.includes(password)) leaked = true;
-    text = text.split(password).join('<test account password>');
-    if (email) text = text.split(email).join('<test account email>');
+    for (const form of writtenForms(password)) {
+      if (text.includes(form)) leaked = true;
+      text = text.split(form).join('<test account password>');
+    }
+    if (email) for (const form of writtenForms(email)) text = text.split(form).join('<test account email>');
   }
   return { text, maskLines, snapshotLines, leaked };
 }
 
-/** Whether raw file bytes (read as latin1) still hold any password, in its UTF-8 form. */
+/** Whether raw file bytes (read as latin1) still hold any password, in any written form, as UTF-8. */
 export function holdsAPassword(rawLatin1: string, secrets: Secret[]): boolean {
-  return secrets.some(({ password }) => rawLatin1.includes(Buffer.from(password, 'utf8').toString('latin1')));
+  return secrets.some(({ password }) =>
+    writtenForms(password).some((form) => rawLatin1.includes(Buffer.from(form, 'utf8').toString('latin1'))),
+  );
 }
