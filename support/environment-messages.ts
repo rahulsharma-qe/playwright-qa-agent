@@ -35,6 +35,10 @@ export function cannotLogInThroughApi(reason: string): string {
   return `Could not log the test customer in through Toolshop's API (${reason}); ${ENVIRONMENT_PHRASE}.`;
 }
 
+export function givenUserNotSet(): string {
+  return `The given test user is not set: APP_USER_EMAIL and APP_USER_PASSWORD are needed; ${ENVIRONMENT_PHRASE}.`;
+}
+
 export function cannotRegister(reason: string): string {
   return `Could not register a test customer on Toolshop (${reason}); ${ENVIRONMENT_PHRASE}.`;
 }

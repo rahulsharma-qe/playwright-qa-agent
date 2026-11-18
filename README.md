@@ -1,7 +1,7 @@
 # playwright-qa-agent
 
 A Playwright + TypeScript test framework for QA teams, with AI-drafted tests that a person reviews and approves
-before they are merged. Built: 30 UI tests (login, search, cart, category filters, checkout), CI on every pull
+before they are merged. Built: 31 UI tests (login, search, cart, category filters, checkout), CI on every pull
 request, a published test report, and a planted-bug run that measures what the tests catch.
 
 **Latest test report (main):** https://rahulsharma-qe.github.io/playwright-qa-agent/
@@ -57,7 +57,7 @@ its reason in the [drafting log](docs/ai-drafting-log.md).
 - Tags: `@sanity` (login works, search, one category filter, one order) and `@regression` (the rest); `npm run test:sanity` for a quick check after a deploy or a fix
 - AI-assisted tests, one user flow at a time: Playwright's test agents explore the site, write a test plan and draft
   tests with our page objects; a person approves the plan and the tests in pull requests. Built for the category
-  filters and checkout (25 of the 30 UI tests). Rules for the agents: [AGENTS.md](AGENTS.md); how to use them:
+  filters and checkout (25 of the 31 UI tests). Rules for the agents: [AGENTS.md](AGENTS.md); how to use them:
   [docs/ai-assisted-tests.md](docs/ai-assisted-tests.md); every drafted test and its outcome:
   [docs/ai-drafting-log.md](docs/ai-drafting-log.md)
 
@@ -105,7 +105,7 @@ nvm use                      # Node version from .nvmrc (22.18 or later: Node ru
 npm ci
 npx playwright install chromium
 ci/start-toolshop.sh         # the pinned local copy of Toolshop (needs Docker; see CI below)
-npm test                     # 71 tests: 39 unit, 2 set-up, 30 UI; no settings needed, the defaults are this copy
+npm test                     # 80 tests: 47 unit, 2 set-up, 31 UI; no settings needed, the defaults are this copy
 npm run test:sanity          # only @sanity tests (setup still runs)
 npm run test:ready           # the "ready" check: every test but the seed 3 times at 2 workers, as before a merge
 npm run test:unit            # only the unit tests (no Toolshop needed)
@@ -143,6 +143,18 @@ hand are removed when Toolshop resets its data. So each run registers two custom
 for the login tests; one more per retry; in CI, one more for the agents' starting test). Their emails use the reserved `example.com` domain; the passwords are
 generated for the run and kept only in `playwright/.auth/run-accounts/` (git-ignored), where the secret scan
 reads them.
+
+For an application where tests cannot register their own account, its profile says `testUser: given`: the tests
+log in as an account made for them, from `APP_USER_EMAIL` and `APP_USER_PASSWORD` (in CI, GitHub secrets of those
+names; only the names are in this repository). The wrong-password test and the order tests still register their
+own accounts when the application allows it; when it does not, the wrong-password test is left out with its
+reason and the run uses one worker. The secret scan covers the given password too. A pull request from a fork gets
+no secrets, so its run skips the projects that need a user, and says so. `tests/given-user-login.spec.ts` is a
+working example on Toolshop.
+
+The given-user mode is shown by one example on Toolshop (an account registered, then passed in as a given user,
+logging in through the page); its set-up path (a session made with a given user) and the one-worker rule have run
+only through the test list and CI's count step, not yet against an application without registration.
 
 ## CI
 

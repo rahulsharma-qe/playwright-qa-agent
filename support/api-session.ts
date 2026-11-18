@@ -5,6 +5,7 @@ import { callApi } from './api-call';
 import { cannotLogInThroughApi } from './environment-messages';
 import { SESSION_TOKEN_FILE, settings } from './settings';
 import { registerTestCustomer, type TestAccount } from './test-accounts';
+import { canRegister, givenUserFrom } from './test-user';
 
 /** What the API login gives back: the token, and its lifetime in seconds if the reply says. */
 export type ApiLogin = { token: string; expiresInSeconds?: number };
@@ -72,7 +73,8 @@ export function sessionHasExpired(session: SavedSession, now: number): boolean {
  * redact and check steps cover it.
  */
 export async function useOwnCustomer(page: Page, request: APIRequestContext, purpose: string): Promise<void> {
-  const account = await registerTestCustomer(request, purpose);
+  // With no registration there is only the given user; the run is then on one worker (playwright.config.ts).
+  const account = canRegister(settings.app) ? await registerTestCustomer(request, purpose) : givenUserFrom(process.env);
   const loggedInAt = Date.now();
   const login = await logInThroughApi(request, account);
   await checkSessionThroughApi(request, login.token);

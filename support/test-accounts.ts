@@ -61,7 +61,7 @@ function generatePassword(): string {
 }
 
 /** Generated passwords are not GitHub secrets, so GitHub would not hide them in logs on its own. */
-function hideInCiLogs(value: string): void {
+export function hideInCiLogs(value: string): void {
   if (process.env.GITHUB_ACTIONS) console.log(`::add-mask::${value}`);
 }
 

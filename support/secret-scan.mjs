@@ -11,10 +11,12 @@
 // Limit: compressed files (trace archives, screenshots) cannot be read this way. They come only from the
 // logged-in tests, where no password is typed or printed (see playwright.config.ts).
 // The values come from playwright/.auth/run-accounts/ (one file per account, git-ignored, never attached to the
-// report). Output names files only, never a value.
+// report), plus the given test user's password from APP_USER_PASSWORD when it is set. The rules themselves are in
+// support/secret-scan-rules.ts, with unit tests. Output names files only, never a value.
 import { existsSync, readdirSync, readFileSync, writeFileSync, statSync } from 'node:fs';
 import { extname, join } from 'node:path';
 import { RUN_ACCOUNTS_DIR } from './run-output-paths.ts';
+import { holdsAPassword, redactText, secretsToScan } from './secret-scan-rules.ts';
 
 const TEXT_FILES = new Set(['.json', '.md', '.txt', '.log', '.html', '.xml', '.csv']);
 const mode = process.argv[2];
@@ -33,12 +35,15 @@ function stop(message) {
 }
 
 const accountFiles = filesUnder(RUN_ACCOUNTS_DIR).filter((f) => f.endsWith('.json'));
-if (accountFiles.length === 0) {
-  if (process.env.CI) stop('No run-accounts file; cannot scan; nothing uploaded.');
-  console.log('No run-accounts file: this run registered no test account, so there is nothing to scan for.');
+const accounts = secretsToScan(
+  accountFiles.map((f) => JSON.parse(readFileSync(f, 'utf8'))),
+  process.env,
+);
+if (accounts.length === 0) {
+  if (process.env.CI) stop('No run-accounts file and no given user; cannot scan; nothing uploaded.');
+  console.log('No run-accounts file and no given user: there is nothing to scan for.');
   process.exit(0);
 }
-const accounts = accountFiles.map((f) => JSON.parse(readFileSync(f, 'utf8')));
 
 if (mode === 'redact') {
   let maskLines = 0;
@@ -47,32 +52,18 @@ if (mode === 'redact') {
   let changedFiles = 0;
   for (const file of filesUnder('allure-results').filter((f) => TEXT_FILES.has(extname(f)))) {
     const original = readFileSync(file, 'utf8');
-    let text = original;
-    for (const { email, password } of accounts) {
-      const maskLine = `::add-mask::${password}`;
-      maskLines += text.split(maskLine).length - 1;
-      text = text.split(maskLine).join('::add-mask::<test account password>');
-      // Page snapshot: a line such as `- textbox "Password *" [ref=e5]: <value>` ends with the typed value.
-      text = text
-        .split('\n')
-        .map((line) => {
-          if (/^\s*- textbox\b/.test(line) && line.endsWith(`: ${password}`)) {
-            snapshotLines++;
-            return line.slice(0, -password.length) + '<test account password>';
-          }
-          return line;
-        })
-        .join('\n');
-      if (text.includes(password)) leaks.add(file);
-      text = text.split(password).join('<test account password>').split(email).join('<test account email>');
-    }
+    const result = redactText(original, accounts);
+    const text = result.text;
+    maskLines += result.maskLines;
+    snapshotLines += result.snapshotLines;
+    if (result.leaked) leaks.add(file);
     if (text !== original) {
       writeFileSync(file, text);
       changedFiles++;
     }
   }
   console.log(
-    `Secret scan: ${accounts.length} test accounts; ${maskLines} log-mask lines, ${snapshotLines} page-snapshot lines ` +
+    `Secret scan: ${accounts.length} passwords (test accounts and any given user); ${maskLines} log-mask lines, ${snapshotLines} page-snapshot lines ` +
       `and ${leaks.size} other places replaced (${changedFiles} result files changed).`,
   );
   if (leaks.size > 0) {
@@ -84,14 +75,14 @@ if (mode === 'redact') {
   const found = [];
   for (const file of [...filesUnder('allure-results'), ...filesUnder('allure-report')]) {
     const content = readFileSync(file).toString('latin1');
-    if (accounts.some(({ password }) => content.includes(Buffer.from(password, 'utf8').toString('latin1')))) {
+    if (holdsAPassword(content, accounts)) {
       found.push(file);
     }
   }
   if (found.length > 0) {
     stop(`A secret value was found in the report; nothing uploaded. Files:\n  ${found.join('\n  ')}`);
   }
-  console.log(`Secret scan: ${accounts.length} test-account passwords checked; none in allure-results/ or allure-report/.`);
+  console.log(`Secret scan: ${accounts.length} passwords checked; none in allure-results/ or allure-report/.`);
 } else {
   stop('Usage: node support/secret-scan.mjs redact|check');
 }

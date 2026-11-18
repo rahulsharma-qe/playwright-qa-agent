@@ -7,15 +7,15 @@ import {
   saveSession,
   sessionNotAccepted,
 } from '../support/api-session';
-import { SESSION_FILE } from '../support/settings';
-import { registerTestCustomer } from '../support/test-accounts';
+import { SESSION_FILE, settings } from '../support/settings';
+import { runUser } from '../support/test-user';
 
 // Makes the logged-in session for the search and cart tests through the API, and checks it the same way on every
 // Toolshop copy: the API accepts the token (GET /users/me), and the site, once its header has rendered, no longer
 // offers "Sign in". The UI login is tested by the login tests (login.spec.ts), which log in through the page.
 // Never touches the cart.
 setup('log in through the API and save the session', async ({ page, request, productListPage, header }) => {
-  const account = await registerTestCustomer(request, 'session');
+  const account = await runUser(settings.app, request, 'session'); // registered now, or the given user
   const loggedInAt = Date.now();
   const login = await logInThroughApi(request, account);
   const token = login.token;
