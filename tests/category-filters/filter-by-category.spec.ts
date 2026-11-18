@@ -26,7 +26,7 @@ test.describe('Category filter: basics', () => {
     await expect(productListPage.cards).toHaveCount(listCounts.pageSize);
   });
 
-  test('Selecting one sub-category shows only its products', { tag: '@sanity' }, async ({ productListPage, filterSidebar }) => {
+  test('Selecting one sub-category shows only its products', { tag: '@regression' }, async ({ productListPage, filterSidebar }) => {
     // 1. Start state: fresh home page, nothing filtered
     await expect(productListPage.cards).toHaveCount(listCounts.pageSize);
     await expect(productListPage.pageButtons).toHaveCount(listCounts.unfilteredPages);

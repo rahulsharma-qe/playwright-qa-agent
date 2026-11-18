@@ -32,7 +32,7 @@ test.describe('Order confirmation', () => {
     await checkoutPage.fillAddressAndProceed(billingAddress);
   });
 
-  test('Happy path with a credit card', { tag: '@sanity' }, async ({
+  test('Happy path with a credit card', { tag: ['@regression', '@p0'] }, async ({
     productListPage,
     checkoutPage,
     accountPage,
@@ -62,7 +62,7 @@ test.describe('Order confirmation', () => {
     await expect(invoicesPage.invoiceRow(invoiceNumber)).toBeVisible();
   });
 
-  test('Happy path with Cash on Delivery', { tag: '@regression' }, async ({ productListPage, checkoutPage, header }) => {
+  test('Happy path with Cash on Delivery', { tag: ['@regression', '@p0'] }, async ({ productListPage, checkoutPage, header }) => {
     // 1. Same as 4.1 (including the conditional second Confirm), but choose Cash on Delivery
     await checkoutPage.choosePaymentMethod('Cash on Delivery');
     const cartEmptied = await checkoutPage.placeOrder();
