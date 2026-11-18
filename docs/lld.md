@@ -7,7 +7,7 @@ how each part is built, as built: step 1 and the merged step 2 flows (category f
 
 ```
 playwright-qa-agent/
-  pages/                  nine page objects (section 3)
+  pages/                  ten page objects (section 3)
   fixtures.ts             gives the page objects to tests, watches every page for a bot check, gives logged-in pages
                           their session, re-exports test and expect
   tests/                  setup files, the hand-written specs, category-filters/ and checkout/ (AI-drafted, decided by
@@ -62,10 +62,11 @@ planted-bug run never runs it; CI runs it in its own step.
 
 ## 3. Page objects and fixtures
 
-- Nine page objects in `pages/`: `Header` (the shared top bar: sign-in link, account menu, cart count),
+- Ten page objects in `pages/`: `Header` (the shared top bar: sign-in link, account menu, cart count),
   `LoginPage`, `ProductListPage`, `ProductPage`, `CartPage`, `CheckoutPage` (sign-in, billing address and payment
-  steps, placing an order), `AccountPage`, `InvoicesPage` and `FilterSidebar` (categories, brands, sort, price,
-  eco-friendly).
+  steps, placing an order), `AccountPage`, `InvoicesPage`, `FilterSidebar` (categories, brands, sort, price,
+  eco-friendly) and `Pagination` (the page buttons under the product list, and a walk that reads every page; the
+  walk's poll message is built from its timeout constant).
 - Page objects hold locators and actions and may return values; they never call `expect`. Each action is a
   `test.step` ("Log in", `Search for "Pliers"`, "Add to cart"), so the report reads like a test case; step names
   never hold a login value.
@@ -254,8 +255,8 @@ uploaded as an artifact; nothing goes to GitHub Pages. The pins file for that co
 - **Config:** `testIdAttribute: 'data-test'` (Toolshop's attribute); `locale: 'en-US'` (the site follows the
   browser language, so texts and role names stay in English); retries 1 in CI and 0 locally; 2 workers in CI.
 - **Versions:** Node in `.nvmrc` only (no `engines` field); `@playwright/test`, `allure-playwright`, the Allure 3
-  CLI (`allure`) and `@estruyf/github-actions-reporter` pinned to exact versions in `package.json`; GitHub Actions
-  pinned to major versions; Toolshop's images pinned by digest, and checked against `TOOLSHOP_COMMIT` (section 7).
+  CLI (`allure`) and `@estruyf/github-actions-reporter` pinned to exact versions in `package.json`; every GitHub Action
+  pinned to a commit SHA, with its version in a comment; Toolshop's images pinned by digest, and checked against `TOOLSHOP_COMMIT` (section 7).
 - **`SPRINT` and `TOOLSHOP_COMMIT`:** `SPRINT` comes from the environment's `version` (`local` and `public-site`:
   `sprint5`; `with-bugs`: `sprint5-with-bugs`) and picks the Toolshop copy and its pins file; nobody types it;
   `TOOLSHOP_COMMIT` in `ci/toolshop-env.sh` is the pinned commit (tag 2.5, `9e7736c`).

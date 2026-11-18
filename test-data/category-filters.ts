@@ -3,8 +3,33 @@
  * (1 to 100). Change them here, not in the tests.
  */
 
+/** The parent categories, as the sidebar shows them. */
+export type ParentCategory = 'Hand Tools' | 'Power Tools' | 'Other';
+
+/** The sub-categories, as the sidebar shows them. A name not in this list is a compile error. */
+export type SubCategory =
+  | 'Hammer'
+  | 'Hand Saw'
+  | 'Wrench'
+  | 'Screwdriver'
+  | 'Pliers'
+  | 'Chisels'
+  | 'Measures'
+  | 'Grinder'
+  | 'Sander'
+  | 'Saw'
+  | 'Drill'
+  | 'Tool Belts'
+  | 'Storage Solutions'
+  | 'Workbench'
+  | 'Safety Gear'
+  | 'Fasteners';
+
+/** Any category checkbox in the sidebar. */
+export type CategoryName = ParentCategory | SubCategory;
+
 /** Each sub-category and the products the category filter shows for it. */
-export const categoryProducts: Record<string, string[]> = {
+export const categoryProducts: Record<SubCategory, string[]> = {
   Hammer: [
     'Claw Hammer with Shock Reduction Grip',
     'Hammer',
@@ -40,14 +65,17 @@ export const categoryProducts: Record<string, string[]> = {
 };
 
 /** The parent categories and their children, in the order the sidebar shows them. */
-export const parentCategories: Record<'Hand Tools' | 'Power Tools' | 'Other', string[]> = {
+export const parentCategories: Record<ParentCategory, SubCategory[]> = {
   'Hand Tools': ['Hammer', 'Hand Saw', 'Wrench', 'Screwdriver', 'Pliers', 'Chisels', 'Measures'],
   'Power Tools': ['Grinder', 'Sander', 'Saw', 'Drill'],
   Other: ['Tool Belts', 'Storage Solutions', 'Workbench', 'Safety Gear', 'Fasteners'],
 };
 
+/** The parent category names, in the sidebar's order. */
+export const parentCategoryNames = Object.keys(parentCategories) as ParentCategory[];
+
 /** The sub-categories test 1.2 walks through; Drill is left out (observed note 2). */
-export const subCategoriesChecked = [
+export const subCategoriesChecked: SubCategory[] = [
   'Hammer',
   'Pliers',
   'Sander',
@@ -77,13 +105,13 @@ export const listCounts = {
 };
 
 export const noResultsText = 'There are no products found.';
-export const sanityCategory = 'Pliers';
-export const hammerCategory = 'Hammer';
+export const sanityCategory: SubCategory = 'Pliers';
+export const hammerCategory: SubCategory = 'Hammer';
 /** The second sub-category in test 1.3: Hammer (7) plus Sander (2) fills one page of 9. */
-export const unionPartnerCategory = 'Sander';
-export const emptyCategory = 'Grinder';
-export const narrowedParent = 'Hand Tools';
-export const unticked = 'Wrench';
+export const unionPartnerCategory: SubCategory = 'Sander';
+export const emptyCategory: SubCategory = 'Grinder';
+export const narrowedParent: ParentCategory = 'Hand Tools';
+export const unticked: SubCategory = 'Wrench';
 
 export const sortCase = {
   nameAZ: 'Name (A - Z)',

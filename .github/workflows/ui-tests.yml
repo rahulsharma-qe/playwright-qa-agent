@@ -25,9 +25,9 @@ jobs:
     outputs:
       report-scanned: ${{ steps.report.outcome == 'success' }}
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - uses: actions/setup-node@v7
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version-file: .nvmrc
           cache: npm
@@ -44,7 +44,7 @@ jobs:
 
       # Toolshop's web server image is published for arm64 only; QEMU lets this amd64 runner run it.
       - name: Allow arm64 images (emulation)
-        uses: docker/setup-qemu-action@v4
+        uses: docker/setup-qemu-action@99012661954931238ded8c8b007157a8430204e1 # v4.4.0
         with:
           platforms: arm64
 
@@ -95,7 +95,7 @@ jobs:
       # Only a report that passed the secret scan is uploaded.
       - name: Upload the Allure report
         if: ${{ !cancelled() && steps.report.outcome == 'success' }}
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: allure-report
           path: allure-report/
@@ -105,7 +105,7 @@ jobs:
       # report above, so uploaded only when that step passed.
       - name: Upload the Playwright JSON results
         if: ${{ !cancelled() && steps.report.outcome == 'success' }}
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: playwright-json
           path: playwright-json/
@@ -113,7 +113,7 @@ jobs:
 
       - name: Prepare the report for GitHub Pages
         if: ${{ !cancelled() && steps.report.outcome == 'success' && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
-        uses: actions/upload-pages-artifact@v5
+        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
         with:
           path: allure-report/
 
@@ -138,4 +138,4 @@ jobs:
       url: ${{ steps.deploy.outputs.page_url }}
     steps:
       - id: deploy
-        uses: actions/deploy-pages@v5
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1

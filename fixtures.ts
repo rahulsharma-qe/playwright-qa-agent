@@ -9,6 +9,7 @@ import { FilterSidebar } from './pages/FilterSidebar';
 import { Header } from './pages/Header';
 import { InvoicesPage } from './pages/InvoicesPage';
 import { LoginPage } from './pages/LoginPage';
+import { Pagination } from './pages/Pagination';
 import { ProductListPage } from './pages/ProductListPage';
 import { ProductPage } from './pages/ProductPage';
 
@@ -22,6 +23,7 @@ type PageObjects = {
   loginPage: LoginPage;
   productListPage: ProductListPage;
   filterSidebar: FilterSidebar;
+  pagination: Pagination;
   productPage: ProductPage;
   cartPage: CartPage;
   checkoutPage: CheckoutPage;
@@ -76,6 +78,7 @@ export const test = base.extend<PageObjects & TestOptions>({
   loginPage: async ({ page }, use) => use(new LoginPage(page)),
   productListPage: async ({ page }, use) => use(new ProductListPage(page)),
   filterSidebar: async ({ page }, use) => use(new FilterSidebar(page)),
+  pagination: async ({ page }, use) => use(new Pagination(page)),
   productPage: async ({ page }, use) => use(new ProductPage(page)),
   cartPage: async ({ page }, use) => use(new CartPage(page)),
   checkoutPage: async ({ page }, use) => use(new CheckoutPage(page)),

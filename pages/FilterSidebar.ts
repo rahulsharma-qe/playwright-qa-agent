@@ -1,4 +1,5 @@
 import { Locator, Page, test } from '@playwright/test';
+import type { CategoryName } from '../test-data/category-filters';
 
 /** The filter sidebar on the home page: sort, price range, categories, brands and the eco-friendly option. */
 export class FilterSidebar {
@@ -16,15 +17,15 @@ export class FilterSidebar {
   }
 
   /** A category checkbox, by its exact label ("Saw" is not "Hand Saw"). */
-  category(name: string): Locator {
+  category(name: CategoryName): Locator {
     return this.categories.getByRole('checkbox', { name, exact: true });
   }
 
-  async checkCategory(name: string): Promise<void> {
+  async checkCategory(name: CategoryName): Promise<void> {
     await test.step(`Tick the category "${name}"`, () => this.category(name).check());
   }
 
-  async uncheckCategory(name: string): Promise<void> {
+  async uncheckCategory(name: CategoryName): Promise<void> {
     await test.step(`Untick the category "${name}"`, () => this.category(name).uncheck());
   }
 
