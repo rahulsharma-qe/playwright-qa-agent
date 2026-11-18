@@ -298,10 +298,14 @@ How to use the agents: [ai-assisted-tests.md](ai-assisted-tests.md). In short:
   runs the same tests on it. Tests are never written or changed from the bug list or that copy.
 - Differences between the copies that set-up and navigation must follow (sign-up fields, page addresses, where
   the token is kept) are the `with-bugs` environment's in `support/apps/toolshop.ts`; locators, steps and assertions never change.
-- Two runs on that copy are compared without reading them: `support/compare-runs.ts` takes two Playwright JSON
-  results files and compares, per UI test, the name, the outcome and the title of the first failing step
-  (`--outcome-only` leaves the step out; `--files` keeps some spec files); it prints "identical" or only the names
-  that differ.
+- Two runs on that copy are compared without reading them: `support/compare-runs.ts` takes two runs, each either
+  Playwright's JSON results (the `playwright-json` artifact, uploaded by CI and the with-bugs workflow after redact
+  and check) or an Allure report, and compares per test the status and the name of the first failing step
+  (`--outcome-only` leaves the step out, and it is left out with a line saying so when a run kept no steps;
+  `--names` and `--files` keep some tests). It prints "identical", or the names of the tests that differ and the field
+  (status, first failing step, only in one run), never a value. `STEP_RENAMES` maps an older step name to today's,
+  so a rename in our own code is not a difference; a pull request that renames a report step says "step renamed:
+  old → new" and adds an entry.
 - The results are in `docs/bug-hunt.md` only: one table per run, a person matching each failure to a planted bug,
   baselines kept apart (a later run is compared only with the latest baseline on the same version).
 - The list of planted bugs "on our path" is written and merged before the run it is used for.
