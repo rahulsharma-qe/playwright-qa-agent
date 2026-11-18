@@ -4,8 +4,8 @@
 before they are merged.**
 
 Status: step 1, the framework, is built, with application profiles, a given-user mode and three suites. Step 2,
-AI-assisted tests, is being built one user flow at a time: the category filters and checkout flows are merged. Next: moving the local and CI copy of Toolshop to the public site's
-version, together with a production build of its UI. The README's Built / Next / Later list is the record. How each
+AI-assisted tests, is being built one user flow at a time: the category filters and checkout flows are merged. Next: the contact form flow, the planted-bug run after step 2,
+and onboarding a second application, its time measured, not estimated. The README's Built / Next / Later list is the record. How each
 part is built: [lld.md](lld.md).
 
 ## Diagrams
@@ -27,7 +27,7 @@ flowchart TB
   REP["Test report<br/>Passwords removed, then checked<br/>(Allure)"]
   PUB["Shared report page<br/>Main branch only (GitHub Pages)"]
   AI["AI-assisted tests<br/>Agents plan and draft; a person approves<br/>every plan, test and fix"]
-  NEXT["Next: the public site's Toolshop version<br/>with a production build of its UI"]
+  NEXT["Later: the public site's Toolshop version<br/>with a production build of its UI"]
   ENV --> USER --> SHOP
   ENV --> LOGIN
   SHOP --> HELP
@@ -201,7 +201,7 @@ flowchart LR
 | Three nested suites by tag, checked in CI | A person chooses P0 in the plan; CI checks the nesting and that no test name holds a tag, because `--grep` reads names | Tags are test-file changes, reviewed like any other |
 | Locators by role or label first, `data-test` as fallback | Playwright's own guidance; a role locator also breaks when the page's accessibility breaks | A few elements need the fallback, and the page object says why |
 | Own Toolshop copy in CI | The public site shows a bot check to CI machines; a pinned copy is not changed by other visitors | Each CI run pulls the images and starts Toolshop; CI does not test the public site |
-| Pinned to Toolshop 2.5, with a pair check | The published images were built from that commit; the check proves the images and the commit are one pair | The public site runs newer code, where the Payment tests fail; moving to it is the next design |
+| Pinned to Toolshop 2.5, with a pair check | The published images were built from that commit; the check proves the images and the commit are one pair | The public site runs newer code, where the Payment tests fail; moving to it is on the Later list |
 | Toolshop's `cron` left out | It re-seeds the database every hour | None for a run of a few minutes |
 | Toolshop's web server image under QEMU | It is published for arm64 only | Emulation on an amd64 runner (it only passes requests on) |
 | A Playwright project `unit` for our helpers | Runs TypeScript with no extra tool and never waits for Toolshop | Unit tests show in the same report as UI tests |
@@ -221,10 +221,10 @@ flowchart LR
   generator drafts tests from it with our page objects, and a healer proposes fixes for failing tests. A person
   approves the plan, the tests and every fix in a pull request ([ai-assisted-tests.md](ai-assisted-tests.md)).
   Category filters and checkout are merged.
-- **Next:** moving the local and CI copy to the public site's Toolshop version together with a production build of
-  its UI, as one design delivered in phases; then the contact form flow, with a plan written
-  by the QA engineer; then the planted-bug run again, to measure what the AI-drafted tests catch.
-- **Later:** account lockout test on our own copy · accessibility checks · several applications · visual
+- **Next:** the contact form flow, with a plan written by the QA engineer; the planted-bug run again after step 2,
+  to measure what the AI-drafted tests catch; onboarding a second application, its time measured, not estimated.
+- **Later:** moving the local and CI copy to the public site's Toolshop version together with a production build of
+  its UI, as one design delivered in phases · account lockout test on our own copy · accessibility checks · several applications · visual
   regression · UI error states by mocking API replies · plain-English steps to a test script · Allure history and
   trends · a weekly run on both the public site and the CI copy · GitLab CI (explained by mapping from GitHub
   Actions) · a lint rule for the refused list.

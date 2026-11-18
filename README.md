@@ -73,12 +73,13 @@ its reason in the [drafting log](docs/ai-drafting-log.md).
   [docs/ai-drafting-log.md](docs/ai-drafting-log.md)
 
 **Next**
-- Move the local and CI copy to the public site's Toolshop version, with a production build of its UI (no
-  development server), then the Payment and address tests checked again
 - The contact form flow, with a test plan written by the QA engineer in plain English and drafted by the AI test generator
 - The planted-bug run again after step 2, to measure what the AI-drafted tests catch
+- Onboard a second application; its time measured, not estimated
 
 **Later**
+- Move the local and CI copy to the public site's Toolshop version, with a production build of its UI (no
+  development server), then the Payment and address tests checked again
 - A full agent: reads a requirement, plans tests, drafts them, heals broken locators; every change comes as a pull request a person approves
 - Account lockout test (on our own copy) · accessibility checks · several applications · visual regression · UI error states by mocking API replies
 - Allure history and trends · GitLab CI (explained by mapping from Actions)

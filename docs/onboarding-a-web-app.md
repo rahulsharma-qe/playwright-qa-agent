@@ -20,7 +20,7 @@ Each application gets one file, `support/apps/<name>.ts`, and is listed in `supp
 | Field | What it says | Toolshop |
 |---|---|---|
 | `name` | what `APP_UNDER_TEST` selects | `toolshop` |
-| `environments` | each place the application runs, with its site and API addresses and how that copy differs: `pagePrefix` (for example `/#` for hash routing), `tokenStore` (where the site keeps the login token), `signUpFields` | `local`, `public-site`, `with-bugs` |
+| `environments` | each place the application runs, with its site and API addresses and how that copy differs: `version` (the application's own name for that copy), `pagePrefix` (for example `/#` for hash routing), `tokenStore` (where the site keeps the login token), `signUpFields` | `local`, `public-site`, `with-bugs`; `version` is the `SPRINT` the start script and the image pins use (`sprint5`, `sprint5-with-bugs`) |
 | `healthChecks` | what the environment check calls before any test: a page of the site and an API path that needs no login | the home page and `/brands` |
 | `testUser` | how the tests get a user: `register` (an account made at run time) or `given` (an account made for the tests) | `register` |
 
@@ -42,8 +42,8 @@ Replace `<name>` and `<environment>` with your own values. The run's first line 
 and where they came from.
 
 The site check calls the profile's two health checks. If one does not answer, or answers with a bot-check page, the
-run stops with an environment message ("… this is an environment problem, not a test failure"). In that case, no
-test is counted as failed.
+run stops with an environment message ("… this is an environment problem, not a test failure"): the site check
+shows as 1 failed with that message, and the other tests do not run.
 
 **Check:** the `site-check` project passes on the environment you will test.
 
