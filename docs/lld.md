@@ -89,7 +89,12 @@ planted-bug run never runs it; CI runs it in its own step.
   (`FORK_PR`) gets none, so `auth-setup`, `logged-in` and `login` are left out, said in the console. The secret scan
   adds the given password (`secretsToScan()` in `support/secret-scan-rules.ts`). Example:
   `tests/given-user-login.spec.ts` passes an account registered now in as the given user and logs in. Toolshop's
-  profile stays on `register`.
+  profile stays on `register`. The config's two messages go to stderr, so `--reporter=json` stays valid; the fork
+  condition is one function (`support/fork-runs.ts`), and on a fork the count check says the UI projects were left
+  out and exits 0. Honest line: the given-user mode is shown by one example on Toolshop (an account registered, then
+  passed in as a given user, logging in through the page); its set-up path (a session made with a given user) and the
+  one-worker rule have run only through the test list and CI's count step, not yet against an application without
+  registration.
 - **Sign-up fields by copy:** `signUpFields` of each environment in the application profile (`support/apps/toolshop.ts`). Sprint 5 needs
   only name, email and password; the "with bugs" version's contract also asks for address, city and country as
   separate fields, and it gets a date of birth to work around a defect not on the planted list (recorded in
@@ -248,10 +253,10 @@ uploaded as an artifact; nothing goes to GitHub Pages. The pins file for that co
 - **`EXPECTED_UI_TESTS`** in `support/planted-bug-count.ts`: the number of UI tests (projects `login` and
   `logged-in`, the seed left out). CI checks it before the tests (section 7), and the planted-bug summary warns when
   fewer are found. It changes in the same pull request as the tests.
-- **Scripts:** `npm test` (every test but the seed: 79 tests, 31 UI, 46 unit, 2 set-up), `npm run test:sanity`,
+- **Scripts:** `npm test` (every test but the seed: 80 tests, 31 UI, 47 unit, 2 set-up), `npm run test:sanity`,
   `npm run test:seed`, `npm run test:unit`, `npm run test:public-site` (the same tests against the public site and
-  its API), `npm run test:ready` (every test but the seed, 3 times at 2 workers: the check before a merge; 233 tests
-  in all: 93 UI, 138 unit, 2 set-up), `npm run report:build`, `npm run report`.
+  its API), `npm run test:ready` (every test but the seed, 3 times at 2 workers: the check before a merge; 236 tests
+  in all: 93 UI, 141 unit, 2 set-up), `npm run report:build`, `npm run report`.
 - **Verified from a fresh clone:** `npm ci`, `npx playwright install chromium`, `ci/start-toolshop.sh`, then
   `npm test` with no settings (the README's [Run it](../README.md#run-it)); every commit typechecks and its tests
   pass. `npm run test:public-site` runs the public site, where the Payment tests fail, because it runs newer code

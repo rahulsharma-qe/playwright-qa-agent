@@ -105,7 +105,7 @@ nvm use                      # Node version from .nvmrc (22.18 or later: Node ru
 npm ci
 npx playwright install chromium
 ci/start-toolshop.sh         # the pinned local copy of Toolshop (needs Docker; see CI below)
-npm test                     # 79 tests: 46 unit, 2 set-up, 31 UI; no settings needed, the defaults are this copy
+npm test                     # 80 tests: 47 unit, 2 set-up, 31 UI; no settings needed, the defaults are this copy
 npm run test:sanity          # only @sanity tests (setup still runs)
 npm run test:ready           # the "ready" check: every test but the seed 3 times at 2 workers, as before a merge
 npm run test:unit            # only the unit tests (no Toolshop needed)
@@ -151,6 +151,10 @@ own accounts when the application allows it; when it does not, the wrong-passwor
 reason and the run uses one worker. The secret scan covers the given password too. A pull request from a fork gets
 no secrets, so its run skips the projects that need a user, and says so. `tests/given-user-login.spec.ts` is a
 working example on Toolshop.
+
+The given-user mode is shown by one example on Toolshop (an account registered, then passed in as a given user,
+logging in through the page); its set-up path (a session made with a given user) and the one-worker rule have run
+only through the test list and CI's count step, not yet against an application without registration.
 
 ## CI
 

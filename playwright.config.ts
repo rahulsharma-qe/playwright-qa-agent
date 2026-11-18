@@ -1,6 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 import type { TestOptions } from './fixtures';
 import { SESSION_FILE, settings } from './support/settings';
+import { FORK_MESSAGE, NEEDS_A_USER, noGivenUserOnFork } from './support/fork-runs.ts';
 import { canRegister } from './support/test-user';
 
 const inCI = !!process.env.CI;
@@ -10,10 +11,10 @@ const inCI = !!process.env.CI;
 // log in as the given user: the projects that need a user are left out, and the run says so.
 const givenUser = settings.app.testUser.mode === 'given';
 const oneWorker = givenUser && !canRegister(settings.app);
-const noGivenUserOnFork = givenUser && !process.env.APP_USER_PASSWORD && process.env.FORK_PR === 'true';
-const NEEDS_A_USER = ['auth-setup', 'logged-in', 'login'];
-if (oneWorker) console.log('Given test user and no registration: the tests run on one worker, one after another.');
-if (noGivenUserOnFork) console.log(`Pull request from a fork: no secrets, so ${NEEDS_A_USER.join(', ')} are skipped.`);
+const onForkWithoutUser = noGivenUserOnFork(settings.app, process.env);
+// stderr, so they stay out of any --reporter=json output (CI's test count reads it from stdout).
+if (oneWorker) console.error('Given test user and no registration: the tests run on one worker, one after another.');
+if (onForkWithoutUser) console.error(FORK_MESSAGE);
 
 export default defineConfig<TestOptions>({
   testDir: './tests',
@@ -69,5 +70,5 @@ export default defineConfig<TestOptions>({
       use: { ...devices['Desktop Chrome'], screenshot: 'off' as const }, // the page shows the typed email
       dependencies: ['site-check'],
     },
-  ].filter((project) => !noGivenUserOnFork || !NEEDS_A_USER.includes(project.name)),
+  ].filter((project) => !onForkWithoutUser || !NEEDS_A_USER.includes(project.name)),
 });
