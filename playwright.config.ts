@@ -1,15 +1,26 @@
 import { defineConfig, devices } from '@playwright/test';
 import type { TestOptions } from './fixtures';
 import { SESSION_FILE, settings } from './support/settings';
+import { canRegister } from './support/test-user';
 
 const inCI = !!process.env.CI;
+
+// A given test user (support/apps/): an application that allows no registration has one account for every test,
+// so its tests run one after another, on one worker. A pull request from a fork gets no GitHub secrets, so it cannot
+// log in as the given user: the projects that need a user are left out, and the run says so.
+const givenUser = settings.app.testUser.mode === 'given';
+const oneWorker = givenUser && !canRegister(settings.app);
+const noGivenUserOnFork = givenUser && !process.env.APP_USER_PASSWORD && process.env.FORK_PR === 'true';
+const NEEDS_A_USER = ['auth-setup', 'logged-in', 'login'];
+if (oneWorker) console.log('Given test user and no registration: the tests run on one worker, one after another.');
+if (noGivenUserOnFork) console.log(`Pull request from a fork: no secrets, so ${NEEDS_A_USER.join(', ')} are skipped.`);
 
 export default defineConfig<TestOptions>({
   testDir: './tests',
   fullyParallel: true,
   forbidOnly: inCI,
   retries: inCI ? 1 : 0, // a test that passes only on retry is flaky, not passed
-  workers: inCI ? 2 : undefined, // light load on a shared public site
+  workers: oneWorker ? 1 : inCI ? 2 : undefined, // light load on a shared public site
   reporter: [
     ['list'],
     ['allure-playwright', { resultsDir: 'allure-results', detail: false }], // detail off: action steps would carry typed values
@@ -37,7 +48,7 @@ export default defineConfig<TestOptions>({
         ...devices['Desktop Chrome'],
         storageState: SESSION_FILE,
         signedIn: true, // fixtures.ts gives these tests the saved session's token
-        trace: 'retain-on-failure', // no password is typed here
+        trace: 'retain-on-failure' as const, // no password is typed here
       },
       dependencies: ['auth-setup'],
     },
@@ -47,7 +58,7 @@ export default defineConfig<TestOptions>({
     {
       name: 'auth-setup',
       testMatch: /auth\.setup\.ts/,
-      use: { ...devices['Desktop Chrome'], screenshot: 'off' }, // the page shows the typed email
+      use: { ...devices['Desktop Chrome'], screenshot: 'off' as const }, // the page shows the typed email
       dependencies: ['site-check'],
     },
     {
@@ -55,8 +66,8 @@ export default defineConfig<TestOptions>({
       // if login is broken, these tests still run and say so.
       name: 'login',
       testMatch: /login\.spec\.ts/,
-      use: { ...devices['Desktop Chrome'], screenshot: 'off' }, // the page shows the typed email
+      use: { ...devices['Desktop Chrome'], screenshot: 'off' as const }, // the page shows the typed email
       dependencies: ['site-check'],
     },
-  ],
+  ].filter((project) => !noGivenUserOnFork || !NEEDS_A_USER.includes(project.name)),
 });

@@ -17,6 +17,11 @@ jobs:
     env:
       BASE_URL: http://localhost:4200
       API_URL: http://localhost:8091
+      # Only for an application with a given test user (support/apps/); Toolshop registers its own and leaves these
+      # empty. A pull request from a fork gets no secrets: FORK_PR lets the run skip the projects that need a user.
+      APP_USER_EMAIL: ${{ secrets.APP_USER_EMAIL }}
+      APP_USER_PASSWORD: ${{ secrets.APP_USER_PASSWORD }}
+      FORK_PR: ${{ github.event.pull_request.head.repo.fork || false }}
     outputs:
       report-scanned: ${{ steps.report.outcome == 'success' }}
     steps:
