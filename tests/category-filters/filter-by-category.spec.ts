@@ -11,6 +11,7 @@ import {
   narrowedParent,
   noResultsText,
   parentCategories,
+  parentCategoryNames,
   sanityCategory,
   subCategoriesChecked,
   unionPartnerCategory,
@@ -30,9 +31,9 @@ test.describe('Category filter: basics', () => {
     // 1. Start state: fresh home page, nothing filtered
     await expect(productListPage.cards).toHaveCount(listCounts.pageSize);
     await expect(pagination.pageButtons).toHaveCount(listCounts.unfilteredPages);
-    for (const [parent, children] of Object.entries(parentCategories)) {
+    for (const parent of parentCategoryNames) {
       await expect(filterSidebar.category(parent)).toBeVisible();
-      for (const child of children) await expect(filterSidebar.category(child)).toBeVisible();
+      for (const child of parentCategories[parent]) await expect(filterSidebar.category(child)).toBeVisible();
     }
 
     // 2. Check one sub-category in the Categories group
@@ -106,7 +107,7 @@ test.describe('Category filter: basics', () => {
   });
 
   test('Unchecking one child while the parent is checked narrows the list', { tag: '@regression' }, async ({ productListPage, filterSidebar, pagination }) => {
-    const expected = parentCategories[narrowedParent as 'Hand Tools']
+    const expected = parentCategories[narrowedParent]
       .filter((child) => child !== unticked)
       .flatMap((child) => categoryProducts[child]);
 

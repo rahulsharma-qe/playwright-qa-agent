@@ -2,9 +2,9 @@
 // seed: tests/seed.spec.ts
 import { expect, test } from '../../fixtures';
 import { READ_ALL_PAGES_POLL } from '../../pages/Pagination';
-import { categoryProducts, listCounts, parentCategories } from '../../test-data/category-filters';
+import { categoryProducts, listCounts, parentCategories, type SubCategory } from '../../test-data/category-filters';
 
-const namesOf = (children: string[]) => children.flatMap((child) => categoryProducts[child]).sort();
+const namesOf = (children: SubCategory[]) => children.flatMap((child) => categoryProducts[child]).sort();
 
 test.describe('Category filter: pagination', () => {
   test('Pagination follows the filtered result set', { tag: '@regression' }, async ({ productListPage, filterSidebar, pagination }) => {
