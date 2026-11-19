@@ -5,7 +5,7 @@ before they are merged.**
 
 Status: step 1, the framework, is built, with application profiles, a given-user mode and three suites. Step 2,
 AI-assisted tests, is being built one user flow at a time: the category filters and checkout flows are merged. Next: the contact form flow, the planted-bug run after step 2,
-and onboarding a second application, its time measured, not estimated. The README's Built / Next / Later list is the record. How each
+and onboarding a second application, its time measured, not estimated. The README's Built / Next / Later is the short record; the full Built list is in [section 9](#built-in-full). How each
 part is built: [lld.md](lld.md).
 
 ## Diagrams
@@ -229,6 +229,55 @@ flowchart LR
   trends · a weekly run on both the public site and the CI copy · GitLab CI (explained by mapping from GitHub
   Actions) · a lint rule for the refused list.
 
+### Built, in full
+
+The README keeps a short list; this is the whole of it.
+
+- The suite runs in five groups (Playwright "projects"). First an environment check (is the shop up?). After it,
+  two paths: create a test user and sign in through the API, then the shopping tests (search, cart); and the login
+  tests through the real login page. Checks of our own helpers run on their own.
+- Node version in `.nvmrc`; site and API addresses from `.env` (both have defaults)
+- Site check: stops the run with "Toolshop site (or API) is not responding … an environment problem, not a test failure"
+- On Toolshop, each run registers its own customers through the API (no shared account, no account secrets). The
+  login tests log in through the page; the other tests start from a session made through the API and checked on the site
+- Page objects (`pages/`) given to tests through `fixtures.ts`
+- Login tests: login works · unknown email shows an error · wrong password shows the same error (on this run's own account)
+- Search finds the product · add to cart makes the cart count go up; search terms and product names in `test-data/`
+- Allure report (Allure 3, runs on Node, no Java): steps, retries. Screenshots and traces only on failed
+  logged-in tests: they record what was typed, and the login tests type login details. A failed login test keeps
+  a text snapshot instead.
+  A secret scan replaces this run's test-account values in the results, in their raw, JSON-escaped and HTML-escaped
+  forms, and stops the report if a password is left anywhere except the CI log-mask line and the page snapshot of a
+  failed test (both are replaced). It cannot
+  look inside compressed files (traces, screenshots); those come only from logged-in tests, where no password is
+  typed or printed
+- Bot-check detection: if a site shows a bot check (such as Cloudflare's "Performing security verification")
+  instead of Toolshop, in the site check or later in any test, the run stops with one clear message: an
+  environment problem, not a test failure. We never try to get past it. Unit tests for the detector run in a
+  `unit` project with no browser
+- A hand-started planted-bug run on Toolshop's "with bugs" version; failures are matched to planted bugs by a
+  person in [docs/bug-hunt.md](bug-hunt.md)
+- CI starts its own copy of Toolshop from pinned images, seeds it and waits for it, then runs the tests against it
+- GitHub Actions on every pull request and push to main: a pass/fail table on the run page, and the Allure report
+  attached to the run (`allure-report`), even when tests fail
+- The report from main published on GitHub Pages (link at the top), also when tests fail
+- Three suites, each part of the next, by tag (see [Suites](../README.md#suites)): `@sanity`, `@p0` and `@regression`, with
+  `npm run test:sanity`, `test:p0` and `test:regression`
+- Application profiles (`support/apps/`): the application and its environments, picked by `APP_UNDER_TEST` and
+  `TEST_ENV`; how to add one: [docs/onboarding-a-web-app.md](onboarding-a-web-app.md)
+- A given-user mode for an application where tests cannot register their own account (`APP_USER_EMAIL`,
+  `APP_USER_PASSWORD`), with a working example on Toolshop
+- Playwright's JSON results uploaded as their own artifact (`playwright-json`), after the secret scan
+- A run comparison (`support/compare-runs.ts`) that says whether two runs ended the same way, test by test, naming
+  only the field that differs, never a value
+- The run page shows UI tests and framework checks apart: "31 UI tests, 57 framework checks (and 2 set-up steps)"
+- CI checks the tag rules and that no test's name holds a suite tag
+- AI-assisted tests, one user flow at a time: Playwright's test agents explore the site, write a test plan and draft
+  tests with our page objects; a person approves the plan and the tests in pull requests. Built for the category
+  filters and checkout (25 of the 31 UI tests). Rules for the agents: [AGENTS.md](../AGENTS.md); how to use them:
+  [docs/ai-assisted-tests.md](ai-assisted-tests.md); every drafted test and its outcome:
+  [docs/ai-drafting-log.md](ai-drafting-log.md)
+
 ## 10. Limits
 
 - CI tests a pinned copy (Toolshop 2.5), not the public site, which runs newer code where the Payment tests fail.
@@ -249,4 +298,13 @@ flowchart LR
   which was flaky at 2 workers.
 - The order tests' cart check depends on the site's own `DELETE` answer after the order; a customer who leaves the
   confirmation page before it keeps a badge for a cart already ordered (observed note 16).
-- Starting Toolshop adds time to every CI run (images are pulled and the UI compiles when it starts).
+- Starting Toolshop adds about a minute to every CI run (images are pulled and the UI compiles when it starts;
+  Toolshop ready after 42 s in the first measured run).
+- Toolshop is shared by everyone and can be slow or down; the site check says when the environment, not a test, is the problem.
+- Lockout after failed logins is not tested yet (Later: on an account made for it, on our own copy).
+- Toolshop's web server image is published for arm64 only, so CI (amd64) runs it under emulation (QEMU); the
+  other images run natively.
+- At 4 workers on a laptop, address-form refills were more than 1 in 10 runs.
+- Toolshop's header shows "Testing Guide" on every page, the local copy too. The AI agents' page snapshots from
+  the category-filters and checkout sessions show that button only; none shows the guide or the "with bugs" site
+  open. The snapshots are what the sessions kept, not a full record.
