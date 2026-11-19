@@ -30,7 +30,8 @@ its reason in the [drafting log](docs/ai-drafting-log.md).
   GitHub Pages; a secret scan removes this run's test-account values before anything is uploaded
 - AI-assisted tests: Playwright's test agents plan and draft, a person approves the plan and the tests (category
   filters and checkout, 25 of the 31 UI tests); [AGENTS.md](AGENTS.md), [docs/ai-assisted-tests.md](docs/ai-assisted-tests.md)
-- A hand-started planted-bug run that measures what the tests catch ([how strong are the tests?](docs/running-the-tests.md#planted-bug-run))
+- A hand-started planted-bug run: the five original tests caught 2 of the 29 planted bugs on their pages (10-11-2026)
+  ([how strong are the tests?](docs/running-the-tests.md#planted-bug-run))
 
 Everything built, in full: [docs/architecture.md](docs/architecture.md#built-in-full).
 
