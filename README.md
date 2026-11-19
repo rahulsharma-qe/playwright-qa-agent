@@ -6,18 +6,11 @@ request, a published test report, and a planted-bug run that measures what the t
 
 **Latest test report (main):** https://rahulsharma-qe.github.io/playwright-qa-agent/
 
-Tests run against **Toolshop**, the Sprint 5 version of the practice web shop by
-[Testsmith](https://github.com/testsmith-io/practice-software-testing). The main path is a pinned local copy of
-Toolshop, the same one CI starts inside its runner (see [Run it](#run-it) and [CI](#ci)).
+Tests run against **Toolshop**, the Sprint 5 practice web shop by [Testsmith](https://github.com/testsmith-io/practice-software-testing),
+as a pinned local copy, the same one CI starts inside its runner ([the Toolshop copy](docs/running-the-tests.md#the-toolshop-copy)).
 
-> **The tests are pinned to Toolshop 2.5 (commit 9e7736c), which the local and CI copy run.** There, Payment has one
-> finish button labelled "Confirm", clicked twice. The public site runs a newer version, where Payment shows "Check
-> payment" before "Confirm", so the Payment tests fail there. The default settings run the pinned copy, started
-> with `ci/start-toolshop.sh` (see [Run it](#run-it)); `npm run test:public-site` runs the public site, where a run
-> on 15-11-2026 failed 5 tests, all at the Payment step: "Invalid credit card fields
-> show their messages and keep Confirm disabled" (3.1), "An invalid Bank Name shows its message and disables
-> Confirm" (3.3), "An invalid Gift Card Number shows its message and disables Confirm" (3.4), "Happy path with a
-> credit card" (4.1) and "Happy path with Cash on Delivery" (4.2).
+> **The tests are pinned to Toolshop 2.5 (commit 9e7736c), which the local and CI copy run.** The public site runs
+> a newer version, where the Payment tests fail ([which tests, and why](docs/running-the-tests.md#run-against-the-public-site)).
 
 **Proof of "AI drafts, a person decides":** pull request
 [#24](https://github.com/rahulsharma-qe/playwright-qa-agent/pull/24): its first commit holds the AI test
@@ -27,50 +20,19 @@ its reason in the [drafting log](docs/ai-drafting-log.md).
 ## Built / Next / Later
 
 **Built**
-- The suite runs in five groups (Playwright "projects"). First an environment check (is the shop up?). After it,
-  two paths: create a test user and sign in through the API, then the shopping tests (search, cart); and the login
-  tests through the real login page. Checks of our own helpers run on their own.
-- Node version in `.nvmrc`; site and API addresses from `.env` (both have defaults)
-- Site check: stops the run with "Toolshop site (or API) is not responding … an environment problem, not a test failure"
-- On Toolshop, each run registers its own customers through the API (no shared account, no account secrets). The
-  login tests log in through the page; the other tests start from a session made through the API and checked on the site
-- Page objects (`pages/`) given to tests through `fixtures.ts`
-- Login tests: login works · unknown email shows an error · wrong password shows the same error (on this run's own account)
-- Search finds the product · add to cart makes the cart count go up; search terms and product names in `test-data/`
-- Allure report (Allure 3, runs on Node, no Java): steps, retries. Screenshots and traces only on failed
-  logged-in tests: they record what was typed, and the login tests type login details. A failed login test keeps
-  a text snapshot instead.
-  A secret scan replaces this run's test-account values in the results, in their raw, JSON-escaped and HTML-escaped
-  forms, and stops the report if a password is left anywhere except the CI log-mask line and the page snapshot of a
-  failed test (both are replaced). It cannot
-  look inside compressed files (traces, screenshots); those come only from logged-in tests, where no password is
-  typed or printed
-- Bot-check detection: if a site shows a bot check (such as Cloudflare's "Performing security verification")
-  instead of Toolshop, in the site check or later in any test, the run stops with one clear message: an
-  environment problem, not a test failure. We never try to get past it. Unit tests for the detector run in a
-  `unit` project with no browser
-- A hand-started planted-bug run on Toolshop's "with bugs" version; failures are matched to planted bugs by a
-  person in [docs/bug-hunt.md](docs/bug-hunt.md)
-- CI starts its own copy of Toolshop from pinned images, seeds it and waits for it, then runs the tests against it
-- GitHub Actions on every pull request and push to main: a pass/fail table on the run page, and the Allure report
-  attached to the run (`allure-report`), even when tests fail
-- The report from main published on GitHub Pages (link at the top), also when tests fail
-- Three suites, each part of the next, by tag (see [Suites](#suites)): `@sanity`, `@p0` and `@regression`, with
-  `npm run test:sanity`, `test:p0` and `test:regression`
-- Application profiles (`support/apps/`): the application and its environments, picked by `APP_UNDER_TEST` and
-  `TEST_ENV`; how to add one: [docs/onboarding-a-web-app.md](docs/onboarding-a-web-app.md)
-- A given-user mode for an application where tests cannot register their own account (`APP_USER_EMAIL`,
-  `APP_USER_PASSWORD`), with a working example on Toolshop
-- Playwright's JSON results uploaded as their own artifact (`playwright-json`), after the secret scan
-- A run comparison (`support/compare-runs.ts`) that says whether two runs ended the same way, test by test, naming
-  only the field that differs, never a value
-- The run page shows UI tests and framework checks apart: "31 UI tests, 57 framework checks (and 2 set-up steps)"
-- CI checks the tag rules and that no test's name holds a suite tag
-- AI-assisted tests, one user flow at a time: Playwright's test agents explore the site, write a test plan and draft
-  tests with our page objects; a person approves the plan and the tests in pull requests. Built for the category
-  filters and checkout (25 of the 31 UI tests). Rules for the agents: [AGENTS.md](AGENTS.md); how to use them:
-  [docs/ai-assisted-tests.md](docs/ai-assisted-tests.md); every drafted test and its outcome:
-  [docs/ai-drafting-log.md](docs/ai-drafting-log.md)
+- 31 UI tests in five Playwright projects (see [Design](#design)); page objects (`pages/`) given to tests through
+  `fixtures.ts`; search terms and product names in `test-data/`
+- Application profiles (`support/apps/`, picked by `APP_UNDER_TEST` and `TEST_ENV`): on Toolshop each run registers
+  its own customers through the API; a given-user mode for an application where tests cannot
+  ([docs/onboarding-a-web-app.md](docs/onboarding-a-web-app.md))
+- Three suites, each part of the next, by tag ([Suites](#suites)), with the tag rules checked in CI
+- CI on every pull request and push to main, against its own Toolshop copy from pinned images; an Allure report on
+  GitHub Pages; a secret scan removes this run's test-account values before anything is uploaded
+- AI-assisted tests: Playwright's test agents plan and draft, a person approves the plan and the tests (category
+  filters and checkout, 25 of the 31 UI tests); [AGENTS.md](AGENTS.md), [docs/ai-assisted-tests.md](docs/ai-assisted-tests.md)
+- A hand-started planted-bug run that measures what the tests catch ([how strong are the tests?](docs/running-the-tests.md#planted-bug-run))
+
+Everything built, in full: [docs/architecture.md](docs/architecture.md#built-in-full).
 
 **Next**
 - The contact form flow, with a test plan written by the QA engineer in plain English and drafted by the AI test generator
@@ -78,8 +40,7 @@ its reason in the [drafting log](docs/ai-drafting-log.md).
 - Onboard a second application; its time measured, not estimated
 
 **Later**
-- Move the local and CI copy to the public site's Toolshop version, with a production build of its UI (no
-  development server), then the Payment and address tests checked again
+- Move the local and CI copy to the public site's Toolshop version, with a production build of its UI
 - A full agent: reads a requirement, plans tests, drafts them, heals broken locators; every change comes as a pull request a person approves
 - Account lockout test (on our own copy) · accessibility checks · several applications · visual regression · UI error states by mocking API replies
 - Allure history and trends · GitLab CI (explained by mapping from Actions)
@@ -101,11 +62,8 @@ flowchart LR
   class ENV,USER,SHOP,LOGIN,UNIT,REP,AI box
 ```
 
-The whole picture, how one test runs, and the CI run: [docs/architecture.md](docs/architecture.md#diagrams).
-
-[High-level design](docs/architecture.md): goals, components, one run and one CI run step by step, safety,
-decisions and limits. [Low-level design](docs/lld.md): projects, page objects, test accounts, reporting and the
-secret scan, bot-check detection, CI and the Toolshop copy, settings and versions.
+More diagrams: [docs/architecture.md](docs/architecture.md#diagrams). [High-level design](docs/architecture.md):
+goals, components, safety, decisions and limits. [Low-level design](docs/lld.md): how each part is built.
 
 ## Run it
 
@@ -113,7 +71,7 @@ secret scan, bot-check detection, CI and the Toolshop copy, settings and version
 nvm use                      # Node version from .nvmrc (22.18 or later: Node runs one TypeScript script directly)
 npm ci
 npx playwright install chromium
-ci/start-toolshop.sh         # the pinned local copy of Toolshop (needs Docker; see CI below)
+ci/start-toolshop.sh         # the pinned local copy of Toolshop (needs Docker)
 npm test                     # 90 tests: 57 unit, 2 set-up, 31 UI; no settings needed, the defaults are this copy
 npm run test:sanity          # the sanity suite: login and search (set-up still runs)
 npm run test:p0              # the P0 suite: login, search and placing an order
@@ -128,106 +86,7 @@ ci/stop-toolshop.sh          # when you are done
 If the local copy is not running, the site check shows as 1 failed with this message, and the other tests do not
 run: "The local Toolshop copy is not running. Start it with ci/start-toolshop.sh."
 
-### Run against the public site
-
-`npm run test:public-site` runs the same tests against https://practicesoftwaretesting.com and its API. Expect:
-
-- the Payment tests fail there, because the public site runs newer Toolshop code than the pinned copy (see the note
-  at the top);
-- the site's login lasts 5 minutes, so a run that takes longer can meet an expired session in its last tests;
-- the public site's data is shared with other visitors; a run can fail many tests when they have changed it, until
-  the site's hourly reset.
-
-`test:public-site` sets the two addresses in the command itself, which works on macOS, Linux and CI. On Windows, set
-`BASE_URL` and `API_URL` in `.env` instead.
-
-A trace attached to a failed test opens with `npx playwright show-trace <file>` or at trace.playwright.dev.
-
-## Settings
-
-`TEST_ENV` (the environment: `local`, `public-site` or `with-bugs`) and `APP_UNDER_TEST` (the application, `toolshop`)
-pick the application profile in `support/apps/`; the defaults are Toolshop's pinned local copy (`http://localhost:4200`,
-API `http://localhost:8091`). `BASE_URL` and `API_URL`, when set, win over the environment's addresses. There
-are no account values anywhere on Toolshop: shared demo accounts get locked by other visitors, and accounts
-registered by hand are removed when Toolshop resets its data. So each run registers five customers through
-Toolshop's API (one for the logged-in tests, one for the login tests, one for each of the two order tests, one for
-the given-user example), plus one more in CI for the agents' starting test, and one more each time a retry starts
-a new worker. Their emails use the reserved `example.com` domain; the passwords are generated for the run and kept
-only in `playwright/.auth/run-accounts/` (git-ignored), where the secret scan reads them.
-
-For an application where tests cannot register their own account, its profile says `testUser: given`: the tests
-log in as an account made for them, from `APP_USER_EMAIL` and `APP_USER_PASSWORD` (in CI, GitHub secrets of those
-names; only the names are in this repository). The wrong-password test and the order tests still register their
-own accounts when the application allows it; when it does not, the wrong-password test is left out with its
-reason and the run uses one worker. The secret scan covers the given password too. The fork rule for this mode is in
-[CI](#ci). `tests/given-user-login.spec.ts` is a working example on Toolshop. All the steps:
-[docs/onboarding-a-web-app.md](docs/onboarding-a-web-app.md).
-
-## CI
-
-`.github/workflows/ui-tests.yml` runs on every pull request and push to main. Toolshop's public site shows a bot
-check to CI machines, and we do not try to get past it, so CI starts its own copy first:
-
-1. `ci/start-toolshop.sh` fetches Toolshop's repository at a pinned commit into a cache folder outside this
-   repository (nothing of it is committed here), starts the database, API, web server
-   and site from Toolshop's published images (pinned by digest in `ci/toolshop-images.sprint5.yml`), seeds the
-   database, and waits until the API and the site answer. Toolshop's hourly data reset is not started.
-2. `npm test` runs against `http://localhost:4200` (site) and `http://localhost:8091` (API), with 2 workers and 1 retry.
-3. The report is built and scanned; `ci/stop-toolshop.sh` removes the containers.
-
-Start the same copy on your machine (needs Docker):
-
-```bash
-ci/start-toolshop.sh
-npm test
-ci/stop-toolshop.sh
-```
-
-Before long runs, restart the local copy (`ci/stop-toolshop.sh`, then `ci/start-toolshop.sh`): it keeps every order
-and cart it is given, and a copy left running for hours gets slower.
-
-The copy uses host ports 3306 (database), 8000 and 8091 (API) and 4200 (site); free them first.
-Toolshop's web server image is published for arm64 only. A Mac with Apple silicon runs it natively; Docker
-Desktop on an Intel Mac or Windows emulates it on its own. On a Linux machine (amd64), turn on arm64 emulation
-once: `docker run --privileged --rm tonistiigi/binfmt --install arm64`.
-
-On Toolshop, CI needs no secrets, so pull requests from forks run fully. For an application with a given test user
-(see [Settings](#settings)), a pull request from a fork gets no secrets, so its run leaves out the projects that need
-a user and says so. Only a report that passed the secret scan is uploaded
-or published. For the report on GitHub Pages, one-time setup: Settings → Pages → Source: "GitHub Actions". Pull
-requests do not publish. On the run page, read the line "31 UI tests, 57 framework checks (and 2 set-up steps)";
-the "Total tests" line above it is the reporter's own and adds them all together. No AI runs in CI: runs stay repeatable and cost nothing per run.
-
-**Planted-bug run.** The hand-started workflow "Run on the with-bugs copy" runs the same tests on Toolshop's
-version with bugs planted on purpose, to see which of them the tests catch ([docs/bug-hunt.md](docs/bug-hunt.md)).
-Failed tests are the result there, so that workflow stays green when they fail. The same run on your machine:
-
-```bash
-TEST_ENV=with-bugs ci/start-toolshop.sh
-TEST_ENV=with-bugs npm test
-ci/stop-toolshop.sh
-```
-
-To update Toolshop in CI: change `TOOLSHOP_COMMIT` in `ci/toolshop-env.sh` and run `ci/pin-toolshop-images.sh`
-(the two are one pair), start the local copy (`ci/check-toolshop-pair.sh` runs and stops on a mismatch), run the
-tests on it, then let CI run on the new copy.
-
-## How strong are the tests?
-
-Toolshop has a second version with bugs planted on purpose, and Testsmith lists them. We run the same tests on it,
-by hand, to see which planted bugs they catch.
-
-- Of Toolshop's 94 planted bugs, 29 are on the pages the five original tests open (login, home and search, product
-  page, cart).
-- **First baseline (09-11-2026):** 1 caught. **Second baseline (10-11-2026):** 2 caught, after search and cart began
-  to start from a session made through the API. Both baselines are for the five original tests. Bugs the tests did
-  not reach are not counted as missed.
-- The tests added since (the 25 AI-drafted tests and the given-user example) are measured for the first time in
-  the planted-bug run after step 2, with their own list of bugs on their pages written first.
-
-Which bugs were caught and why, how we count, and every run: [docs/bug-hunt.md](docs/bug-hunt.md). The AI test
-agents are kept away from that file and from the "with bugs" copy; these are guards, not a guarantee
-([docs/ai-assisted-tests.md](docs/ai-assisted-tests.md)).
+Settings, the public site, CI, the planted-bug run and the pins: [docs/running-the-tests.md](docs/running-the-tests.md).
 
 ## How we write tests
 
@@ -245,12 +104,9 @@ P0 means the flows that must work; a person chooses them in the plan.
 | P0 (`@p0`) | `npm run test:p0` | the sanity tests, and both order tests (credit card; Cash on Delivery) |
 | Regression (`@regression`) | `npm run test:regression` | all 31 UI tests |
 
-The sanity suite used to hold one category-filter test and the credit-card order test as well; they are now in the
-full suite, and the order test in P0 too. After a deploy, run `npm run test:sanity` (or `test:p0`) with `BASE_URL`
-and `API_URL` set to the deployed site.
+After a deploy, run `npm run test:sanity` (or `test:p0`) with `BASE_URL` and `API_URL` set to the deployed site.
 
 Page objects come from `fixtures.ts`; a test asks for the ones it needs:
-
 ```ts
 import { expect, test } from '../fixtures';
 
@@ -264,50 +120,23 @@ test('login works', { tag: ['@regression', '@p0', '@sanity'] }, async ({ loginPa
 - No hard waits (`page.waitForTimeout`): Playwright already waits for elements.
 - Locators by role or label first; `data-test` when there is no clear role or label. No CSS chains or XPath.
 - Page objects describe the page and may return values; only tests call `expect`. Tests never write `new LoginPage(page)`.
-- Page objects wrap each action in `test.step('…')`, so the report reads like a test case. Step names never hold
-  login details.
+- Page objects wrap each action in `test.step('…')`, so the report reads like a test case; no login details in it.
 - Check what the page shows with web-first assertions (`await expect(locator).toHaveText(…)`), or `expect.poll` for a
   value a page object returns. Never read a value once and compare it: the page may still be updating.
 - A test that passes only on retry is **flaky**, not passed.
 
 ## Honest lines
 
+- The tests run a pinned copy of Toolshop 2.5; the public site runs newer code, where the Payment tests fail.
 - Six hand-written tests (the five originals and the given-user example) prove the framework; the AI-drafted tests
-  (25) add a few user flows. Neither is the
-  coverage of a shop. Small on purpose.
-- Toolshop is shared by everyone and can be slow or down; the site check says when the environment, not a test, is the problem.
-- Each run leaves throwaway accounts on Toolshop: five (one for the logged-in tests, one for the login tests, one
-  for each of the two order tests, because orders on one account at the same moment collide (observed note 17), one
-  for the given-user example), plus one more in CI for the agents' starting test, and one more each time a retry
-  starts a new worker; there is no API to delete them, and the site's resets clear them.
-- Lockout after failed logins is not tested yet (Later: on an account made for it, on our own copy).
-- CI tests its own copy of Toolshop Sprint 5, not the public site. Images are pinned, so Toolshop changes reach CI
-  only when the pins are updated. The pins are Toolshop 2.5; the public site runs newer code and fails the Payment
-  tests (see the note at the top). Starting Toolshop adds about a minute (Toolshop ready after 42 s in the first measured run) to
-  every CI run.
-- The with-bugs images are not yet checked against the pinned commit.
-- One kind of failure cannot pass on a retry: Toolshop's API keeps a product list for 5 minutes, so an empty answer
-  stays empty for a retry inside that time (observed note 21).
-- Toolshop's web server image is published for arm64 only, so CI (amd64) runs it under emulation (QEMU); the
-  other images run natively.
-- The local copy (CI's own too) runs Toolshop's development server, which sometimes rebuilds the billing address
-  form after a test has filled it; the checkout tests fill it again, at most twice, and each refill is shown in the
-  report and counted on the run page. At 4 workers on a laptop, refills were more than 1 in 10 runs.
-- The postal-code length check (2.3) is left out until the production build of the UI: the development server
-  reset its form once in 44 runs.
-- The checkout order tests wait for the site's own answer that it emptied the cart; a customer who leaves the
-  confirmation page at once keeps a cart badge for an order already placed (observed note 16), which is not tested.
+  (25) add a few user flows. Neither is the coverage of a shop. Small on purpose.
 - Flakiness numbers are from a development-server copy of Toolshop.
-- Toolshop's header shows "Testing Guide" on every page, the local copy too. The AI agents' page snapshots from
-  the category-filters and checkout sessions show that button only; none shows the guide or the "with bugs" site
-  open. The snapshots are what the sessions kept, not a full record.
-- The given-user mode is shown by one example on Toolshop (an account registered, then passed in as a given user,
-  logging in through the page); its set-up path (a session made with a given user) and the one-worker rule have run
-  only through the test list and CI's count step, not yet against an application without registration.
-- Only one application (Toolshop) uses a profile so far; onboarding a second one is the next step, and its time
-  will be measured, not estimated.
-- The CI copy is not fully offline: Toolshop checks new passwords against the Have I Been Pwned service, so a slow
-  or unreachable service shows as "Could not register a test customer … environment problem".
+- Only one application (Toolshop) uses a profile so far; a second one's onboarding time will be measured.
+- The planted-bug numbers are for the five original tests; the newer tests are first measured after step 2.
+- The given-user mode is shown by one example on Toolshop; its set-up path and the one-worker rule have run only
+  through the test list and CI's count step, not yet against an application without registration.
+
+More, with their reasons: [docs/architecture.md](docs/architecture.md#10-limits).
 
 ## Credits
 

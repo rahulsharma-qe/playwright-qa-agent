@@ -24,8 +24,8 @@ playwright-qa-agent/
                           pair check
   specs/                  the test plans (Markdown), one per flow
   drafts/                 an AI generator's raw draft during a tests pull request; empty again after it
-  docs/                   this design, onboarding a web application, AI-assisted tests, the drafting log, observed
-                          notes, the planted-bug results
+  docs/                   this design, running the tests (settings and the Toolshop copy), onboarding a web
+                          application, AI-assisted tests, the drafting log, observed notes, the planted-bug results
   AGENTS.md               rules for any AI assistant working here
   .claude/settings.json   the deny list for Claude Code users (the same list as in AGENTS.md)
   playwright.config.ts    projects, reporters, locale, screenshots and traces
